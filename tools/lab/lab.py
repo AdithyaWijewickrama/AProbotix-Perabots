@@ -245,6 +245,8 @@ def parse_logs(out):
         res.update(s1_time=f(m.group(1)), end_time=f(m.group(2)), dist=float(m.group(3)),
                    collisions=int(m.group(4)), maxtilt=float(m.group(5)), final=m.group(6))
     res['judged'] = bool(m)
+    m = re.search(r'sim_t=([\d.]+) why=(\w+)', j)
+    res['sim_t'], res['why'] = (float(m.group(1)), m.group(2)) if m else (None, None)
     return res, c, j
 
 
@@ -300,7 +302,8 @@ def run_one(rid):
                 break
             time.sleep(0.5)
         res, c, j = parse_logs(out)
-        status = 'cancelled' if current['cancel'] else ('done' if res['judged'] else 'failed')
+        status = 'cancelled' if current['cancel'] else (
+            'done' if res['judged'] and res['why'] != 'sim_ended' else 'failed')
         tb, tg = truth.get('blue', 0), truth.get('green', 0)
         want = 'BLUE' if tb > tg else 'GREEN'
         fails = []
@@ -308,6 +311,9 @@ def run_one(rid):
             fails.append('CRASH')
         if not res['judged']:
             fails.append('NO RESULT')
+        elif res['why'] == 'sim_ended' and not current['cancel']:
+            # webots closed under us (window closed / killed). not the robots fault, rerun it
+            fails.append('ABORTED at %.0fs (webots closed)' % res['sim_t'])
         else:
             if res.get('det_major') != want:
                 fails.append('WRONG COLOUR' if res.get('det_major') else 'NO DECISION')

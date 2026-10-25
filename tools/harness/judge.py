@@ -58,8 +58,10 @@ while sup.step(TS) != -1:
     if tilt > 45 or t > LIMIT:
         break
 
-print('JUDGE mode=%s s1_time=%s end_time=%s dist=%.2f collisions=%d maxtilt=%.1f final=(%.3f,%.3f)' % (
-    mode, '%.1f' % t_s1 if t_s1 else None, '%.1f' % t_end if t_end else None, dist, coll, maxtilt, p[0], p[1]))
+# sim_t + why = so a webots that got closed/killed mid run isnt blamed on the robot
+why = 'finished' if t_end else ('tipped' if maxtilt > 45 else ('time_limit' if t > LIMIT else 'sim_ended'))
+print('JUDGE mode=%s s1_time=%s end_time=%s dist=%.2f collisions=%d maxtilt=%.1f final=(%.3f,%.3f) sim_t=%.1f why=%s' % (
+    mode, '%.1f' % t_s1 if t_s1 else None, '%.1f' % t_end if t_end else None, dist, coll, maxtilt, p[0], p[1], t, why))
 for c in coll_log[:10]:
     print('JUDGE collision', c)
 sys.stdout.flush()
