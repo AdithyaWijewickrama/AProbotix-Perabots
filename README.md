@@ -7,6 +7,7 @@ This repo is for PeraBots Competition 2026 first round by AProbotix team in Facu
   rulebook (4.5) asks for. zip it as `AProbotix_Submission.zip`
 - root `controllers/`, `protos/`, `worlds/` - our working copy, same code but
   with all the comments. open `worlds/Arena.wbt` in webots R2025a
+- `CONTROLLER_EXPLANATION.md` - proper write up of what the controller does
 - `DEVELOPMENT_NOTES.md` - how it works, what we learned, tuning knobs
 - `test_worlds/` - 34 random arenas we tested on
 - `tools/` - headless test harness + the physics experiments
