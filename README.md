@@ -10,6 +10,8 @@ This repo is for PeraBots Competition 2026 first round by AProbotix team in Facu
 - `CONTROLLER_EXPLANATION.md` - proper write up of what the controller does
 - `DEVELOPMENT_NOTES.md` - how it works, what we learned, tuning knobs
 - `test_worlds/` - 34 random arenas we tested on
+- `tools/lab/` - **sim lab web app**: double click `start_lab.bat`, pick/generate
+  worlds, change settings, run, compare (results kept in sqlite)
 - `tools/` - headless test harness + the physics experiments
 
 if you change the controller: change the root one, test it, then copy it to

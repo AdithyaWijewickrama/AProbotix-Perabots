@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 *.zip
 tools/harness/runs/
+tools/lab/lab.db
+tools/lab/runs/
+tools/lab/exports/

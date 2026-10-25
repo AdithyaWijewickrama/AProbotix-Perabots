@@ -54,6 +54,14 @@ def strip_solids(text, pat):
             out_ += blk
         i = k + 1
 
+def env_range(name, lo, hi):
+    # "a-b" or "a" from env, default lo-hi (defaults keep old seeds identical)
+    v = os.environ.get(name)
+    if not v:
+        return lo, hi
+    a, _, b = v.partition('-')
+    return int(a), int(b or a)
+
 truth = {}
 COLS, ROWS = 9, 4
 if seed == 0:
@@ -78,7 +86,7 @@ else:
         if n[0] != c: walls_v[(max(c, n[0]), r)] = False
         else: walls_h[(c, max(r, n[1]))] = False
         seen.add(n); st.append(n)
-    extra = rng.randint(0, 2)
+    extra = rng.randint(*env_range('LOOPS', 0, 2))
     keys = [k for k, v in list(walls_v.items()) + list(walls_h.items()) if v]
     for _ in range(extra):
         k = rng.choice(keys)
@@ -93,7 +101,7 @@ else:
         return n
     deads = [(c, r) for c in range(COLS) for r in range(ROWS) if opens(c, r) == 1 and (c, r) not in ((0, 0), (8, 3))]
     rng.shuffle(deads)
-    nt = min(len(deads), rng.randint(3, 7))
+    nt = min(len(deads), rng.randint(*env_range('NTILES', 3, 7)))
     if nt % 2 == 0 and nt > 1: nt -= 1
     tiles = deads[:nt]
     nb_ = rng.randint(0, nt)
@@ -142,7 +150,7 @@ else:
         return False
     cubes = []
     tries = 0
-    target = rng.randint(25, 45)
+    target = rng.randint(*env_range('NCUBES', 25, 45))
     while len(cubes) < target and tries < 400:
         tries += 1
         if cubes and rng.random() < 0.6:

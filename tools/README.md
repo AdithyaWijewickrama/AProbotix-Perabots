@@ -3,6 +3,15 @@
 not part of the submission. needs webots at `D:\Programs\Webots` (change the
 paths in `harness/run.ps1` if yours is somewhere else) and python on PATH.
 
+## lab/ - web app for testing (start here)
+
+double click `lab/start_lab.bat` -> http://localhost:8765. Pick or generate
+worlds, change any controller setting, run, and compare against older runs
+(sqlite). see `lab/README.md`.
+
+generator options (env vars for gen.py, also in the lab UI): `NCUBES=a-b`,
+`NTILES=a-b`, `LOOPS=a-b`. Defaults give the same worlds as before.
+
 ## harness/ - headless test runs with a judge
 
 - `run.ps1 <seed> [s2]` - builds a throwaway project in `harness/runs/`
