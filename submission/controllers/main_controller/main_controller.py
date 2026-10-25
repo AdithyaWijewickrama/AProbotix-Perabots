@@ -592,7 +592,7 @@ def run_maze():
 
 G = 0.02
 NX, NY = 122, 68
-R_HARD, R_INF, R_SOFT = 0.06, 0.09, 0.15
+R_HARD, R_INF, R_SOFT = 0.06, 0.075, 0.12
 occ = bytearray(NX * NY)
 clear = [9.0] * (NX * NY)
 _OFF = []

@@ -84,7 +84,13 @@ the submission folder.
 - `PIV_X` - the measured pivot point, dont touch unless the proto changes
 - `LAM` - exploration order bias, tried 0 / 0.5 / 1.0, 1.0 was best
 - `classify()` thresholds - blue/green/black, tuned by eye on the dev tiles
-- `R_HARD`, `R_INF`, `R_SOFT` - how close to cubes A* is allowed to go
+- `R_HARD`, `R_INF`, `R_SOFT` - how close to cubes A* is allowed to go.
+  was 0.06/0.09/0.15, now 0.06/0.075/0.12 (1.7% faster, 45/45 worlds, 0 coll)
+
+sweeps we ran in the sim lab (vs default, same worlds, all passed):
+- TURN90_COST 0.5 / 1.0, TURN180_COST 0.7 / 1.4, VOTES_NEEDED 8 / 16 ->
+  nothing faster, kept 0.7 / 1.0 / 12
+- R_INF 0.075 -1.6%, R_SOFT 0.12 -1.6%, R_SOFT 0.2 +0.8% -> took the first two
 
 ## todo / known stuff
 

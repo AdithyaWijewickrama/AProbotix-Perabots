@@ -162,9 +162,10 @@ and a random start heading. Some worlds start the robot at the maze entrance.
 | Majority colour correct | every test run |
 | End cell reached and stopped | every test run |
 | Collisions | 0 |
-| Full run (S1 + S2) | ~73–92 s (dev arena 73.4 s) |
-| Section 1 alone | ~18–34 s |
-| Maze only (start at entrance) | ~55–78 s |
+| Full run (S1 + S2) | 60.7–99.3 s (dev arena 65.8 s) |
+| Section 1 alone | 17.6–25.7 s |
+| Maze only (start at entrance) | 47.0–77.8 s |
+| Average over 45 test worlds | 77.8 s, 45/45 passed |
 
 ## 8. Main parameters
 
@@ -173,6 +174,6 @@ and a random start heading. Some worlds start the robot at the maze entrance.
 | `V_MAX` | 0.2 m/s | top speed (= motor limit 10 rad/s) |
 | `MAX_DV` | 4.0 rad/s per step | wheel acceleration limit |
 | `ACC` | 3.8 m/s² | braking curve |
-| `R_HARD`, `R_INF`, `R_SOFT` | 0.06 / 0.09 / 0.15 m | obstacle clearance zones for A* |
+| `R_HARD`, `R_INF`, `R_SOFT` | 0.06 / 0.075 / 0.12 m | obstacle clearance zones for A* |
 | `LAM` | 1.0 | how strongly to explore far-from-the-end cells first |
 | `PIV_X` | 0.005 m | measured pivot point (in the caster-forward frame) |
