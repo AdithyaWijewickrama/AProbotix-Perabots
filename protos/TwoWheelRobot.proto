@@ -12,61 +12,85 @@ PROTO TwoWheelRobot [
   field SFString   controller     "<none>"
   field MFString   controllerArgs []
   field SFColor    bodyColor      0.6 0.6 0.6
-  # ---------------------------------------------------------------------------
-  # Team-added devices, mounted through the official extension slot.
-  # Nothing in the locked drivetrain/chassis is touched. All devices are
-  # passive (no Physics/boundingObject) so they add no mass and do not change
-  # the robot dynamics. Webots conventions used below:
-  #   * DistanceSensor emits its ray along its local +X axis.
-  #   * Camera looks along its local -Z axis.
-  #   * Robot body frame: +X = forward, +Y = left, +Z = up.
-  # ---------------------------------------------------------------------------
+  # our sensors go here (extension slot only, drivetrain not touched)
+  # !! we drive the robot CASTER FIRST (backwards). the caster ball is a sliding
+  # sphere and in webots that makes the robot veer off when the wheels lead,
+  # with the ball leading it self straightens. so everything below faces -X.
+  # distance sensor ray = +X of the sensor, camera looks along +X too (R2025a)
+  # all distance sensors generic, value = metres*1000, max 1.5m
   field MFNode     extensionSlot  [
-    # ----- Distance sensors (type "generic" = pure geometric distance; the
-    #       "infra-red" type would be fooled by the near-black walls/cubes) ---
-    # lookupTable maps metres -> value: value = distance_m * 1000, range 0.40 m.
-    DistanceSensor {                 # straight ahead  (ray +X)
+    DistanceSensor {
       name "ds_front"
-      translation 0.04 0 0.04
-      lookupTable [ 0 0 0, 0.4 400 0 ]
+      translation -0.041 0 0.045
+      rotation 0 0 1 -3.1416
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
     }
-    DistanceSensor {                 # forward-left  (+45 deg about +Z)
-      name "ds_front_left"
-      translation 0.04 0.02 0.04
-      rotation 0 0 1 0.7854
-      lookupTable [ 0 0 0, 0.4 400 0 ]
+    DistanceSensor {
+      name "ds_fl1"
+      translation -0.041 -0.012 0.045
+      rotation 0 0 1 -2.7416
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
     }
-    DistanceSensor {                 # forward-right (-45 deg about +Z)
-      name "ds_front_right"
-      translation 0.04 -0.02 0.04
-      rotation 0 0 1 -0.7854
-      lookupTable [ 0 0 0, 0.4 400 0 ]
+    DistanceSensor {
+      name "ds_fr1"
+      translation -0.041 0.012 0.045
+      rotation 0 0 1 2.7416
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
     }
-    DistanceSensor {                 # left side  (+90 deg -> ray +Y)
+    DistanceSensor {
+      name "ds_fl2"
+      translation -0.039 -0.022 0.045
+      rotation 0 0 1 -2.3416
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
+    }
+    DistanceSensor {
+      name "ds_fr2"
+      translation -0.039 0.022 0.045
+      rotation 0 0 1 2.3416
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
+    }
+    DistanceSensor {
+      name "ds_fl3"
+      translation -0.03 -0.026 0.045
+      rotation 0 0 1 -1.9416
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
+    }
+    DistanceSensor {
+      name "ds_fr3"
+      translation -0.03 0.026 0.045
+      rotation 0 0 1 1.9416
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
+    }
+    DistanceSensor {
       name "ds_left"
-      translation 0.03 0.025 0.04
-      rotation 0 0 1 1.5708
-      lookupTable [ 0 0 0, 0.4 400 0 ]
-    }
-    DistanceSensor {                 # right side (-90 deg -> ray -Y)
-      name "ds_right"
-      translation 0.03 -0.025 0.04
+      translation 0 -0.026 0.045
       rotation 0 0 1 -1.5708
-      lookupTable [ 0 0 0, 0.4 400 0 ]
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
     }
-    # ----- Downward-forward camera for blue/green floor-tile detection -------
-    # Camera views along -Z; pitched ~30 deg off vertical so it sees the floor
-    # a few cm ahead of the robot (clear of its own chassis).
+    DistanceSensor {
+      name "ds_right"
+      translation 0 0.026 0.045
+      rotation 0 0 1 1.5708
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
+    }
+    DistanceSensor {
+      name "ds_back"
+      translation 0.041 0 0.045
+      rotation 0 0 1 0.0000
+      lookupTable [ 0 0 0, 1.5 1500 0 ]
+    }
+    # floor cam looking out over the caster, tilted down a bit. sees the
+    # floor from ~15cm to ~65cm ahead = the next 2 maze cells, so we can spot
+    # tiles in dead ends without driving all the way in.
+    # rotation = turn 180 about Z then pitch down 0.4
     Camera {
       name "cam"
-      translation 0.045 0 0.08
-      rotation 0 1 0 -0.52
-      fieldOfView 1.0
-      width 32
+      translation -0.042 0 0.09
+      rotation -0.1987 0 0.9801 3.14159
+      fieldOfView 0.8
+      width 48
       height 32
     }
-    # ----- Absolute heading reference (world-frame yaw). Allowed: it is not a
-    #       GPS and exposes no position, only orientation. --------------------
     InertialUnit {
       name "imu"
     }
