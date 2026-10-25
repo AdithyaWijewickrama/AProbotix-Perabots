@@ -25,9 +25,9 @@ R_WHEEL = 0.02
 HALF_TRACK = 0.032
 PIV_X = 0.005          # pivot point, x in OUR frame (caster side = +x, see below)
 
-MAX_DV = 1.0           # rad/s per step wheel slew (caster first it doesnt nose dive anymore)
+MAX_DV = 4.0           # rad/s per step wheel slew. was 1.0, 4 is ~10% faster and still flat (10 rocks the robot)
 V_MAX = 0.2            # m/s (motor caps at 10 rad/s anyway)
-ACC = 1.0              # braking curve, a bit under what the slew allows
+ACC = 3.8              # braking curve, a bit under what the slew allows
 W_RUN = 0.15           # max turn rate while driving (more = wheels slip, odometry dies)
 
 # maze
@@ -171,7 +171,7 @@ def turn_to(target, tol=0.02):
         e = wrap(target - yaw)
         if abs(e) < tol and abs(gyro.getValues()[2]) < 0.5:
             break
-        w = min(6.2, math.sqrt(2 * 24.0 * abs(e)))
+        w = min(6.2, math.sqrt(2 * 80.0 * abs(e)))
         w = max(w, 0.4)
         set_vw(0.0, w if e > 0 else -w)
     full_stop()

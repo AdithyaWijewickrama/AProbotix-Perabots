@@ -74,7 +74,7 @@ we ran it headless in webots with a judge supervisor (logs true position,
 collisions, time) on the dev arena + ~25 random arenas (random cubes keeping
 a 25cm passage, random maze, random tiles in dead ends, random start heading,
 also starts in the chamber / c1r1). every run: right majority, end cell
-reached, 0 collisions. full run ~85-105s, dev arena ~83s. the harness isnt in
+reached, 0 collisions. full run ~73-92s, dev arena ~73s (after the accel tuning, was ~85-105s). the harness isnt in
 the submission folder.
 
 ## knobs (top of main_controller.py)
