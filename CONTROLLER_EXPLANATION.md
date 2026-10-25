@@ -37,7 +37,7 @@ No GPS, Emitter, Receiver or Supervisor functions are used.
 ### Why the robot drives "caster first"
 
 The base robot has a sliding ball caster. We measured its behaviour in
-Webots (scripts in `tools/experiments/`):
+Webots (scripts in `test/tools/experiments/`):
 
 - **Wheels leading:** a heading error of 0.02 rad grew to 0.3–0.6 rad within
   0.5 m, even with strong steering correction.
@@ -152,8 +152,9 @@ The LED is already on when the robot arrives, which meets the 3 s rule.
 ## 7. Tested performance
 
 Tested headless in Webots R2025a with a supervisor "judge" that logs the true
-position, collisions and times (`tools/harness/`). We used the dev arena plus
-21 generated arenas, 34 test worlds in total (`test_worlds/`). The arenas have
+position, collisions and times (`test/tools/harness/`). We used the dev arena plus
+31 generated arenas, 45 test worlds in total (`test/worlds/`, full results in
+`test/TEST_REPORT.md`). The arenas have
 random cubes keeping 25 cm passages, random mazes, random tiles at dead ends
 and a random start heading. Some worlds start the robot at the maze entrance.
 

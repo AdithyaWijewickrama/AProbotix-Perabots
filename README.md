@@ -3,19 +3,29 @@ This repo is for PeraBots Competition 2026 first round by AProbotix team in Facu
 
 ## whats where
 
-- `submission/` - **the thing we submit.** no comments, only the files the
-  rulebook (4.5) asks for. zip it as `AProbotix_Submission.zip`
-- root `controllers/`, `protos/`, `worlds/` - our working copy, same code but
-  with all the comments. open `worlds/Arena.wbt` in webots R2025a
+- root `controllers/`, `protos/`, `worlds/` - our working copy WITH comments.
+  open `worlds/Arena.wbt` in webots R2025a. **edit the robot here.**
+- `submission/` - the clean copy (no comments). made automatically by
+  `make_submission_zip.py`, dont edit it by hand
+- `test/` - test worlds (45), test report, raw results, test tools
+  (`test/README.md`)
+  - `test/tools/lab/start_lab.bat` - **sim lab web app**: pick/generate worlds,
+    change settings, run, compare (results kept in sqlite)
 - `CONTROLLER_EXPLANATION.md` - proper write up of what the controller does
 - `DEVELOPMENT_NOTES.md` - how it works, what we learned, tuning knobs
-- `test_worlds/` - 34 random arenas we tested on
-- `tools/lab/` - **sim lab web app**: double click `start_lab.bat`, pick/generate
-  worlds, change settings, run, compare (results kept in sqlite)
-- `tools/` - headless test harness + the physics experiments
 
-if you change the controller: change the root one, test it, then copy it to
-`submission/` with the comments stripped.
+## making the submission zip
+
+```
+python make_submission_zip.py
+```
+
+this rebuilds `submission/` from the root files (strips comments and checks the
+code didnt change), refreshes `test/TEST_REPORT.md` from the lab database, and
+writes `dist/AProbotix_Submission.zip`. inside the zip:
+`PeraBots_UC/{protos, controllers/main_controller, worlds, docs, test}`.
+there is exactly one TwoWheelRobot.proto and one main_controller.py in it (the
+script checks that), the test worlds reuse them through `test/controllers/test_runner`.
 
 note: the two drive wheels are moved 2cm forward (x 0 -> 0.02) in
 TwoWheelRobot.proto. rulebook 4.4 allows small wheel position changes for
