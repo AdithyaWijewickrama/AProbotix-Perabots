@@ -1,0 +1,14 @@
+#VRML_SIM R2025a utf8
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "../protos/Arena_seed12.proto"
+EXTERNPROTO "../protos/Obstacles_seed12.proto"
+EXTERNPROTO "../../protos/TwoWheelRobot.proto"
+WorldInfo { title "seed12" basicTimeStep 16 }
+Viewpoint { orientation 0.32 0.13 -0.94 2.5 position 4.9 3.8 3.3 }
+TexturedBackground { texture "empty_office" }
+TexturedBackgroundLight { texture "empty_office" }
+DirectionalLight { direction 0.3 0.4 -1 intensity 2.2 castShadows TRUE }
+Arena_seed12 { }
+Obstacles_seed12 { }
+DEF ROBOT TwoWheelRobot { translation 2.325487 0.152678 0.001 rotation 0 0 1 3.076037 name "team_robot_template" controller "test_runner" bodyColor 1 0.55 0 }

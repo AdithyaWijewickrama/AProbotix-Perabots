@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.zip
+test/tools/harness/runs/
+test/tools/lab/lab.db
+test/tools/lab/runs/
+test/tools/lab/exports/
+.claude/
+dist/

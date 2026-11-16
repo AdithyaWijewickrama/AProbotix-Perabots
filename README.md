@@ -1,19 +1,29 @@
 # AProbotix-Perabots
-This repo is for PeraBots Competition 2026 first round by AProbotix team in Faculty of Engineering University of Ruhuna
 
-## whats where
+This repo holds team AProbotix's work for the PeraBots 2026 competition
+(University category), Faculty of Engineering, University of Ruhuna.
 
-- `submission/` - **the thing we submit.** no comments, only the files the
-  rulebook (4.5) asks for. zip it as `AProbotix_Submission.zip`
-- root `controllers/`, `protos/`, `worlds/` - our working copy, same code but
-  with all the comments. open `worlds/Arena.wbt` in webots R2025a
-- `DEVELOPMENT_NOTES.md` - how it works, what we learned, tuning knobs
-- `test_worlds/` - 34 random arenas we tested on
-- `tools/` - headless test harness + the physics experiments
+| Folder | Round | What it is |
+|---|---|---|
+| [`Phase 01 - Online Round/`](Phase%2001%20-%20Online%20Round/) | Online (simulation) round | Webots solution submitted for round 1. Includes the TwoWheelRobot controller, test worlds, the sim lab and the submission zip builder |
+| [`Phase 02 - Final Round/`](Phase%2002%20-%20Final%20Round/) | Final (physical) round – "The Nine Seals of Pera" | GuardianBot: Webots simulation of all 3 trials, plus the hardware (PCB, laser-cut acrylic, 3-D prints, parts list and build guide) |
 
-if you change the controller: change the root one, test it, then copy it to
-`submission/` with the comments stripped.
+## Phase 01 – Online Round
 
-note: the two drive wheels are moved 2cm forward (x 0 -> 0.02) in
-TwoWheelRobot.proto. rulebook 4.4 allows small wheel position changes for
-balance. everything else in the locked part is the original.
+This is the original first-round project, moved into its own folder unchanged. Paths below
+are relative to `Phase 01 - Online Round/`:
+
+- `controllers/`, `protos/`, `worlds/`: working copy with comments. Open `worlds/Arena.wbt` in Webots R2025a.
+- `submission/`: clean copy built by `make_submission_zip.py` (do not edit by hand).
+- `test/`: test worlds, test report, tools and the sim lab (`test/tools/lab/start_lab.bat`).
+- `CONTROLLER_EXPLANATION.md`, `DEVELOPMENT_NOTES.md`: write-ups of the controller.
+
+## Phase 02 – Final Round
+
+Start with [`Phase 02 - Final Round/README.md`](Phase%2002%20-%20Final%20Round/README.md).
+Quick links:
+
+- Simulation: open `Phase 02 - Final Round/simulation/worlds/perabots_arena.wbt` in Webots R2025a.
+- Build guide and parts list: `Phase 02 - Final Round/docs/GuardianBot_build_guide_and_BOM.md`.
+- PCB to order: `Phase 02 - Final Round/hardware/pcb/guardianbot_main_gerbers_JLCPCB.zip`.
+- Laser cutting: `Phase 02 - Final Round/hardware/acrylic/`. 3-D printing: `Phase 02 - Final Round/hardware/3d_prints/`.

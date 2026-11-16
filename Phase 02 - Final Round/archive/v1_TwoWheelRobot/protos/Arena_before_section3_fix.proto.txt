@@ -1,0 +1,257 @@
+#VRML_SIM R2025a utf8
+# Arena.proto - Complete 3-Section Competition Arena in native PeraBots coordinates
+# Section 1: Obstacle Field (Y: 0.0 to 1.22)
+# Section 2: The Labyrinth (Y: 1.22 to 2.44)
+# Section 3: The Nine-Point Board (Y: 2.44 to 3.66)
+
+PROTO Arena [
+] {
+  Group {
+    children [
+      # ========================================================================
+      # FLOORS (Z = -0.005)
+      # ========================================================================
+      # Section 1 Floor (white)
+      Solid {
+        translation 1.22 0.61 -0.005
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 2.44 1.22 0.01 } } ]
+        name "section1_floor"
+        boundingObject Box { size 2.44 1.22 0.01 }
+      }
+      # Section 2 Floor (dark gray)
+      Solid {
+        translation 1.22 1.83 -0.005
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 2.44 1.22 0.01 } } ]
+        name "section2_floor"
+        boundingObject Box { size 2.44 1.22 0.01 }
+      }
+      # Section 3 Floor (white)
+      Solid {
+        translation 1.22 3.05 -0.005
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 2.44 1.22 0.01 } } ]
+        name "section3_floor"
+        boundingObject Box { size 2.44 1.22 0.01 }
+      }
+
+      # ========================================================================
+      # OUTER BOUNDARY WALLS (Height 10cm, Z = 0.05)
+      # ========================================================================
+      # South outer wall (Y = 0)
+      Solid {
+        translation 1.22 0 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 2.452 0.012 0.1 } } ]
+        name "wall_south"
+        boundingObject Box { size 2.452 0.012 0.1 }
+      }
+      # North outer wall (Y = 3.66)
+      Solid {
+        translation 1.22 3.66 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 2.452 0.012 0.1 } } ]
+        name "wall_north"
+        boundingObject Box { size 2.452 0.012 0.1 }
+      }
+      # West outer wall (X = 0, along full Y: 0 to 3.66)
+      Solid {
+        translation 0 1.83 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 0.012 3.684 0.1 } } ]
+        name "wall_west"
+        boundingObject Box { size 0.012 3.684 0.1 }
+      }
+      # East outer wall (X = 2.44, along full Y: 0 to 3.66)
+      Solid {
+        translation 2.44 1.83 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 0.012 3.684 0.1 } } ]
+        name "wall_east"
+        boundingObject Box { size 0.012 3.684 0.1 }
+      }
+
+      # ========================================================================
+      # SECTION DIVIDERS
+      # ========================================================================
+      # Divider S1-S2 (Y = 1.22): gap at X in [0.095, 0.345] for chamber
+      Solid {
+        translation 0.0475 1.22 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 0.107 0.012 0.1 } } ]
+        name "s1_wall_top_left"
+        boundingObject Box { size 0.107 0.012 0.1 }
+      }
+      Solid {
+        translation 1.3925 1.22 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 2.107 0.012 0.1 } } ]
+        name "s1_wall_top_right"
+        boundingObject Box { size 2.107 0.012 0.1 }
+      }
+
+      # Divider S2-S3 (Y = 2.44): gap at X in [2.08, 2.34] for exit into Section 3
+      Solid {
+        translation 1.04 2.44 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 2.08 0.012 0.1 } } ]
+        name "divider_s2_s3_left"
+        boundingObject Box { size 2.08 0.012 0.1 }
+      }
+      Solid {
+        translation 2.39 2.44 0.05
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 metalness 0 } geometry Box { size 0.10 0.012 0.1 } } ]
+        name "divider_s2_s3_right"
+        boundingObject Box { size 0.10 0.012 0.1 }
+      }
+
+      # ========================================================================
+      # SECTION 1: START MARKER & TRANSITION CHAMBER
+      # ========================================================================
+      Solid {
+        translation 2.315 0.125 0.001
+        children [ Shape { appearance PBRAppearance { baseColor 1 0 0 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ]
+        name "start_marker"
+      }
+      Solid {
+        translation 0.22 1.275 0.001
+        children [ Shape { appearance PBRAppearance { baseColor 1 0 0 roughness 1 } geometry Box { size 0.25 0.122 0.001 } } ]
+        name "chamber_transition_tile"
+      }
+      Solid {
+        translation 0.095 1.275 0.05
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.098 0.1 } } ]
+        name "chamber_wall_left"
+        boundingObject Box { size 0.012 0.098 0.1 }
+      }
+      Solid {
+        translation 0.345 1.275 0.05
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.098 0.1 } } ]
+        name "chamber_wall_right"
+        boundingObject Box { size 0.012 0.098 0.1 }
+      }
+
+      # ========================================================================
+      # SECTION 2: THE LABYRINTH (9x4 Maze)
+      # ========================================================================
+      # Maze outer walls
+      Solid {
+        translation 1.34 1.33 0.05
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 2.002 0.012 0.1 } } ]
+        name "s2_wall_bottom"
+        boundingObject Box { size 2.002 0.012 0.1 }
+      }
+      Solid {
+        translation 0.095 1.83 0.05
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 1.012 0.1 } } ]
+        name "s2_wall_left"
+        boundingObject Box { size 0.012 1.012 0.1 }
+      }
+      Solid {
+        translation 2.335 1.83 0.05
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 1.012 0.1 } } ]
+        name "s2_wall_right"
+        boundingObject Box { size 0.012 1.012 0.1 }
+      }
+      # Top maze wall (gap at col 8 [2.095, 2.345] for exit into Section 3)
+      Solid {
+        translation 1.04 2.33 0.05
+        children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 1.90 0.012 0.1 } } ]
+        name "s2_wall_top"
+        boundingObject Box { size 1.90 0.012 0.1 }
+      }
+      # Red Exit Tile at (c8, r3)
+      Solid {
+        translation 2.21 2.205 0.001
+        children [ Shape { appearance PBRAppearance { baseColor 1 0 0 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ]
+        name "end_marker"
+      }
+      # Corridor Exit Tile into Section 3
+      Solid {
+        translation 2.21 2.385 0.001
+        children [ Shape { appearance PBRAppearance { baseColor 1 0 0 roughness 1 } geometry Box { size 0.25 0.11 0.001 } } ]
+        name "corridor_s2_s3_tile"
+      }
+
+      # Maze Internal Walls (exact official topology)
+      Solid { translation 0.345 1.58 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.512 0.1 } } ] name "maze_wall_v_c1c2_r1r2" boundingObject Box { size 0.012 0.512 0.1 } }
+      Solid { translation 0.595 1.705 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c2c3_r2" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 0.845 2.205 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c3c4_r4" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 1.095 1.955 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c4c5_r3" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 1.345 1.455 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c5c6_r1" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 1.595 2.205 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c6c7_r4" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 1.845 1.955 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c7c8_r3" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 2.095 1.705 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c8c9_r2" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 2.095 1.46 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c8c9_r1" boundingObject Box { size 0.012 0.262 0.1 } }
+      Solid { translation 2.095 2.205 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.012 0.262 0.1 } } ] name "maze_wall_v_c8c9_r4" boundingObject Box { size 0.012 0.262 0.1 } }
+
+      Solid { translation 0.595 2.08 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.512 0.012 0.1 } } ] name "maze_wall_h_r4r3_c2c3" boundingObject Box { size 0.512 0.012 0.1 } }
+      Solid { translation 1.47 2.08 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.262 0.012 0.1 } } ] name "maze_wall_h_r4r3_c6" boundingObject Box { size 0.262 0.012 0.1 } }
+      Solid { translation 1.97 2.08 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.262 0.012 0.1 } } ] name "maze_wall_h_r4r3_c8" boundingObject Box { size 0.262 0.012 0.1 } }
+      Solid { translation 1.095 1.83 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.512 0.012 0.1 } } ] name "maze_wall_h_r3r2_c4c5" boundingObject Box { size 0.512 0.012 0.1 } }
+      Solid { translation 1.72 1.83 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.262 0.012 0.1 } } ] name "maze_wall_h_r3r2_c7" boundingObject Box { size 0.262 0.012 0.1 } }
+      Solid { translation 0.47 1.58 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.262 0.012 0.1 } } ] name "maze_wall_h_r2r1_c2" boundingObject Box { size 0.262 0.012 0.1 } }
+      Solid { translation 1.095 1.58 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.512 0.012 0.1 } } ] name "maze_wall_h_r2r1_c4c5" boundingObject Box { size 0.512 0.012 0.1 } }
+      Solid { translation 1.845 1.58 0.05 children [ Shape { appearance PBRAppearance { roughness 1 metalness 0 } geometry Box { size 0.512 0.012 0.1 } } ] name "maze_wall_h_r2r1_c7c8" boundingObject Box { size 0.512 0.012 0.1 } }
+
+      # The 5 Clue Tiles (3 Blue, 2 Green in dead ends)
+      Solid { translation 0.72 2.205 0.001 children [ Shape { appearance PBRAppearance { baseColor 0 0 1 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ] name "maze_tile_blue_r4c3" }
+      Solid { translation 1.22 1.455 0.001 children [ Shape { appearance PBRAppearance { baseColor 0 0 1 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ] name "maze_tile_blue_r1c5" }
+      Solid { translation 1.97 2.205 0.001 children [ Shape { appearance PBRAppearance { baseColor 0 0 1 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ] name "maze_tile_blue_r4c8" }
+      Solid { translation 0.47 1.455 0.001 children [ Shape { appearance PBRAppearance { baseColor 0 1 0 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ] name "maze_tile_green_r1c2" }
+      Solid { translation 1.97 1.455 0.001 children [ Shape { appearance PBRAppearance { baseColor 0 1 0 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ] name "maze_tile_green_r1c8" }
+
+      # ========================================================================
+      # SECTION 3: NINE-POINT BOARD & GUIDE LINES
+      # Spans Y from 2.44 to 3.66, centered at X = 1.22
+      # ========================================================================
+      # Black line from Section 2 exit (X = 2.21, Y = 2.44) towards center
+      Solid {
+        translation 1.715 2.56 0.0015
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 1.01 0.02 0.001 } } ]
+        name "line_exit_to_center"
+      }
+      # Vertical line along X = 1.22 from Y = 2.56 up into the board
+      Solid {
+        translation 1.22 2.70 0.0015
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 0.02 0.30 0.001 } } ]
+        name "line_vert_to_board"
+      }
+      # Horizontal branch at Y = 2.70 connecting collection stations
+      Solid {
+        translation 1.22 2.70 0.0015
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 0.82 0.02 0.001 } } ]
+        name "line_collection_branch"
+      }
+      # Green Cube Collection Station Marker at (0.82, 2.70)
+      Solid {
+        translation 0.82 2.70 0.0015
+        children [ Shape { appearance PBRAppearance { baseColor 0 0.8 0 roughness 1 } geometry Box { size 0.10 0.10 0.001 } } ]
+        name "marker_collection_green"
+      }
+      # Blue Cylinder Collection Station Marker at (1.62, 2.70)
+      Solid {
+        translation 1.62 2.70 0.0015
+        children [ Shape { appearance PBRAppearance { baseColor 0 0.2 0.9 roughness 1 } geometry Box { size 0.10 0.10 0.001 } } ]
+        name "marker_collection_blue"
+      }
+
+      # --- 3x3 Nine-Point Board Grid Lines (20mm black) ---
+      # Board outer dimensions: 122cm wide (along X: 0.61 to 1.83) x 92cm high (along Y: 2.80 to 3.72)
+      # 4 Horizontal lines:
+      Solid { translation 1.22 2.80 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 1.22 0.02 0.001 } } ] name "board_h0" }
+      Solid { translation 1.22 3.10 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 1.22 0.02 0.001 } } ] name "board_h1" }
+      Solid { translation 1.22 3.40 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 1.22 0.02 0.001 } } ] name "board_h2" }
+      Solid { translation 1.22 3.70 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 1.22 0.02 0.001 } } ] name "board_h3" }
+      # 4 Vertical lines:
+      Solid { translation 0.61 3.25 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 0.02 0.92 0.001 } } ] name "board_v0" }
+      Solid { translation 1.01 3.25 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 0.02 0.92 0.001 } } ] name "board_v1" }
+      Solid { translation 1.41 3.25 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 0.02 0.92 0.001 } } ] name "board_v2" }
+      Solid { translation 1.83 3.25 0.0015 children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 0.02 0.92 0.001 } } ] name "board_v3" }
+
+      # Exit path from top of board to END zone
+      Solid {
+        translation 1.22 3.55 0.0015
+        children [ Shape { appearance PBRAppearance { baseColor 0.02 0.02 0.02 roughness 1 } geometry Box { size 0.02 0.30 0.001 } } ]
+        name "line_board_to_end"
+      }
+      # Red END Zone (25cm x 25cm)
+      Solid {
+        translation 1.22 3.535 0.001
+        children [ Shape { appearance PBRAppearance { baseColor 1 0 0 roughness 1 } geometry Box { size 0.25 0.25 0.001 } } ]
+        name "end_zone_marker"
+      }
+    ]
+  }
+}

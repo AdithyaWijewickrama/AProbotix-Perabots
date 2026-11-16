@@ -1,0 +1,39 @@
+Qty,References,Value,Footprint,Notes
+1,C1,10uF 25V,C_1206_3216Metric,TB6612 VM
+4,C2 C3 C6 C7,100nF,C_0805_2012Metric,ADC filter; MCP decoupling; TB6612 VCC; TB6612 VM
+1,C4,220uF 16V,CP_Elec_6.3x7.7,VBAT bulk
+1,C5,47uF 10V,C_1206_3216Metric,5 V bulk
+4,C8 C9 C10 C11,10uF,C_0805_2012Metric,Sharp supply
+1,D1,BLUE,LED_0805_2012Metric,clan LED blue
+1,D2,GREEN,LED_0805_2012Metric,clan LED green
+1,J1,DevKitC J1,PinSocket_1x22_P2.54mm_Vertical,"ESP32-S3-DevKitC-1 N16R8, left header (female socket)"
+1,J10,IR left,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,Sharp GP2Y0A41 left
+1,J11,IR right,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,Sharp GP2Y0A41 right
+1,J12,Motor L,JST_XH_B6B-XH-A_1x06_P2.50mm_Vertical,left gearmotor + encoder
+1,J13,Motor R,JST_XH_B6B-XH-A_1x06_P2.50mm_Vertical,right gearmotor + encoder
+1,J14,Line array,PinHeader_1x11_P2.54mm_Vertical,QTRX-MD-08A
+1,J15,Servo,PinHeader_1x03_P2.54mm_Vertical,"MG90S gripper servo (S, +, -)"
+1,J16,Qwiic IMU,JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal,BNO085 (Qwiic)
+1,J17,Qwiic colour,JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal,TCS34725 (Qwiic)
+1,J18,XIAO cam,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,XIAO ESP32S3 Sense (I2C slave 0x42)
+1,J20,XT30 battery,AMASS_XT30UPB-M_1x02_P5.0mm_Vertical,2S LiPo input (bottom side)
+1,J21,Power switch,JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,to a 3 A panel/slide switch
+1,J3,DevKitC J3,PinSocket_1x22_P2.54mm_Vertical,"ESP32-S3-DevKitC-1 N16R8, right header (female socket)"
+1,J4,US front,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,HC-SR04 front
+1,J5,US left,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,HC-SR04 left
+1,J6,US right,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,HC-SR04 right
+1,J7,US back,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,HC-SR04 back
+1,J8,IR front-left,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,Sharp GP2Y0A41 front-left
+1,J9,IR front-right,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,Sharp GP2Y0A41 front-right
+1,Q1,AO3401A,SOT-23,"P-MOSFET reverse-battery protection (G, S, D)"
+6,R1 R4 R7 R9 R11 R13,10k,R_0805_2012Metric,MCP reset pull-up; Q1 gate pull-down; echo divider top
+2,R15 R16,330R,R_0805_2012Metric,LED resistor
+1,R2,100k,R_0805_2012Metric,VBAT divider
+1,R3,33k,R_0805_2012Metric,VBAT divider
+2,R5 R6,4.7k,R_0805_2012Metric,I2C pull-up
+4,R8 R10 R12 R14,20k,R_0805_2012Metric,echo divider bottom
+1,SW1,START,SW_PUSH_6mm,start button
+1,SW2,CAL,SW_PUSH_6mm,calibration button (rule 5.3)
+1,U2,TB6612FNG,SSOP-24_5.3x8.2mm_P0.65mm,Dual H-bridge 1.2 A / 3.2 A peak
+1,U3,MCP23017-E/SO,SOIC-28W_7.5x17.9mm_P1.27mm,16-bit I2C I/O expander @0x20
+1,U4,Pololu D24V22F5,PinHeader_1x05_P2.54mm_Vertical,"5 V 2.5 A buck module: PG, EN, VIN, GND, VOUT (check silkscreen)"

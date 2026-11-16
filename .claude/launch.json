@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sim-lab",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["D:/PeraBots/PeraBots_UC/test/tools/lab/lab.py"],
+      "port": 8765
+    }
+  ]
+}

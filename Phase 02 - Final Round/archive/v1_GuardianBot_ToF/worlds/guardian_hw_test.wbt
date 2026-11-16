@@ -1,0 +1,163 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "../protos/Arena.proto"
+EXTERNPROTO "../protos/Obstacles.proto"
+EXTERNPROTO "../protos/GuardianBot.proto"
+
+WorldInfo {
+  title "PeraBots 2026 - The Nine Seals of Pera"
+  info [
+    "PeraBots 2026 Final Round - University Category"
+    "Full Competition Arena: 2.44m x 3.66m"
+    "Section 1: Obstacle Field (43 cubes, start square, transition chamber)"
+    "Section 2: The Labyrinth (9x4 maze, 12mm walls, 3 blue & 2 green clue tiles)"
+    "Section 3: The Nine-Point Board (3x3 grid, movable game pieces, end zone)"
+  ]
+  basicTimeStep 16
+  contactProperties [
+    ContactProperties {
+      material1 "default"
+      material2 "default"
+      coulombFriction [ 0.8 ]
+    }
+    ContactProperties {
+      material1 "default"
+      material2 "tire"
+      coulombFriction [ 1.0 ]
+    }
+    ContactProperties {
+      material1 "default"
+      material2 "caster"
+      coulombFriction [ 0.05 ]
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.3221 0.1331 -0.9373 2.4956
+  position 4.93 3.79 3.30
+  follow ""
+}
+TexturedBackground {
+  texture "empty_office"
+}
+TexturedBackgroundLight {
+  texture "empty_office"
+}
+DirectionalLight {
+  direction 0.3 0.4 -1
+  intensity 2.2
+  castShadows TRUE
+}
+
+# The Static Arena (floors, walls, markings, maze, board lines)
+Arena {
+}
+
+# The 43 Obstacle Cubes in Section 1
+Obstacles {
+}
+
+# ==============================================================================
+# MOVABLE GAME PIECES WITH PHYSICS
+# Blue Pieces: Cylinders (diameter 5cm, height 5cm, mass 0.03kg)
+# Green Pieces: Cubes (5cm x 5cm x 5cm, mass 0.03kg)
+# Board Cell Centers:
+#   Columns along X: Col 0 = 0.81m, Col 1 = 1.22m, Col 2 = 1.62m
+#   Rows along Y:    Row 0 = 2.95m, Row 1 = 3.25m, Row 2 = 3.55m
+# ==============================================================================
+
+# --- Board Piece 1: Green Cube (Row 2, Col 0 - Position 2) ---
+Solid {
+  translation 0.81 3.55 0.025
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0 0.8 0 roughness 0.4 metalness 0 }
+      geometry Box { size 0.05 0.05 0.05 }
+    }
+  ]
+  name "board_green_cube_1"
+  boundingObject Box { size 0.05 0.05 0.05 }
+  physics Physics { density -1 mass 0.03 }
+}
+
+# --- Board Piece 2: Green Cube (Row 2, Col 2 - Position 4) ---
+Solid {
+  translation 1.62 3.55 0.025
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0 0.8 0 roughness 0.4 metalness 0 }
+      geometry Box { size 0.05 0.05 0.05 }
+    }
+  ]
+  name "board_green_cube_2"
+  boundingObject Box { size 0.05 0.05 0.05 }
+  physics Physics { density -1 mass 0.03 }
+}
+
+# --- Board Piece 3: Blue Cylinder (Row 1, Col 1 - Position 5) ---
+Solid {
+  translation 1.22 3.25 0.025
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0 0.2 0.9 roughness 0.4 metalness 0 }
+      geometry Cylinder { height 0.05 radius 0.025 }
+    }
+  ]
+  name "board_blue_cyl_1"
+  boundingObject Cylinder { height 0.05 radius 0.025 }
+  physics Physics { density -1 mass 0.03 }
+}
+
+# --- Board Piece 4: Blue Cylinder (Row 1, Col 2 - Position 3) ---
+Solid {
+  translation 1.62 3.25 0.025
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0 0.2 0.9 roughness 0.4 metalness 0 }
+      geometry Cylinder { height 0.05 radius 0.025 }
+    }
+  ]
+  name "board_blue_cyl_2"
+  boundingObject Cylinder { height 0.05 radius 0.025 }
+  physics Physics { density -1 mass 0.03 }
+}
+
+# --- Collection Station: Green Cube Pickup at (0.82, 2.70) ---
+Solid {
+  translation 0.82 2.70 0.025
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0 0.8 0 roughness 0.4 metalness 0 }
+      geometry Box { size 0.05 0.05 0.05 }
+    }
+  ]
+  name "collect_green_cube"
+  boundingObject Box { size 0.05 0.05 0.05 }
+  physics Physics { density -1 mass 0.03 }
+}
+
+# --- Collection Station: Blue Cylinder Pickup at (1.62, 2.70) ---
+Solid {
+  translation 1.62 2.70 0.025
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0 0.2 0.9 roughness 0.4 metalness 0 }
+      geometry Cylinder { height 0.05 radius 0.025 }
+    }
+  ]
+  name "collect_blue_cyl"
+  boundingObject Cylinder { height 0.05 radius 0.025 }
+  physics Physics { density -1 mass 0.03 }
+}
+
+# ==============================================================================
+# ROBOT: GuardianBot (buildable 130 mm robot, see GuardianBot_BOM.md) at START
+# ==============================================================================
+GuardianBot {
+  translation 1.62 2.833 0.0
+  rotation 0 0 1 1.5708
+  name "team_robot"
+  controller "guardian_hw_test"
+}
