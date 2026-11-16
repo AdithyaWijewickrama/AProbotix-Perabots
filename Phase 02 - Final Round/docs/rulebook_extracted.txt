@@ -1,0 +1,729 @@
+--- PAGE 1 ---
+RULEBOOK
+RULEBOOK
+FINAL ROUND
+FINAL ROUND
+UNIVERSITY CATEGORY
+UNIVERSITY CATEGORY
+D E P A R T M E N T  O F  E L E C T R I C A L  &  E L E C T R O N I C  E N G I N E E R I N G  
+U N I V E R S I T Y  O F  P E R A D E N I Y A
+--- PAGE 2 ---
+Long ago, two powerful clans, the Blue Sentinels and
+the Green Keepers, protected the Ninefold Seal,
+which guarded the ancient knowledge of Pera.
+Together, they kept peace across the land. But one
+day, a mysterious incident changed everything. One
+clan turned against Pera and threatened to destroy
+the peace it had once protected. No one knows
+which clan betrayed its duty. The truth lies hidden
+within a dangerous maze, guarded by fallen stones,
+twisting paths, and mysterious coloured tiles.
+Now, a robotic guardian has been chosen to uncover
+the truth. It must cross the fallen stone barriers,
+explore the labyrinth, and collect clues from the blue
+and green tiles. The paths and hidden signs hold the
+secrets needed to reveal the arrangement of the
+ancient Nine-Point Board and discover which clan
+has remained loyal to Pera.
+In the final chamber, the two clans face their last
+battle on the ancient board. Using the clues gathered
+from the maze, the robot must uncover the hidden
+pattern, identify the winning move, and place the
+correct game piece. Only the right move can defeat
+the opposing side, restore peace, and unlock the
+Ninefold Seal.
+U N I V E R S I T Y  C AT EG O RY  
+2
+THE NINE SEALS OF PERA: 
+THE BATTLE OF THE TWO GUARDIANS
+THE NINE SEALS OF PERA: 
+THE BATTLE OF THE TWO GUARDIANS
+1 . 1  T H E  L E G E ND  O F  T H E  T WO  G UA R D I A N S
+T H E  T R U T H  I S  H I D D E N .  T H E  M A Z E
+H O L D S  T H E  C L U E S.  T H E  F I N A L  M OVE
+W I L L  D E C I D E  T H E  FAT E  O F  P E R A .
+
+--- PAGE 3 ---
+Your robot has been chosen to uncover the truth and restore peace to
+Pera. To complete the quest, your robot must:
+Cross the Fallen Stones: Navigate the obstacle field safely and reach
+the maze.
+Explore the Hidden Labyrinth: Find the blue and green tiles and count
+the left and right turns along the shortest path.
+Uncover the Secret Clues: Use the four values collected from the
+maze to identify the positions of the game pieces on the Nine-Point
+Board.
+Choose the Winning Move: Determine whether the Blue Sentinels or
+the Green Keepers are your allies, identify a winning move, and place
+the correct game piece on the board.
+Restore Peace to Pera: Leave the board and reach the finish to
+complete the mission.
+U N I V E R S I T Y  C AT EG O RY  
+3
+1 . 2  YO U R  M I S S I O N ,  G UA R D I A N !
+G UA R D I A N ,  O B S E RVE  CA R E F U L LY,  R E M E M B E R  E VE RY  C L U E ,
+A ND  T H I N K  W I S E LY.  T H E  FAT E  O F  P E R A  R E STS  O N  YO U R  F I N A L
+M OVE !
+
+--- PAGE 4 ---
+Before beginning your quest, familiarise yourself with the arena and its
+three connected sections. Each section presents a different challenge,
+from navigating obstacles and exploring a maze to solving the final
+strategic puzzle.
+U N I V E R S I T Y  C AT EG O RY  
+4
+2 .  E XP LO R I N G  T H E  C H A L L E N G E  A R E N A
+2 . 1  A R E N A  L AYO U T  A ND  D I M E N S I O N S
+The competition arena measures 2.44 m × 3.66 m and consists of three
+connected sections, each measuring 2.44 m × 1.22 m.
+The arena contains an obstacle field, a maze with coloured tiles, and a
+final 3 × 3 game board.
+The main arena specifications are:
+Overall arena: 2.44 m × 3.66 m
+Individual sections: 2.44 m × 1.22 m each
+Black line width: 20 mm
+Section 1 obstacles: 10 cm × 10 cm × 10 cm cubes
+Section 2 maze: 9 × 4 grid consisting of 36 cells, with a 25 cm × 25 cm
+cell pitch measured from wall centreline to wall centreline. 
+Maze walls are 12 mm thick and 100 mm high, resulting in a clear
+internal area of approximately 23.8 cm × 23.8 cm per cell 
+Section 3 game board: 3 × 3 grid, with positions spaced 40 cm
+horizontally and 30 cm vertically
+Game board outer dimensions: 122 cm wide × 92 cm high, including
+the grid lines
+Blue game pieces: Cylinders with a 5 cm diameter and 5 cm height
+Green game pieces: Cubes measuring 5 cm × 5 cm × 5 cm
+Dimensional tolerance: Arena dimensions may vary by up to ±2 mm or
+±1% of the specified dimension, as applicable. Teams must ensure that
+their robots can operate reliably despite these minor variations.
+--- PAGE 5 ---
+U N I V E R S I T Y  C AT EG O RY  
+5
+FIGURE 1: OVERALL ARENA LAYOUT 
+2 . 2  STA RT I N G  P O I N T,  S E CT I O N  T R A N S I T I O N S,  A ND  F I N I S H  Z O NE
+The challenge begins at the marked START zone in Section 1. The robot
+must navigate the obstacle field, proceed through the maze in Section 2,
+and complete the final board challenge in Section 3.
+The sections are connected by designated transition paths. After
+completing the final board challenge, the robot must leave the board area
+and follow the route to the END zone to complete the quest.
+FIGURE 2: ARENA ROUTE OVERVIEW 
+244cm
+--- PAGE 6 ---
+Arena feature Purpose
+Black lines Guide the robot along the paths
+Cubes in Section 1 Create obstacles for autonomousnavigation
+Blue and green tiles in
+Section 2 Provide clues for the final challenge
+Maze walls Define the available routes through thelabyrinth
+Numbered positions in
+Section 3 Identify possible game-board locations
+Blue cylinder and green cube Represent the two sides of the final boardgame
+The arena contains different features that help define the challenge:
+U N I V E R S I T Y  C AT EG O RY  
+6
+2 . 3  U ND E R STA ND I N G  T H E  A R E N A  M A R K I N G S  A ND  O B J E CTS
+--- PAGE 7 ---
+U N I V E R S I T Y  C AT EG O RY  
+7
+2 . 4  T H E  L A BY R I N T H  A ND  I TS  H I D D E N  C L U E S
+Section 2 contains a maze of connected paths, walls, and coloured tiles.
+The robot must explore the maze and collect information about the
+number of blue and green tiles, as well as the left and right turns along the
+shortest path.
+These four values provide the clues needed to solve the final challenge.
+Teams should ensure that their robots can explore the maze, record the
+required information, and retain it for use in Section 3.
+FIGURE 3: SECTION 2 — THE LABYRINTH OVERVIEW 
+The locations and functions of these elements are explained in the
+following challenge sections.
+--- PAGE 8 ---
+Section 3 contains a 3 × 3 game board with nine positions. The robot must
+use the information gathered in Section 2 to determine the appropriate
+move in the battle between the Blue Sentinels and the Green Keepers.
+A blue cylinder and a green cube are provided at designated collection
+points near the board. The robot must select the appropriate piece, place
+it in the winning position, and leave the board area.
+U N I V E R S I T Y  C AT EG O RY  
+8
+2 . 5  T H E  N I NE - P O I N T  BOA R D
+FIGURE 4: THE NINE-POINT BOARD 
+--- PAGE 9 ---
+U N I V E R S I T Y  C AT EG O RY  
+9
+2 . 6  C O M P L E T E  A R E N A  D I AG R A M
+The complete arena diagram shows the arrangement of the three
+sections and their connecting paths.
+Teams should study the diagram before the competition to familiarise
+themselves with the overall layout. Detailed instructions for completing
+each section are provided in Section 3.
+FIGURE 5: COMPLETE ARENA DIAGRAM
+--- PAGE 10 ---
+FIGURE 6: SECTION 1 — CROSS THE FALLEN STONES. 
+3 . 1  T R I A L  O NE :  C R O S S  T H E  FA L L E N  STO NE S
+The first trial challenges your robot to navigate a field of fallen stones and
+reach the entrance to the labyrinth.
+The arena contains fixed cubes arranged to create obstacles and possible
+routes. Your robot must move autonomously, find a suitable path, and
+reach the transition point leading to Section 2.
+The route may require careful obstacle avoidance and efficient
+navigation. Collisions and unnecessary travel may affect the robot's score.
+Objective: Reach the entrance to the Labyrinth of Hidden Signs while
+avoiding obstacles.
+U N I V E R S I T Y  C AT EG O RY  
+10
+The journey to uncover the truth behind the Nine Seals of Pera has three
+trials. Your robot must cross the fallen stones, uncover the clues hidden
+within the labyrinth, and use its discoveries to win the final battle between
+the two Guardians.
+3 .  T H E  T H R E E  T R I A L S  O F  T H E  N I NE  S E A L S
+--- PAGE 11 ---
+3 . 2  T R I A L  T WO :  T H E  L A BY R I N T H  O F  H I D D E N  S I G N S
+Beyond the fallen stones lies a labyrinth filled with hidden clues. Blue and
+green tiles are placed in selected dead-end cells throughout the maze.
+However, not every dead-end cell contains a tile. The number of blue and
+green tiles will never be equal, ensuring that one colour always has a clear
+majority.
+Your robot must explore the maze and determine:
+The total number of blue tiles.
+The total number of green tiles.
+The number of right turns along the shortest path through the maze.
+The number of left turns along the shortest path through the maze.
+Turn Counting: A turn is defined as a 90° change in direction within a cell.
+Counting begins when the robot enters the labyrinth and continues until it
+reaches the last exit cell. Any turn made inside the last exit cell to align
+with or pass through the exit door must not be counted.
+The robot must retain all four values because they will be needed to
+uncover the arrangement of the game pieces in the final trial.
+U N I V E R S I T Y  C AT EG O RY  
+11
+--- PAGE 12 ---
+Information collected Corresponding game piece
+Number of blue tiles Cylinder 1
+Number of green tiles Cube 1
+Number of right turns Cylinder 2
+Number of left turns Cube 2
+The values obtained from the maze correspond directly to the numbered
+positions on the game board. The method behind the board's numbering
+remains a secret for the Guardians to discover.
+Objective: Explore the labyrinth, collect all four clues correctly, and retain
+the information for the final challenge.
+These clues determine the positions of the existing pieces on the Nine-
+Point Board:
+U N I V E R S I T Y  C AT EG O RY  
+12
+FIGURE 7: SECTION 2 — THE LABYRINTH OF HIDDEN SIGNS. 
+--- PAGE 13 ---
+Discover the Hidden Numbering
+The Nine-Point Board follows a special numbering pattern inspired by the
+ancient secrets of Pera. The numbers are arranged so that the sum of the
+numbers in every row, column, and diagonal is equal.
+The numbering begins from the robot's entrance side. Position 1 is
+located in the middle cell of the first row, and Position 6 is located on
+the robot’s left when viewed from the entrance side, not from the exit
+side.
+Use this hidden pattern together with the four clues collected in Section 2
+to determine the positions of the existing game pieces.
+The final trial takes place on the Nine-Point Board, where the Blue
+Sentinels and Green Keepers face their final battle.
+Identify Your Side
+The number of blue and green tiles found in the maze determines the
+robot's side:
+More blue tiles: The robot represents the Blue Sentinels and uses a
+blue cylinder.
+More green tiles: The robot represents the Green Keepers and uses a
+green cube.
+The side with the greater number of tiles represents the Guardian clan
+that has remained loyal to Pera.
+U N I V E R S I T Y  C AT EG O RY  
+13
+3 . 3  T R I A L  T H R E E :  T H E  BAT T L E  O F  T H E  T WO  G UA R D I A N S
+--- PAGE 14 ---
+Inspect the Board and Find the Winning Move
+The robot must determine the arrangement of the game pieces and
+identify a winning move for its side. If the collected clues are not
+sufficient to determine the board arrangement, the robot may enter the
+grid and inspect the existing pieces by moving along the grid lines.
+Once the winning position has been identified, the robot must collect the
+appropriate game piece from its designated collection point and place it
+in the correct position on the board.
+Placement guidance: We recommend choosing a winning move along a
+horizontal row whenever a suitable winning option is available, as this
+provides more space for the robot to turn and position the game piece.
+Placing a piece along a vertical line is also permitted, but the available
+turning space may be tighter. The robot must manoeuvre carefully to
+avoid touching the existing game pieces, as any such contact will be
+recorded as a collision and may result in mark deductions.
+U N I V E R S I T Y  C AT EG O RY  
+14
+FIGURE 8: THE NINE-POINT BOARD
+--- PAGE 15 ---
+After placing its piece, the robot must leave the board area and continue
+to the END point to complete the challenge.
+Objective: Use the clues gathered from the labyrinth, identify your side,
+discover the winning move, place the correct game piece, and restore
+peace to Pera.
+U N I V E R S I T Y  C AT EG O RY  
+15
+4 .  P R E PA R I N G  YO U R  R O BOT
+Teams must prepare a robot that can complete all three trials safely and
+autonomously under the actual conditions of the physical arena. The
+robot must be designed not only to perform the required tasks but also to
+handle small variations in the arena and its surroundings.
+4 . 1  R O BOT  D I M E N S I O N S
+The robot must fit within a maximum size of 20 cm × 20 cm × 20 cm.
+All components must be securely attached and must not create
+hazards or interfere with the arena.
+The robot must be able to navigate the obstacle field, explore the
+maze, inspect the Nine-Point Board, and place the required game
+piece within these dimensional limits.
+4 . 2  AU TO N O M O U S  O P E R AT I O N
+The robot must complete all trials autonomously, without human
+assistance during an attempt.
+Remote control is strictly prohibited. Teams must not remotely
+control the robot or use external transmitting or receiving equipment
+to send commands to or control its movements during an attempt.
+The robot must make its own decisions using its onboard controller,
+sensors, and programmed logic.
+Once an attempt begins, no team member may physically guide,
+reposition, or otherwise assist the robot unless instructed by an
+official.
+--- PAGE 16 ---
+U N I V E R S I T Y  C AT EG O RY  
+16
+The robot must be designed and operated safely throughout the
+competition.
+It must not damage, scratch, displace, or deliberately interfere with
+the arena, its walls, floor markings, obstacles, maze, board, or game
+pieces.
+Any sharp, loose, unstable, or potentially hazardous components must
+be avoided.
+The robot must not use any mechanism or action that creates an
+unacceptable risk to the arena, officials, participants, or other
+equipment.
+Any robot considered unsafe or capable of damaging the arena may be
+stopped by the judges and may receive a penalty or be disqualified.
+4 . 3  S A F E T Y  A ND  A R E N A  P R OT E CT I O N
+4 . 4  A DA P T I N G  TO  R E A L  A R E N A  C O ND I T I O N S
+Teams must ensure that their robots operate reliably under the actual
+conditions of the physical competition arena. These conditions may
+differ slightly from those encountered during development, simulation, or
+practice.
+In particular:
+Lighting conditions: Sensors must operate reliably under the lighting
+present in the competition venue. Teams should avoid relying on a
+single fixed lighting condition.
+Surface conditions: The robot must maintain reliable traction and
+sensor performance on the actual arena surface.
+Small dimensional variations: Teams should account for minor
+variations in arena dimensions, markings, wall positions, and
+component placement.
+Section transitions: Small edges or level differences may be present
+where adjacent arena sections meet. The boundary between sections
+may include an edge of approximately 2 mm or less. The robot must
+cross these transitions independently, without lifting, pushing,
+repositioning, or other assistance from team members or officials.
+Teams are responsible for designing, testing, and calibrating their robots
+to handle these conditions reliably.
+--- PAGE 17 ---
+U N I V E R S I T Y  C AT EG O RY  
+17
+All teams must follow the procedures and requirements described in this
+section throughout the Final Round. Teams are responsible for arriving at
+their allocated times and ensuring that their robots are ready for the
+official evaluation.
+5 .  R U L E S  O F  T H E  Q U E ST
+5 . 1  P R ACT I C E  A ND  T E ST I N G  S E S S I O N
+Before the official competition, each team will be allocated a separate
+practice and testing session of approximately 30–40 minutes.
+Each team will be assigned a specific time slot by the organizing
+committee. Teams must arrive at the designated practice area at their
+allocated time.
+Testing will take place in a separate practice arena with floor
+materials and surface conditions similar to those of the official
+competition arena. However, the arrangement of walls, obstacles, and
+other arena elements may differ.
+During this period, teams may test their robots and make necessary
+modifications, including hardware changes, software and code
+updates, mechanical adjustments, and sensor calibration.
+Teams should use this opportunity to test their robots under different
+lighting conditions and ensure reliable operation on the actual
+competition surface.
+Teams arriving late will only be allowed to use the remaining time of
+their allocated session. Lost testing time will not be extended or
+provided again through an additional session.
+--- PAGE 18 ---
+U N I V E R S I T Y  C AT EG O RY  
+18
+5 . 2  R O BOT  H A NDOVE R
+5 . 3  F I N A L  CA L I B R AT I O N  AT  T H E  O F F I C I A L  A R E N A
+At the end of the allocated practice and testing session:
+When the team's official competition time arrives, the team will receive its
+robot and be given a separate two-minute period for final calibration at
+the official competition arena.
+During this period:
+The two-minute calibration period is separate from the 15-minute
+competition period. Teams that do not require final calibration may
+choose to begin their official competition period without using the full
+two minutes.
+Each team must hand over its robot to the organizing committee.
+The organizing committee will retain the robot until the team's
+allocated official competition time.
+The robot will be returned to the respective team immediately before
+its official competition session.
+Teams must ensure that their robots are properly assembled and
+ready for the official competition before handing them over.
+Teams may replace or reconnect the robot's battery if necessary.
+No hardware modifications, component replacements other than the
+battery, software uploads, code changes, or physical adjustments to
+the robot are permitted.
+Teams may use the robot's built-in calibration function by pressing its
+designated calibration button to adjust sensor readings according to
+the actual lighting and surface conditions of the competition arena.
+All calibration activities must be completed within the allocated two-
+minute period.
+--- PAGE 19 ---
+U N I V E R S I T Y  C AT EG O RY  
+19
+5 . 4  C O M P E T I T I O N  T I M E  A ND  AT T E M P TS
+Each team will be given a total competition period of 15 minutes and a
+maximum of three official attempts.
+Teams should manage their allocated time carefully to achieve the best
+possible performance.
+There is no separate time limit for each attempt. However, all
+attempts must be started within the allocated 15-minute competition
+period.
+The 15-minute period begins when the judges officially signal the start
+of the team's first attempt.
+If the 15-minute period expires while an attempt is still in progress,
+the team will be allowed to complete that ongoing attempt, provided it
+is not otherwise terminated.
+The judges will record the actual completion time of that attempt.
+Once the 15-minute period has expired, no further attempts will be
+permitted, even if the team has not used all three attempts.
+The competition period will not be extended because of failed or
+terminated attempts.
+--- PAGE 20 ---
+U N I V E R S I T Y  C AT EG O RY  
+20
+5 . 5  STA RT I N G  A ND  R E STA RT I N G  A N  AT T E M P T
+If the entire challenge has been completed successfully, any subsequent
+attempt must begin from the initial starting position, as directed by the
+judges.
+At the beginning of an attempt, the robot must be positioned at the
+designated starting location as instructed by the competition
+officials.
+The robot must remain stationary until the judges officially signal the
+start of the attempt.
+If an attempt is terminated, the team may use its remaining attempts
+within the allocated competition period, subject to the maximum of
+three attempts.
+Where one or more trials have been successfully completed before an
+attempt is terminated, the next attempt may begin from the
+designated starting point of the next incomplete trial, rather than
+repeating the previously completed trials.
+The judges will determine which trials have been successfully
+completed and instruct the team where to position the robot for the
+next attempt.
+Teams must not independently choose or change the starting position
+of a restarted attempt.
+--- PAGE 21 ---
+U N I V E R S I T Y  C AT EG O RY  
+21
+5 . 6  W H E N  A N  AT T E M P T  I S  STO P P E D
+5 . 7  M A N UA L  I N T E RVE N T I O N  A ND  C O M P L E T I O N
+An attempt terminated under any of these conditions will be counted as
+one of the team's three permitted attempts.
+If an attempt is terminated before the 15-minute competition period
+expires, the team may use its remaining attempts within the available
+time, following the restarting procedure described in Section 5.5.
+Once an attempt begins, the robot must operate fully autonomously.
+Participants must not touch, manually control, reposition, or
+physically assist the robot while it is operating, unless specifically
+instructed or permitted by a competition official.
+Any restart or repositioning between attempts must be carried out
+according to the instructions of the competition officials.
+Participants must not interfere with the robot's operation or provide
+external commands during an official attempt.
+To successfully complete the challenge, the robot must complete the
+required tasks in all three trials. In the final trial, it must correctly place
+the selected game piece, exit the Nine-Point Board, and reach the
+designated END point.
+An evaluation attempt may be terminated under any of the following
+conditions:
+The robot becomes stuck, repeatedly performs an ineffective action,
+enters a continuous loop, or otherwise makes no meaningful progress
+for 15 consecutive seconds.
+A competition official or judge instructs the team to stop the attempt.
+The judges determine that the attempt must be stopped for another
+valid reason, including a safety concern, potential arena damage, or a
+serious violation of competition rules.
+--- PAGE 22 ---
+U N I V E R S I T Y  C AT EG O RY  
+22
+Each robot will be evaluated based on its performance throughout the
+three trials. Marks will be awarded for successful task completion,
+accuracy, efficient navigation, and overall robot performance. Mark
+deductions may apply for collisions, incorrect decisions, and violations of
+competition rules.
+6 .  S C O R I N G  —  H OW  T H E  G UA R D I A N S  E A R N
+T H E I R  M A R KS
+6 . 1  M A R KS  FO R  C O M P L E T I N G  T H E  Q U E ST
+Marks will be awarded based on the robot's ability to successfully
+complete the required tasks in each trial.
+Trial One: Cross the Fallen Stones
+Evaluation may consider:
+Successful autonomous navigation from the designated starting
+point to the end of the obstacle-navigation section.
+Ability to identify and follow the shortest feasible route.
+Path efficiency and unnecessary movements.
+Number of collisions with fixed obstacles.
+Overall successful completion of the trial.
+Any physical contact between the robot and a fixed obstacle will be
+recorded as a collision.
+--- PAGE 23 ---
+U N I V E R S I T Y  C AT EG O RY  
+23
+Trial Two: Labyrinth of Hidden Signs
+Evaluation may consider:
+Successful and sufficient exploration of the maze to identify the
+required clues.
+Number of maze cells explored and overall exploration efficiency.
+Correct identification and counting of blue and green tiles.
+Correct counting of right and left turns along the shortest path.
+Correct interpretation and mapping of the collected clues to the
+corresponding game pieces.
+Number of collisions with maze walls.
+Successful navigation to the designated end point of the maze.
+The robot must correctly identify and utilize the information collected
+during the maze exploration to support its decisions in the final trial.
+--- PAGE 24 ---
+U N I V E R S I T Y  C AT EG O RY  
+24
+Trial Three: The Battle of the Two Guardians
+Evaluation may consider:
+Accurate navigation along the grid lines of the Nine-Point Board.
+Correct interpretation of the collected clues and identification of the
+existing game-piece arrangement.
+Correct identification of the robot's side based on the majority tile
+colour.
+Ability to determine a valid winning move using the collected
+information.
+Correct selection and collection of the required game piece.
+Accuracy of game-piece placement in the intended winning position.
+Ability to determine the correct placement directly from the collected
+clues without unnecessary physical inspection of the board.
+Avoiding collisions with existing game pieces and other board
+elements.
+Successful exit from the Nine-Point Board and reaching the
+designated END point.
+--- PAGE 25 ---
+U N I V E R S I T Y  C AT EG O RY  
+25
+6 . 2  H A R DWA R E  D E S I G N  A ND  C O N ST R UCT I O N
+6 . 3  M A R K  D E D UCT I O N S
+Marks may be deducted for the following:
+Collisions with fixed obstacles in the obstacle-navigation section.
+Collisions with maze walls during maze exploration.
+Collisions with existing game pieces or other elements of the Nine-
+Point Board.
+Incorrect interpretation of the collected clues.
+Selecting the wrong game piece or placing it in an incorrect position.
+Unnecessary movements or navigation errors that affect task
+performance.
+Failure to complete the required actions correctly.
+Violation of competition rules or receiving unauthorized assistance.
+Depending on the seriousness of the violation, penalties may include
+mark deductions, termination of an attempt, or disqualification.
+In addition to task performance, teams may earn marks for the design and
+construction of their robots.
+Judges may consider:
+Quality and neatness of construction.
+Creativity and overall robot design.
+Effective placement and integration of sensors, electronic
+components, and mechanical parts.
+Reliability and suitability of the design for the competition challenges.
+Effectiveness of the robot's mechanical and electronic systems.
+Compliance with the specified dimensional, technical, and safety
+requirements.
+--- PAGE 26 ---
+The team's best attempt will be considered for the primary task-
+performance evaluation. However, consistency, reliability, and overall
+performance demonstrated across the available attempts may also be
+considered when determining the final score.
+Marks awarded for hardware design and construction will be considered
+separately as part of the overall competition result.
+U N I V E R S I T Y  C AT EG O RY  
+26
+6 . 4  AT T E M P TS  A ND  F I N A L  R E S U LTS
+Each team may make a maximum of three official attempts within its
+allocated 15-minute competition period, subject to the conditions
+described in Section 5.
+Judges will record the team's performance throughout the available
+attempts, including:
+Progress and successful completion of individual trials.
+Completion times and overall performance.
+Navigation errors and collisions.
+Accuracy of sensing, clue interpretation, and decision-making.
+Successful execution of the required tasks.
+--- PAGE 27 ---
+If a tie remains after applying the above criteria, the final decision will be
+made by the PeraBots 2026 Evaluation Panel.
+The decisions of the evaluation panel regarding scoring, penalties, and
+final rankings shall be final.
+U N I V E R S I T Y  C AT EG O RY  
+27
+6 . 5  T I E - B R E A K I N G  P R O C E D U R E
+If two or more teams receive the same final score, the final ranking will be
+determined by comparing the following factors in order:
+1.Successful completion of the overall challenge.
+2.Greater progress through the three trials and a higher number of
+successfully completed tasks.
+3.Shorter total time taken to complete the challenge. Where the trials
+are timed separately, the combined recorded time for the three trials
+will be considered.
+4.Fewer collisions and navigation errors.
+5.Better performance in the final trial, The Battle of the Two Guardians.
+6.Fewer attempts required to achieve the result.
+--- PAGE 28 ---
+U N I V E R S I T Y  C AT EG O RY  
+28
+All teams must follow the competition rules and compete fairly
+throughout the Final Round. Violations may result in mark deductions,
+termination of an attempt, or disqualification, depending on their
+seriousness.
+7.  P E N A LT I E S  A ND  D I S Q UA L I F I CAT I O N
+7. 1  FO L LOW I N G  T H E  R U L E S
+7. 2  U N AU T H O R I Z E D  AS S I STA N C E
+Teams must follow this Final Round Challenge Guide, the applicable
+requirements of the original PeraBots 2026 University Category
+Rulebook, and all instructions given by the organizing committee and
+judges.
+Any attempt to gain an unfair advantage, bypass the intended challenge,
+interfere with the competition, or disregard official instructions may
+result in penalties.
+Robots must operate fully autonomously during official attempts.
+Participants must not manually control, touch, reposition, guide, or
+physically assist a running robot unless specifically permitted by a
+competition official.
+Remote control and external communication used to send commands
+to or receive operational instructions from the robot are strictly
+prohibited.
+The use of external transmitting or receiving equipment to influence
+the robot's operation is not permitted.
+Any unauthorized assistance during an official attempt may result in
+termination of the attempt or disqualification.
+Any robot that does not operate autonomously in accordance with the
+competition requirements may be considered in violation of the rules.
+--- PAGE 29 ---
+U N I V E R S I T Y  C AT EG O RY  
+29
+7. 3  C O N TACT  W I T H  A R E N A  E L E M E N TS
+Robots must navigate the arena carefully and avoid unnecessary contact
+with obstacles, maze walls, and game pieces.
+Physical contact between the robot and fixed obstacles in the
+obstacle-navigation section will be recorded as a collision.
+Collisions with maze walls and existing game pieces may result in
+mark deductions according to Section 6.
+Robots must not intentionally move, displace, damage, or modify any
+part of the arena, including obstacles, maze walls, floor markings, the
+Nine-Point Board, and game pieces.
+Any deliberate action that interferes with the arrangement of the
+arena or provides an unfair advantage may result in further penalties.
+7. 4  S A F E T Y  A ND  FA I R  P L AY
+All robots and equipment must be safe to operate throughout the
+competition.
+Teams are responsible for ensuring that their robots comply with the
+specified safety and physical requirements.
+Dangerous mechanisms, sharp components, unstable structures, or
+other hazardous features that could injure participants or damage
+the arena are not permitted.
+Robots must not damage the competition surface, walls, obstacles,
+board, or other equipment.
+Teams must respect other participants, judges, and competition
+officials throughout the event.
+Any robot considered unsafe by the judges may be stopped
+immediately.
+--- PAGE 30 ---
+U N I V E R S I T Y  C AT EG O RY  
+30
+7. 5  D I S Q UA L I F I CAT I O N
+A team may be disqualified for serious violations, including but not
+limited to:
+The organizing committee reserves the right to determine the
+appropriate penalties based on the nature and seriousness of each
+violation.
+Unauthorized remote control or external assistance during an
+official attempt.
+Intentional damage to the arena or competition equipment.
+Dangerous robot design or operation that threatens the safety of
+participants or officials.
+Deliberate interference with another team's performance or
+competition equipment.
+Repeated or serious violations of competition rules.
+Any form of cheating or unfair practice that compromises the
+integrity of the competition.
+7. 6  J U DG E S '  D E C I S I O N S
+The judges and organizing committee are responsible for evaluating the
+challenge, recording performance, and applying the competition rules.
+Their decisions regarding task completion, collisions, scoring, penalties,
+attempt termination, disqualification, and final rankings shall be final.
+--- PAGE 31 ---
+U N I V E R S I T Y  C AT EG O RY  
+31
+8 .  F I N A L  I N ST R UCT I O N S  FO R  T H E  Q U E ST
+8 . 1  R U L E S  F R O M  T H E  P R E V I O U S  R U L E BO O K
+8 . 2  O F F I C I A L  A NN O U N C E M E N TS  A ND  C L A R I F I CAT I O N S
+All general rules, eligibility requirements, technical requirements, and
+other applicable regulations stated in the original PeraBots 2026
+University Category Rulebook remain in effect unless specifically
+changed, replaced, or clarified by this Final Round Challenge Guide.
+Teams must read both documents carefully and ensure that their robots
+comply with all applicable requirements before attending the competition.
+Teams must follow additional instructions and clarifications provided by
+the organizing committee throughout the Final Round.
+Any changes to the competition schedule, procedures, or requirements
+will be communicated through the official PeraBots 2026 communication
+channels or directly to participating teams.
+Teams are encouraged to raise any questions regarding the challenge or
+competition rules with the organizing committee before their official
+attempts begin.
+--- PAGE 32 ---
+U N I V E R S I T Y  C AT EG O RY  
+32
+8 . 3  C O M P E T I T I O N - DAY  R E M I ND E R S
+Before attending the competition, each team should ensure that:
+The robot meets the maximum permitted dimensions of 20 cm × 20
+cm × 20 cm and all applicable physical and safety requirements.
+The robot is capable of operating fully autonomously without remote
+control or external assistance.
+All hardware, sensors, motors, mechanical systems, and required
+components are functioning correctly.
+The robot's battery is sufficiently charged for the competition.
+The team has completed the allocated practice and testing session
+and handed over the robot according to the specified procedure.
+The robot's built-in calibration function is ready to use, and the team
+understands the two-minute final calibration procedure.
+The team understands the 15-minute competition period and the
+maximum of three official attempts.
+The robot can navigate the obstacle field, explore the maze, identify
+and interpret the required clues, and determine the correct game-
+piece positions.
+The game-piece collection and placement mechanism is functioning
+correctly.
+The team understands the rules for restarting and terminating
+attempts.
+The team is familiar with the competition rules, scoring criteria,
+penalties, and disqualification conditions.
+Teams should also ensure that they arrive at their allocated times and
+follow all instructions provided by the organizing committee and judges.
+--- PAGE 33 ---
+U N I V E R S I T Y  C AT EG O RY  
+33
+8 . 4  R E STO R E  P E AC E  TO  P E R A !
+The fate of Pera lies in the hands of the two Guardians. Navigate the fallen
+stones, uncover the hidden signs within the labyrinth, and use the ancient
+clues to make the final move on the Nine-Point Board.
+Build wisely, compete fairly, and guide your robot through all three trials
+to restore the Nine Seals of Pera.
+M AY  T H E  G UA R D I A N S  O F  P E R A  P R E VA I L !

@@ -1,32 +1,29 @@
 # AProbotix-Perabots
-This repo is for PeraBots Competition 2026 first round by AProbotix team in Faculty of Engineering University of Ruhuna
 
-## whats where
+This repo holds team AProbotix's work for the PeraBots 2026 competition
+(University category), Faculty of Engineering, University of Ruhuna.
 
-- root `controllers/`, `protos/`, `worlds/` - our working copy WITH comments.
-  open `worlds/Arena.wbt` in webots R2025a. **edit the robot here.**
-- `submission/` - the clean copy (no comments). made automatically by
-  `make_submission_zip.py`, dont edit it by hand
-- `test/` - test worlds (45), test report, raw results, test tools
-  (`test/README.md`)
-  - `test/tools/lab/start_lab.bat` - **sim lab web app**: pick/generate worlds,
-    change settings, run, compare (results kept in sqlite)
-- `CONTROLLER_EXPLANATION.md` - proper write up of what the controller does
-- `DEVELOPMENT_NOTES.md` - how it works, what we learned, tuning knobs
+| Folder | Round | What it is |
+|---|---|---|
+| [`Phase 01 - Online Round/`](Phase%2001%20-%20Online%20Round/) | Online (simulation) round | Webots solution submitted for round 1. Includes the TwoWheelRobot controller, test worlds, the sim lab and the submission zip builder |
+| [`Phase 02 - Final Round/`](Phase%2002%20-%20Final%20Round/) | Final (physical) round – "The Nine Seals of Pera" | GuardianBot: Webots simulation of all 3 trials, plus the hardware (PCB, laser-cut acrylic, 3-D prints, parts list and build guide) |
 
-## making the submission zip
+## Phase 01 – Online Round
 
-```
-python make_submission_zip.py
-```
+This is the original first-round project, moved into its own folder unchanged. Paths below
+are relative to `Phase 01 - Online Round/`:
 
-this rebuilds `submission/` from the root files (strips comments and checks the
-code didnt change), refreshes `test/TEST_REPORT.md` from the lab database, and
-writes `dist/AProbotix_Submission.zip`. inside the zip:
-`PeraBots_UC/{protos, controllers/main_controller, worlds, docs, test}`.
-there is exactly one TwoWheelRobot.proto and one main_controller.py in it (the
-script checks that), the test worlds reuse them through `test/controllers/test_runner`.
+- `controllers/`, `protos/`, `worlds/`: working copy with comments. Open `worlds/Arena.wbt` in Webots R2025a.
+- `submission/`: clean copy built by `make_submission_zip.py` (do not edit by hand).
+- `test/`: test worlds, test report, tools and the sim lab (`test/tools/lab/start_lab.bat`).
+- `CONTROLLER_EXPLANATION.md`, `DEVELOPMENT_NOTES.md`: write-ups of the controller.
 
-note: the two drive wheels are moved 2cm forward (x 0 -> 0.02) in
-TwoWheelRobot.proto. rulebook 4.4 allows small wheel position changes for
-balance. everything else in the locked part is the original.
+## Phase 02 – Final Round
+
+Start with [`Phase 02 - Final Round/README.md`](Phase%2002%20-%20Final%20Round/README.md).
+Quick links:
+
+- Simulation: open `Phase 02 - Final Round/simulation/worlds/perabots_arena.wbt` in Webots R2025a.
+- Build guide and parts list: `Phase 02 - Final Round/docs/GuardianBot_build_guide_and_BOM.md`.
+- PCB to order: `Phase 02 - Final Round/hardware/pcb/guardianbot_main_gerbers_JLCPCB.zip`.
+- Laser cutting: `Phase 02 - Final Round/hardware/acrylic/`. 3-D printing: `Phase 02 - Final Round/hardware/3d_prints/`.

@@ -1,0 +1,10 @@
+# Webots / Python run-time files
+__pycache__/
+*.pyc
+simulation/controllers/main_controller/run_log.txt
+# KiCad local files
+*.kicad_prl
+*.lck
+fp-info-cache
+hardware/pcb/.history/
+hardware/pcb/*-backups/
