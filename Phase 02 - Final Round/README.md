@@ -10,6 +10,21 @@ shared set of dimensions, `hardware/cad/guardianbot_geometry.py`.
 
 ![GuardianBot](docs/images/robot_iso.png)
 
+
+## v3 (current): Arduino Mega build — `firmware/`
+
+The robot we are actually building for the final uses the parts we own (Arduino Mega 2560, L298N,
+2 × TCS3200 colour sensors, 2 × metal servos, 4 × HC-SR04, 2S LiPo) plus an MPU6050 and a 5-ch line
+array. Start with **`firmware/GuardianBot_v3_Mega_build_guide.md`** (parts list with Sri Lankan
+prices, wiring/pin map, build order, calibration and competition-day procedure).
+
+- `firmware/mega_guardian/` — Arduino Mega sketch (multi-tab). `config.h` has every pin and tunable.
+- `firmware/mega_guardian/game_logic.h` — maze path / turn counting / Lo Shu board logic in pure C.
+- `firmware/test/test_logic.c` — host unit test of that logic (`gcc -I../mega_guardian test_logic.c && ./a.out`).
+
+The v2 material below (Webots model, custom PCB, ESP32-S3) is kept as reference; the mission logic
+and arena geometry in the Mega firmware are ported from the v2 simulation controller.
+
 ## Folder map
 
 | Folder | What is inside |
