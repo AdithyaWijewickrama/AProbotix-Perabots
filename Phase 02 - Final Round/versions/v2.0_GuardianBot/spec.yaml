@@ -1,0 +1,42 @@
+id: v2.0
+name: GuardianBot v2
+tag: v2.0
+date: 2026-11-16
+status: simulation + full CAD + custom PCB designed (never built)
+summary: Low-cost sensor version. 130 mm body, 4 HC-SR04 + 4 Sharp GP2Y0A41, custom round ESP32-S3 PCB, camera.
+body:
+  shape: round, 130 mm body, 134 mm across the sonar ring
+  size_mm: [134, 134, 122]
+  height_mm: 122
+  decks: base acrylic + round PCB + clear crown
+  gripper: rear pocket + 2 arms on 1 x MG90S with linkage
+weight_g: 270
+weight_note: estimate from the BOM
+controllers: [ESP32-S3 DevKitC-1 (on the PCB), XIAO ESP32S3 Sense (vision)]
+drive: 2 x Pololu HPCB 50:1 + magnetic encoders, 40 mm wheels, TB6612FNG
+battery: 2S LiPo
+sensors:
+  - 4 x HC-SR04
+  - 4 x Sharp GP2Y0A41 (4-30 cm)
+  - 8-ch QTRX line array
+  - XIAO ESP32S3 Sense camera
+  - TCS34725 colour (held piece)
+  - BNO085 IMU
+pcb:
+  type: custom 130 mm round, 2 layers, SMD (TB6612, MCP23017), JLCPCB order files
+  files: hardware/pcb (KiCad, Gerbers, schematic PDF)
+budget:
+  currency: USD
+  total: 230
+  total_lkr_approx: 69000
+  note: plus about USD 120 for factory PCB assembly
+simulation:
+  judge: neutral judge supervisor, same arena
+  section1_s: 27.1
+  maze_s: 90.3
+  end_s: 180.7
+  collisions: 0
+  result: full mission, piece placed
+files:
+  - cad/, hardware/, simulation/, docs/GuardianBot_build_guide_and_BOM.md
+  - GuardianBot_v2_webots_project.zip

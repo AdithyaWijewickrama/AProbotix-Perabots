@@ -1,0 +1,37 @@
+id: v3.0
+name: Mega Guardian (draft)
+tag: v3.0-mega-draft
+date: 2026-11-16
+status: draft firmware + build guide only (no model, no simulation)
+summary: Arduino-Mega-only robot written before the team's exact parts were known (assumed 2S LiPo, MG995 servos, 65 mm wheels, front pocket).
+body:
+  shape: two-deck rectangle, front pocket with lift
+  size_mm: [160, 150, 140]
+  height_mm: 140
+  decks: 2
+  gripper: front jaws (1 servo) + lift (1 servo)
+weight_g: null
+weight_note: not estimated
+controllers: [Arduino Mega 2560 (ESP32-S3 only as a log viewer)]
+drive: assumed Pololu HPCB 50:1, 65 mm wheels, L298N
+battery: 2S LiPo (assumed)
+sensors:
+  - 4 x HC-SR04
+  - 2 x TCS3200
+  - 5-ch TCRT5000 line array
+  - MPU6050
+pcb:
+  type: none (jumper wires)
+budget:
+  currency: LKR
+  total: 14000
+  note: Rs 10,500 - 14,000 with spares (from its build guide)
+simulation:
+  judge: not run - this version has no Webots model
+  section1_s: null
+  maze_s: null
+  end_s: null
+  collisions: null
+  result: not measured (10 cm occupancy grid, no camera)
+files:
+  - mega_guardian/ (Arduino sketch), test/test_logic.c, GuardianBot_v3_Mega_build_guide.md

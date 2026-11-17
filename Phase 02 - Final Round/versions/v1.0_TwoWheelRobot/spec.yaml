@@ -1,0 +1,40 @@
+id: v1.0
+name: TwoWheelRobot
+tag: v1.0-twowheel
+date: 2026-11-15
+status: simulation only (first attempt, abandoned)
+summary: First Webots robot. Small box body, 10 ToF sensors, camera, fixed gripper fingers.
+problems:
+  - ToF sensors faced the opposite way to how the controller drove, so it hit walls
+  - Gripper fingers were 48 mm apart, so a 50 mm piece could not fit
+  - No line sensors for Section 3
+body:
+  shape: rectangular two-deck box
+  size_mm: [100, 90, 90]
+  height_mm: 90
+  decks: 2
+  gripper: two fixed fingers (front)
+weight_g: 230
+weight_note: model mass (0.20 kg body + wheels)
+controllers: [ESP32-S3 (assumed)]
+drive: 2 x micro gear motor, 40 mm wheels
+battery: not specified
+sensors:
+  - 10 x ToF distance (VL53L0X type)
+  - camera
+  - IMU
+pcb:
+  type: none
+budget:
+  currency: LKR
+  total: null
+  note: no parts list was made for this version
+simulation:
+  judge: neutral judge supervisor, same arena (simulation/protos/Arena.proto)
+  section1_s: null
+  maze_s: null
+  end_s: null
+  collisions: 6
+  result: did not finish - drove into the Section 1 wall at (2.30, 1.17) and stayed there
+files:
+  - simulation/  (Webots project of this version)
