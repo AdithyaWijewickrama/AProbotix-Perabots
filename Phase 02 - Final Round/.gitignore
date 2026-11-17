@@ -11,3 +11,5 @@ hardware/pcb/*-backups/
 **/.history/
 **/*-backups/
 versions/v2.0_GuardianBot/hardware/pcb/.history/
+# built by versions/build_site.py (GitHub Actions publishes it)
+versions/_site/

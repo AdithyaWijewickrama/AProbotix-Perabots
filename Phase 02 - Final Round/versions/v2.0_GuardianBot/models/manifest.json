@@ -1,0 +1,88 @@
+{
+ "id": "v2.0",
+ "items": [
+  {
+   "group": "PCB",
+   "name": "PCB with parts",
+   "kind": "glb",
+   "src": "versions/v2.0_GuardianBot/models/pcb.glb",
+   "info": {
+    "w": 130.1,
+    "h": 130.1,
+    "t": 1.6
+   }
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "camera mast",
+   "kind": "stl",
+   "src": "versions/v2.0_GuardianBot/hardware/3d_prints/camera_mast.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "gripper pad",
+   "kind": "stl",
+   "src": "versions/v2.0_GuardianBot/hardware/3d_prints/gripper_pad.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "hinge lever",
+   "kind": "stl",
+   "src": "versions/v2.0_GuardianBot/hardware/3d_prints/hinge_lever.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "sharp bracket",
+   "kind": "stl",
+   "src": "versions/v2.0_GuardianBot/hardware/3d_prints/sharp_bracket.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "acrylic base 3mm black",
+   "kind": "svg",
+   "svg": "versions/v2.0_GuardianBot/models/acrylic_base_3mm_black.svg",
+   "dxf": "versions/v2.0_GuardianBot/hardware/acrylic/acrylic_base_3mm_black.dxf"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "acrylic crown 3mm clear",
+   "kind": "svg",
+   "svg": "versions/v2.0_GuardianBot/models/acrylic_crown_3mm_clear.svg",
+   "dxf": "versions/v2.0_GuardianBot/hardware/acrylic/acrylic_crown_3mm_clear.dxf"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "acrylic sheet layout",
+   "kind": "svg",
+   "svg": "versions/v2.0_GuardianBot/models/acrylic_sheet_layout.svg",
+   "dxf": "versions/v2.0_GuardianBot/hardware/acrylic/acrylic_sheet_layout.dxf"
+  }
+ ],
+ "files": [
+  {
+   "name": "guardianbot_main_gerbers_JLCPCB.zip",
+   "src": "versions/v2.0_GuardianBot/hardware/pcb/guardianbot_main_gerbers_JLCPCB.zip",
+   "kb": 181
+  },
+  {
+   "name": "guardianbot_main_schematic.pdf",
+   "src": "versions/v2.0_GuardianBot/hardware/pcb/guardianbot_main_schematic.pdf",
+   "kb": 369
+  },
+  {
+   "name": "guardianbot_main_bom.csv",
+   "src": "versions/v2.0_GuardianBot/hardware/pcb/guardianbot_main_bom.csv",
+   "kb": 3
+  },
+  {
+   "name": "guardianbot_main.step",
+   "src": "versions/v2.0_GuardianBot/hardware/pcb/guardianbot_main.step",
+   "kb": 529
+  },
+  {
+   "name": "GuardianBot_build_guide_and_BOM.md",
+   "src": "versions/v2.0_GuardianBot/docs/GuardianBot_build_guide_and_BOM.md",
+   "kb": 10
+  }
+ ]
+}

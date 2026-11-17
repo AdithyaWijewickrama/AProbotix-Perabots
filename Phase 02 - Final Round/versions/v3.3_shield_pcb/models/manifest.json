@@ -1,0 +1,158 @@
+{
+ "id": "v3.3",
+ "items": [
+  {
+   "group": "PCB",
+   "name": "PCB with parts",
+   "kind": "glb",
+   "src": "versions/v3.3_shield_pcb/models/pcb.glb",
+   "info": {
+    "w": 107.1,
+    "h": 83.1,
+    "t": 1.6
+   }
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "camera mast",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/camera_mast.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "caster spacer",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/caster_spacer.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "deck spacer 32",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/deck_spacer_32.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "deck spacer 54p5",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/deck_spacer_54p5.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "gripper arm left",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/gripper_arm_left.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "gripper arm right",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/gripper_arm_right.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "hcsr04 hanger",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/hcsr04_hanger.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "n20 clamp",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/n20_clamp.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "pocket",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/pocket.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "servo cradle",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/servo_cradle.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "sharp front hanger",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/sharp_front_hanger.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "sharp side tower",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/sharp_side_tower.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "tcs floor spacer",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/tcs_floor_spacer.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "tcs front bracket",
+   "kind": "stl",
+   "src": "versions/v3.3_shield_pcb/3d_prints/tcs_front_bracket.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "deck base 3mm",
+   "kind": "stl",
+   "svg": "versions/v3.3_shield_pcb/models/deck_base_3mm.svg",
+   "dxf": "versions/v3.3_shield_pcb/acrylic/deck_base_3mm.dxf",
+   "src": "versions/v3.3_shield_pcb/acrylic/deck_base_3mm.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "deck mid 3mm",
+   "kind": "stl",
+   "svg": "versions/v3.3_shield_pcb/models/deck_mid_3mm.svg",
+   "dxf": "versions/v3.3_shield_pcb/acrylic/deck_mid_3mm.dxf",
+   "src": "versions/v3.3_shield_pcb/acrylic/deck_mid_3mm.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "deck top 3mm",
+   "kind": "stl",
+   "svg": "versions/v3.3_shield_pcb/models/deck_top_3mm.svg",
+   "dxf": "versions/v3.3_shield_pcb/acrylic/deck_top_3mm.dxf",
+   "src": "versions/v3.3_shield_pcb/acrylic/deck_top_3mm.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "sheet layout",
+   "kind": "svg",
+   "svg": "versions/v3.3_shield_pcb/models/sheet_layout.svg",
+   "dxf": "versions/v3.3_shield_pcb/acrylic/sheet_layout.dxf"
+  }
+ ],
+ "files": [
+  {
+   "name": "guardianbot_v3_mega_shield_gerbers.zip",
+   "src": "versions/v3.3_shield_pcb/pcb_v3/guardianbot_v3_mega_shield_gerbers.zip",
+   "kb": 211
+  },
+  {
+   "name": "guardianbot_v3_mega_shield_schematic.pdf",
+   "src": "versions/v3.3_shield_pcb/pcb_v3/guardianbot_v3_mega_shield_schematic.pdf",
+   "kb": 317
+  },
+  {
+   "name": "guardianbot_v3_mega_shield_BOM.csv",
+   "src": "versions/v3.3_shield_pcb/pcb_v3/guardianbot_v3_mega_shield_BOM.csv",
+   "kb": 3
+  },
+  {
+   "name": "guardianbot_v3_mega_shield-assembly_top_silkscreen.pdf",
+   "src": "versions/v3.3_shield_pcb/pcb_v3/guardianbot_v3_mega_shield-assembly_top_silkscreen.pdf",
+   "kb": 169
+  },
+  {
+   "name": "GuardianBot_v3_build_guide.md",
+   "src": "versions/v3.3_shield_pcb/GuardianBot_v3_build_guide.md",
+   "kb": 21
+  }
+ ]
+}

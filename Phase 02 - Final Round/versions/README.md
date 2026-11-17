@@ -18,8 +18,24 @@ one `spec.yaml` per version, so bodies, PCBs, budgets, speed, weight and parts c
 Times come from one neutral "judge" supervisor on the same arena for every version
 (`judge/judge.py`).
 
-**Website:** `_site/index.html` (open it locally), or the GitHub Pages site that
-`.github/workflows/versions-site.yml` rebuilds on every push.
+**Website:** the GitHub Pages site that `.github/workflows/versions-site.yml` rebuilds on every push
+(or run `python build_site.py` and open `_site/index.html` through a local server, e.g. `python -m http.server`
+inside `_site`). It has two pages:
 
-**Add a version:** create `vX.Y_name/spec.yaml` (copy the latest one) and `images/iso.jpg`, then push.
+- `index.html`: version cards, charts and a side-by-side comparison.
+- `viewer.html`: **hardware in 3-D** for v2.0, v3.3 and v4.0. You can turn and zoom the PCB with every part (and
+  the Arduino Mega / ESP32 board where it sits), every 3-D printed part, and every laser-cut deck in 3-D or as its
+  cut drawing. It also has the downloads: Gerbers, schematic, BOM, DXF, STL and the build guide.
+
+The 3-D files come from `export_models.py`. Run it after a board or CAD file changes; it needs KiCad 7 and
+`pip install trimesh mapbox_earcut shapely pillow ezdxf matplotlib`. It writes `<version>/models/` (`pcb.glb`,
+the deck drawings and `manifest.json`). The PCB model is built from the board file itself: real copper,
+solder-mask openings, silkscreen and holes on both sides, plus a simple body for every part made from its
+footprint. three.js is included in `viewer_lib/` (MIT licence), so the page needs no CDN.
+
+**Add a version:**
+
+1. Create `vX.Y_name/spec.yaml` (copy the latest one) and `images/iso.jpg`.
+2. If it has hardware, add it to `VERSIONS` in `export_models.py` and run that script.
+3. Push.
 Run `python build_site.py` to preview locally (`pip install pyyaml`).

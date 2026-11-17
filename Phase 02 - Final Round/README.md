@@ -38,7 +38,7 @@ Everything physical is generated from one file of dimensions, `hardware/cad/guar
 | Software-in-the-loop: the real ESP32 C++ drives the Webots robot | `firmware/sil/` + `simulation/controllers/mega_sil/` |
 | Host compile check of both sketches | `firmware/hostcheck/check.sh` |
 | **PCB mid deck** (144 mm round, through-hole, for a local PCB shop) | `hardware/pcb_v4/`, made by `hardware/cad/deck_v4/` |
-| **Every earlier version + comparison website** (bodies, PCBs, budget, speed, weight, parts) | `versions/` (website on GitHub Pages) |
+| **Every earlier version + comparison website** (bodies, PCBs, budget, speed, weight, parts) | `versions/` (website on GitHub Pages, with a 3-D viewer for the PCBs, printed parts and decks) |
 
 Latest Webots results, 0 collisions in every run:
 

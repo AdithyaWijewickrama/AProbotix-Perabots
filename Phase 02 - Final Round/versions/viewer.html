@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GuardianBot hardware in 3-D - PeraBots 2026 AProbotix</title>
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f4f3f0; --surface-1: #fcfcfb; --border: #dcdad4;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #77756f;
+  --accent: #2a78d6; --accent-soft: #2a78d61f; --scene: #e9e7e2;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-0: #121211; --surface-1: #1a1a19; --border: #33322f;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #9a998f;
+    --accent: #3987e5; --accent-soft: #3987e526; --scene: #222220;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #121211; --surface-1: #1a1a19; --border: #33322f;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #9a998f;
+  --accent: #3987e5; --accent-soft: #3987e526; --scene: #222220;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--surface-0); color: var(--text-primary);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; }
+header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 16px;
+  border-bottom: 1px solid var(--border); background: var(--surface-1); }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header a { color: var(--accent); text-decoration: none; }
+header .sp { flex: 1; }
+select, button { font: inherit; color: var(--text-primary); background: var(--surface-0);
+  border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; cursor: pointer; }
+button:hover, select:hover { border-color: var(--accent); }
+button.on { background: var(--accent-soft); border-color: var(--accent); }
+main { flex: 1; display: flex; min-height: 0; }
+aside { width: 290px; flex: none; overflow-y: auto; border-right: 1px solid var(--border);
+  background: var(--surface-1); padding: 10px 12px 20px; }
+aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted);
+  margin: 16px 0 6px; font-weight: 600; }
+aside .item { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; border: 1px solid transparent;
+  background: none; padding: 5px 7px; border-radius: 6px; }
+aside .item:hover { border-color: var(--border); }
+aside .item.sel { background: var(--accent-soft); border-color: var(--accent); }
+aside .item .k { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+aside .dl { display: flex; justify-content: space-between; gap: 8px; padding: 3px 7px; color: var(--accent);
+  text-decoration: none; border-radius: 6px; word-break: break-all; }
+aside .dl:hover { background: var(--accent-soft); }
+aside .dl span { color: var(--text-muted); white-space: nowrap; font-size: 12px; }
+#stage { flex: 1; position: relative; min-width: 0; background: var(--scene); }
+#stage canvas { display: block; width: 100%; height: 100%; }
+#svgview { position: absolute; inset: 0; display: none; overflow: auto; background: #fff; }
+#svgview img { display: block; margin: auto; max-width: 100%; max-height: 100%; }
+#bar { position: absolute; left: 10px; right: 10px; top: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  pointer-events: none; }
+#bar > * { pointer-events: auto; }
+#bar .grp { display: flex; gap: 4px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+#bar .grp button { border: 1px solid transparent; padding: 3px 8px; background: none; }
+#bar .grp button.on { background: var(--accent-soft); border-color: var(--accent); }
+#info { position: absolute; left: 10px; bottom: 10px; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; color: var(--text-secondary); max-width: calc(100% - 20px); }
+#info b { color: var(--text-primary); }
+#busy { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; color: var(--text-secondary); }
+.hint { color: var(--text-muted); font-size: 12px; margin-top: 14px; }
+@media (max-width: 760px) {
+  main { flex-direction: column; }
+  aside { width: auto; max-height: 38vh; border-right: none; border-bottom: 1px solid var(--border); }
+  #stage { min-height: 55vh; }
+}
+</style>
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.min.js", "three/addons/": "./lib/addons/" } }
+</script>
+</head>
+<body>
+<header>
+  <a href="index.html">&larr; All versions</a>
+  <h1>Hardware in 3-D</h1>
+  <select id="ver" aria-label="Version"></select>
+  <span class="sp"></span>
+  <button id="theme" type="button">Light / dark</button>
+</header>
+<main>
+  <aside id="side"></aside>
+  <div id="stage">
+    <div id="svgview"><img id="svgimg" alt="laser-cut drawing"></div>
+    <div id="bar"></div>
+    <div id="info"></div>
+    <div id="busy">Loading&hellip;</div>
+  </div>
+</main>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { STLLoader } from "three/addons/loaders/STLLoader.js";
+
+const MODELS = /*MODELS*/[];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------- three.js scene
+const stage = $("#stage");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.5, 5000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x666666, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 1.8); sun.position.set(150, 300, 200); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, 0.7); fill.position.set(-200, -150, -100); scene.add(fill);
+let current = null, size = new THREE.Vector3(), centre = new THREE.Vector3();
+function setBg() { scene.background = new THREE.Color(css("--scene") || "#e9e7e2"); }
+setBg();
+function resize() {
+  const r = stage.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / Math.max(r.height, 1); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage); resize();
+(function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
+
+function view(name) {
+  if (!current) return;
+  const d = Math.max(size.x, size.y, size.z) * 1.9 + 20;
+  const dir = { iso: [0.9, 0.85, 1.1], top: [0, 1, 0.0001], bottom: [0, -1, 0.0001], front: [0, 0.15, 1], side: [1, 0.15, 0] }[name];
+  const v = new THREE.Vector3(...dir).normalize().multiplyScalar(d);
+  camera.position.copy(centre).add(v);
+  camera.up.set(0, 1, 0);
+  if (name === "top" || name === "bottom") camera.up.set(0, 0, -1);
+  controls.target.copy(centre); controls.update();
+  document.querySelectorAll("#views button").forEach(b => b.classList.toggle("on", b.dataset.v === name));
+}
+function frame(obj) {
+  const box = new THREE.Box3().setFromObject(obj);
+  box.getSize(size); box.getCenter(centre);
+  camera.near = Math.max(0.1, size.length() / 500); camera.far = size.length() * 50; camera.updateProjectionMatrix();
+  view("iso");
+}
+function clear() {
+  if (current) { scene.remove(current); current.traverse(o => { o.geometry?.dispose(); }); current = null; }
+}
+
+// ---------- page state
+const byId = Object.fromEntries(MODELS.map(m => [m.id, m]));
+const params = new URLSearchParams(location.search);
+let ver = byId[params.get("v")] ? params.get("v") : MODELS[MODELS.length - 1]?.id;
+$("#ver").innerHTML = MODELS.map(m => `<option value="${esc(m.id)}">${esc(m.id + " " + m.name)}</option>`).join("");
+
+function side() {
+  const m = byId[ver];
+  const groups = {};
+  m.items.forEach((it, i) => (groups[it.group] ||= []).push([it, i]));
+  let h = "";
+  for (const [g, list] of Object.entries(groups)) {
+    h += `<h2>${esc(g)}</h2>`;
+    h += list.map(([it, i]) => `<button class="item" type="button" data-i="${i}">${esc(it.name)}<span class="k">${it.kind === "glb" ? "3-D" : it.kind === "stl" ? (it.svg ? "3-D + 2-D" : "3-D") : "2-D"}</span></button>`).join("");
+  }
+  if (m.files.length) {
+    h += `<h2>Downloads</h2>` + m.files.map(f => `<a class="dl" href="${esc(f.href)}" download>${esc(f.name)}<span>${f.kb >= 1024 ? (f.kb / 1024).toFixed(1) + " MB" : f.kb + " kB"}</span></a>`).join("");
+  }
+  h += `<p class="hint">Drag to turn, scroll or pinch to zoom, right-drag to pan. Sizes are in millimetres.</p>`;
+  $("#side").innerHTML = h;
+  document.querySelectorAll("#side .item").forEach(b => b.onclick = () => open(+b.dataset.i));
+}
+
+const gltf = new GLTFLoader(), stl = new STLLoader();
+let showing = -1, mode3d = true;
+function bar(it) {
+  let h = `<div class="grp" id="views">` + ["iso", "top", "bottom", "front", "side"].map(v => `<button type="button" data-v="${v}">${v[0].toUpperCase() + v.slice(1)}</button>`).join("") + `</div>`;
+  if (it.kind === "stl" && it.svg) h += `<div class="grp" id="mode"><button type="button" data-m="3d" class="${mode3d ? "on" : ""}">3-D</button><button type="button" data-m="2d" class="${mode3d ? "" : "on"}">Cut drawing</button></div>`;
+  if (it.kind === "glb") h += `<div class="grp" id="layers"></div>`;
+  $("#bar").innerHTML = h;
+  document.querySelectorAll("#views button").forEach(b => b.onclick = () => view(b.dataset.v));
+  document.querySelectorAll("#mode button").forEach(b => b.onclick = () => { mode3d = b.dataset.m === "3d"; open(showing); });
+}
+function info(it) {
+  const s = size;
+  let t = `<b>${esc(it.name)}</b> &nbsp; ${s.x.toFixed(1)} × ${s.z.toFixed(1)} × ${s.y.toFixed(1)} mm`;
+  if (it.info) t += ` &nbsp;·&nbsp; board ${it.info.w} × ${it.info.h} mm, ${it.info.t} mm thick`;
+  if (it.dxf) t += ` &nbsp;·&nbsp; <a href="${esc(it.dxfHref)}" download style="color:var(--accent)">DXF</a>`;
+  if (it.href && it.kind === "stl") t += ` &nbsp;·&nbsp; <a href="${esc(it.href)}" download style="color:var(--accent)">STL</a>`;
+  $("#info").innerHTML = t;
+}
+function open(i) {
+  const m = byId[ver], it = m.items[i];
+  if (!it) return;
+  if (i !== showing) mode3d = true;
+  showing = i;
+  document.querySelectorAll("#side .item").forEach(b => b.classList.toggle("sel", +b.dataset.i === i));
+  history.replaceState(null, "", `?v=${encodeURIComponent(ver)}&item=${i}`);
+  bar(it);
+  const two = it.kind === "svg" || (!mode3d && it.svg);
+  $("#svgview").style.display = two ? "block" : "none";
+  if (two) {
+    $("#svgimg").src = it.svgHref;
+    document.querySelectorAll("#views").forEach(e => e.style.display = "none");
+    $("#info").innerHTML = `<b>${esc(it.name)}</b> &nbsp; laser-cut drawing (top view, front to the right)` + (it.dxf ? ` &nbsp;·&nbsp; <a href="${esc(it.dxfHref)}" download style="color:var(--accent)">DXF</a>` : "");
+    return;
+  }
+  clear();
+  $("#busy").style.display = "flex";
+  const done = obj => {
+    $("#busy").style.display = "none";
+    if (showing !== i) return;
+    current = obj; scene.add(obj); frame(obj); info(it);
+    if (it.kind === "glb") layers(obj);
+  };
+  const fail = e => { $("#busy").textContent = "Could not load this model."; console.error(e); };
+  if (it.kind === "glb") gltf.load(it.href, g => done(g.scene), undefined, fail);
+  else stl.load(it.href, geo => {
+    geo.computeVertexNormals();
+    const isDeck = it.group.startsWith("Laser");
+    const mat = new THREE.MeshStandardMaterial({ color: isDeck ? 0x9fc3d8 : 0xe08a2c, roughness: 0.55, metalness: 0.0,
+      transparent: isDeck, opacity: isDeck ? 0.85 : 1 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = -Math.PI / 2;                    // CAD files are Z-up
+    const g = new THREE.Group(); g.add(mesh);
+    done(g);
+  }, undefined, fail);
+}
+function layers(obj) {
+  const names = { parts: "Parts", arduino_mega: "Arduino Mega", esp32_board: "ESP32 board" };
+  const found = Object.keys(names).filter(n => obj.getObjectByName(n));
+  $("#layers").innerHTML = found.map(n => `<button type="button" class="on" data-n="${n}">${names[n]}</button>`).join("");
+  if (!found.length) $("#layers").remove();
+  document.querySelectorAll("#layers button").forEach(b => b.onclick = () => {
+    const o = obj.getObjectByName(b.dataset.n); o.visible = !o.visible; b.classList.toggle("on", o.visible);
+  });
+}
+function selectVersion(v) {
+  ver = v; $("#ver").value = v; showing = -1; side();
+  const want = +(params.get("item") ?? 0);
+  open(byId[v].items[want] && v === params.get("v") ? want : 0);
+}
+$("#ver").onchange = e => { params.delete("item"); selectVersion(e.target.value); };
+$("#theme").onclick = () => {
+  const r = document.documentElement, dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  const cur = r.dataset.theme || (dark ? "dark" : "light");
+  r.dataset.theme = cur === "dark" ? "light" : "dark"; setBg();
+};
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", setBg);
+if (MODELS.length) selectVersion(ver); else $("#side").innerHTML = "<p>No hardware models yet.</p>";
+</script>
+</body>
+</html>
