@@ -1,9 +1,10 @@
 """
-make_guardianbot.py - generates protos/GuardianBot.proto  (v3: final-round build)
+make_guardianbot.py - generates protos/GuardianBot.proto  (v4: final-round build)
 
-GuardianBot v3: 150 mm round differential-drive robot for PeraBots 2026, built from the
-team's own parts (Arduino Mega + ESP32-S3, L298N, N20 12 V encoder motors, HC-SR04,
-Sharp GP2Y0A21, TCS3200, TCRT5000 line array, MPU6050, Kpower M0170 servos, 3S LiPo).
+GuardianBot v4: 150 mm round differential-drive robot for PeraBots 2026, built from the
+team's own parts (Arduino Mega + ESP32-CAM, DRV8833, N20 6 V 300 rpm encoder motors,
+8 x VL53L0X, 2 x HC-SR04, 2 x TCS3200, Pololu QTR-8RC, L3G4200D gyro, Kpower M0170 servos,
+2S LiPo) on a PCB mid deck.
 Every part in the model is a real component from GuardianBot_BOM.md with its
 real size and position.  Dimensions come from ../hardware/cad/guardianbot_geometry.py,
 the same file the acrylic DXF, 3-D printed STL and PCB generators use.
@@ -93,22 +94,17 @@ SERVO_BLACK = pbr((0.05, 0.05, 0.05), 0.5, 0.0)
 YELLOW = pbr((0.95, 0.8, 0.1), 0.5, 0.0)
 
 
-def sharp21(name, x, y, z, a):
-    """Sharp GP2Y0A21YK0F lying flat (long axis tangential). Lens face at (x, y, z)."""
-    d, w, h = SHARP_BODY
-    vis = [
-        box((-d / 2, 0, 0), (d, w - 0.008, h), SHARP_GREY),
-        box((-d / 2, 0, 0), (0.0025, w, 0.004), SHARP_GREY),                      # mounting tabs
-        box((-0.0012, 0.0095, 0), (0.0026, 0.010, 0.010), BLACK_PLASTIC),         # emitter lens
-        box((-0.0012, -0.0095, 0), (0.0026, 0.010, 0.010), BLACK_PLASTIC),        # receiver lens
-        box((-d - 0.002, 0, 0), (0.004, 0.008, 0.006), WHITE_PLASTIC),            # JST socket
-    ]
+def vl53l0x(name, x, y, z, a):
+    """GY-VL53L0XV2 time-of-flight sensor standing upright, sensor window at (x, y, z)."""
+    t, w, h = TOF_BOARD
+    vis = [box((-t / 2, 0, -0.004), (t, w, h), PCB_BLUE),
+           box((0.0004, 0, 0), (0.0012, 0.0045, 0.0025), BLACK_PLASTIC)]
     return """DistanceSensor {
       translation %s
       rotation 0 0 1 %.5f
       name "%s"
-      # Sharp GP2Y0A21YK0F: 10-80 cm. Firmware converts volts->mm. <10 cm reads 100, >80 cm reads 800.
-      lookupTable [ 0 100 0, 0.10 100 0.02, 0.80 800 0.03, 0.81 800 0 ]
+      # VL53L0X time-of-flight: 30-1200 mm, narrow beam, ~3 %% noise. Reads 1200 when nothing is in range.
+      lookupTable [ 0 30 0, 0.03 30 0.01, 1.20 1200 0.03, 1.21 1200 0 ]
       children [ %s ]
     }""" % (v3((x, y, z)), a, name, " ".join(vis))
 
@@ -174,7 +170,7 @@ def ground_sensor(i):
       rotation 0 1 0 1.5708
       name "gs%d"
       type "infra-red"
-      # TCRT5000 channel (analog): high on white, low on the 20 mm black line
+      # Pololu QTR-8RC channel (shown as 0..1023: high on white, low on the 20 mm black line)
       lookupTable [ 0 1023 0.01, 0.020 0 0.01 ]
       children [ %s ]
     }""" % (v3((LINE_X, y, LINE_SENSOR_Z)), i,
@@ -182,7 +178,7 @@ def ground_sensor(i):
 
 
 # -------------------------------------------------------------- drivetrain
-ENC_RES = 2 * math.pi / (7 * 2 * 100)      # N20 hall encoder: 7 pulses/motor rev, x2 edges, 1:100 gearbox
+ENC_RES = 2 * math.pi / (7 * 2 * 100)      # N20 hall encoder: 7 pulses/motor rev, x2 edges, ~1:100 gearbox
 
 
 def wheel(side):
@@ -196,7 +192,7 @@ def wheel(side):
       device [
         RotationalMotor {
           name "%s_wheel_motor"
-          # N20 12 V 1:100 encoder gear motor (~300 rpm no-load, ~1.6 kg.cm stall) via L298N
+          # N20 6 V ~300 rpm encoder gear motor on 2S through a DRV8833 (PWM capped at ~80 %%)
           maxVelocity 31
           maxTorque 0.12
         }
@@ -332,10 +328,10 @@ def build():
     polys = chassis_polys()
     vis, dev, bnd = [], [], []
 
-    # decks: black acrylic base, clear acrylic mid + top
+    # decks: black acrylic base, green PCB mid deck, clear acrylic top
     for p in polys:
         vis.append(shape(ACRYLIC_BLACK, prism(p, BASE_Z0, BASE_Z1)))
-    vis.append(cyl((0, 0, (MID_Z0 + MID_Z1) / 2), MID_R, MID_Z1 - MID_Z0, ACRYLIC))
+    vis.append(cyl((0, 0, (MID_Z0 + MID_Z1) / 2), MID_R, MID_Z1 - MID_Z0, PCB_GREEN))
     vis.append(cyl((0, 0, (TOP_Z0 + TOP_Z1) / 2), TOP_R, TOP_Z1 - TOP_Z0, ACRYLIC))
     for x, y in BASE_STANDOFFS:
         vis.append(cyl((x, y, (BASE_Z1 + MID_Z0) / 2), 0.0025, MID_Z0 - BASE_Z1, BRASS))
@@ -363,24 +359,28 @@ def build():
     vis.append(box((bx, by, BASE_Z1 + bs[2] / 2), (0.010, bs[1] + 0.002, bs[2] + 0.001), pbr((0.1, 0.1, 0.1), 0.9)))
     vis.append(box((bx - 0.022, by + 0.020, BASE_Z1 + 0.006), (0.010, 0.016, 0.008), YELLOW))     # XT60
 
-    # Sharp brackets (printed), visual only
-    for n, (x, y, z, a) in SHARP.items():
-        d = SHARP_BODY[0]
-        cx, cy = x - (d + 0.003) * math.cos(a), y - (d + 0.003) * math.sin(a)
-        vis.append(box((cx, cy, (BASE_Z1 + z) / 2), (0.006, 0.020, z - BASE_Z1), accent(), "0 0 1 %.4f" % a))
+    # ToF brackets (printed), visual only
+    for n, (x, y, z, a) in TOF.items():
+        cx, cy = x - 0.004 * math.cos(a), y - 0.004 * math.sin(a)
+        if z < MID_Z0 - 0.02:                                     # side sensors stand on the base
+            vis.append(box((cx, cy, (BASE_Z1 + z - 0.008) / 2), (0.004, 0.012, z - 0.008 - BASE_Z1), accent(), "0 0 1 %.4f" % a))
+        elif z > MID_Z1:                                          # back: hangs under the top deck
+            vis.append(box((cx, cy, (z - 0.008 + TOP_Z0) / 2), (0.004, 0.012, TOP_Z0 - z + 0.008), accent(), "0 0 1 %.4f" % a))
+        else:                                                     # front three hang under the PCB deck
+            vis.append(box((cx, cy, (z + 0.008 + MID_Z0) / 2), (0.004, 0.012, MID_Z0 - z - 0.008), accent(), "0 0 1 %.4f" % a))
 
     # modules on the decks
-    # Mega shield PCB (green) above the Mega
-    shz = TOP_Z1 + SHIELD["z"]
-    vis.append(box(((SHIELD["x0"] + SHIELD["x1"]) / 2, (SHIELD["y0"] + SHIELD["y1"]) / 2, shz + SHIELD["t"] / 2),
-                   (SHIELD["x1"] - SHIELD["x0"], SHIELD["y1"] - SHIELD["y0"], SHIELD["t"]), PCB_GREEN))
-    for k in range(9):                                           # rear rows of white JST-XH connectors
-        for row, xr in ((0, SHIELD["x0"] + 0.005), (1, SHIELD["x0"] + 0.016)):
-            vis.append(box((xr, SHIELD["y1"] - 0.008 - k * 0.0108, shz + SHIELD["t"] + 0.003), (0.0058, 0.0085, 0.006), WHITE_PLASTIC))
-    for k in range(6):                                           # front row
-        vis.append(box((SHIELD["x1"] - 0.012, SHIELD["y1"] - 0.010 - k * 0.0165, shz + SHIELD["t"] + 0.003), (0.0058, 0.013, 0.006), WHITE_PLASTIC))
     for name, ((cx, cy), (sx, sy, h), deck) in MODULES.items():
-        z0 = MID_Z1 if deck == "mid" else (shz + SHIELD["t"]) if deck == "shield" else TOP_Z1
+        z0 = MID_Z1 if deck in ("mid", "mid_r") else TOP_Z1
+        if deck == "mid_flip":                                    # Mega upside-down on long headers
+            vis.append(box((cx, cy, MID_Z1 + MEGA_GAP + 0.0008), (sx, sy, 0.0016), MEGA_BLUE))
+            for dx in (-0.0225, 0.0225):
+                vis.append(box((cx + dx, cy - 0.004, MID_Z1 + MEGA_GAP / 2), (0.0026, 0.075, MEGA_GAP), BLACK_PLASTIC))
+            continue
+        if deck in ("mid_r", "under_r"):
+            sx, sy = sy, sx
+        if deck.startswith("under"):                              # hangs under the PCB deck, 10 mm below it
+            z0 = MID_Z0 - 0.010 - h
         vis += module_visual(name, cx, cy, sx, sy, h, z0)
 
     # gripper servos on the mid deck (shaft down through the deck to the arm hubs)
@@ -398,8 +398,8 @@ def build():
                        pbr((0.85, 0.1, 0.1) if k == "start" else (0.95, 0.85, 0.1), 0.4)))
 
     # ---- sensors
-    for n, (x, y, z, a) in SHARP.items():
-        dev.append(sharp21(n, x, y, z, a))
+    for n, (x, y, z, a) in TOF.items():
+        dev.append(vl53l0x(n, x, y, z, a))
     for n, (x, y, z, a) in US.items():
         dev.append(hcsr04(n, x, y, z, a))
     for i in range(LINE_N):
@@ -417,7 +417,7 @@ def build():
       translation %s
       rotation 0 1 0 %.4f
       name "cam"
-      # ESP32-CAM OV2640, cropped and averaged to a %dx%d grid by firmware/esp32cam_vision
+      # ESP32-CAM OV2640, cropped and averaged to a %dx%d grid by firmware/esp32cam_brain (camera task)
       fieldOfView %.3f
       width %d
       height %d
@@ -426,7 +426,7 @@ def build():
     }""" % (v3((CAM_X, 0, CAM_Z)), CAM_PITCH, CAM_W, CAM_H, CAM_FOV, CAM_W, CAM_H,
             cyl((-0.002, 0, 0), 0.0042, 0.005, BLACK_PLASTIC, ROT_X_AXIS),
             cyl((0.0006, 0, 0), 0.0025, 0.0005, GLASS, ROT_X_AXIS)))
-    (ix, iy), _, _ = MODULES["mpu6050"]
+    (ix, iy), _, _ = MODULES["gyro"]
     imu_xyz = v3((ix, iy, MID_Z1 + 0.003))
     dev.append('InertialUnit { translation %s name "imu" noise 0.001 }' % imu_xyz)
     dev.append('Gyro { translation %s name "gyro" }' % imu_xyz)
@@ -480,18 +480,18 @@ def build():
 
     proto = """#VRML_SIM R2025a utf8
 # license: Apache License 2.0
-# GuardianBot v3 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
-# 150 mm round, 3 acrylic decks, rear capture pocket with 2 servo arms.
-# Controllers: Arduino Mega 2560 (real-time I/O) + ESP32-S3 (mission brain); L298N; 3S LiPo.
-# Sensors: 4 x HC-SR04, 5 x Sharp GP2Y0A21YK0F, 5-ch TCRT5000 line array,
-#          2 x TCS3200 (floor + front), ESP32-CAM (cam), MPU6050, N20 hall encoders.
+# GuardianBot v4.0 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
+# 150 mm round: acrylic base + PCB mid deck + acrylic top, rear capture pocket with 2 servo arms.
+# Controllers: Arduino Mega 2560 (real-time I/O, on the PCB mid deck) + ESP32-CAM (brain + camera); DRV8833; 2S LiPo.
+# Sensors: 8 x VL53L0X ToF, 2 x HC-SR04, Pololu QTR-8RC line array,
+#          2 x TCS3200 (floor + front), ESP32-CAM (cam), L3G4200D gyro, N20 hall encoders.
 # Generated by simulation/make_guardianbot.py from hardware/cad/guardianbot_geometry.py.
 #
 # Devices
 #   left_wheel_motor right_wheel_motor  left_wheel_sensor right_wheel_sensor
-#   us_front us_left us_right us_back            (mm, 20..2500)
-#   ir_front ir_fl ir_fr ir_left ir_right         (mm, 100..800)
-#   gs0..gs4 line array (gs0 = right-most)        tcs_floor tcs_front (4x4 colour)
+#   us_front us_back                              (mm, 20..2500)
+#   tof_front tof_fl tof_fr tof_lf tof_lr tof_rf tof_rr tof_back   (mm, 30..1200)
+#   gs0..gs7 line array (gs0 = right-most)        tcs_floor tcs_front (4x4 colour)
 #   grip_left grip_right  (0 = open, +-1.05 = closed)   imu gyro accel   led_blue led_green
 
 PROTO GuardianBot [
@@ -525,8 +525,8 @@ PROTO GuardianBot [
     boundingObject Group { children [ %s ] }
     physics Physics {
       density -1
-      mass 0.58
-      centerOfMass [ 0.012 0 0.048 ]
+      mass 0.57
+      centerOfMass [ 0.012 0 0.044 ]
     }
   }
 }

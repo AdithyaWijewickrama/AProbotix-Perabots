@@ -12,7 +12,8 @@ one `spec.yaml` per version, so bodies, PCBs, budgets, speed, weight and parts c
 | v3.0 Mega Guardian (draft) | `v3.0-mega-draft` | Mega-only firmware, assumed parts | not simulated | Rs 10,500-14,000 |
 | v3.1 Mega + ESP32-S3 | `v3.1` | the team's real parts, 3 decks | 182.9 s | Rs 5,700 |
 | v3.2 + ESP32-CAM | `v3.2-camera` | camera reads dead ends from a distance | 152.1 s | Rs 10,050 |
-| **v3.3 + Mega shield PCB** | `v3.3-pcb` | all wiring on a local-made PCB | 152.1 s | Rs 13,750 |
+| v3.3 + Mega shield PCB | `v3.3-pcb` | all wiring on a local-made PCB | 152.1 s | Rs 13,750 |
+| **v4.0 ESP32-CAM brain + PCB deck** | `v4.0` | real inventory: 8 ToF, QTR-8RC, DRV8833 + 2S, PCB middle floor | 153.6 s | Rs 20,000 (vero: 15,500) |
 
 Times come from one neutral "judge" supervisor on the same arena for every version
 (`judge/judge.py`).

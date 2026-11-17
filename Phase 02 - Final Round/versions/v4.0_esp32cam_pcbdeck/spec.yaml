@@ -1,0 +1,44 @@
+id: v4.0
+name: GuardianBot v4 - ESP32-CAM brain + PCB mid deck
+tag: v4.0
+date: 2026-11-17
+status: latest - simulation + real firmware + CAD + PCB deck, built from the team's real inventory
+summary: Rebuilt around the parts the team has. The ESP32-CAM is brain and camera (no ESP32-S3), 8 VL53L0X ToF sensors replace the Sharp IR, QTR-8RC line array, L3G4200D gyro, DRV8833 + 6 V N20 on a 2S LiPo, keypad + OLED, and a PCB is the middle floor with the Mega upside-down on it.
+body:
+  shape: round 150 mm, acrylic base + 144 mm PCB mid deck + acrylic top deck, rear pocket, camera mast
+  size_mm: [150, 150, 152]
+  height_mm: 152
+  decks: 2 (3 mm acrylic) + 1.6 mm PCB mid deck
+  gripper: rear pocket + 2 arms, one Kpower M0170 servo each
+weight_g: 570
+weight_note: lighter than v3.3 - no acrylic mid deck, no shield, no ESP32-S3, 2S instead of 3S, DRV8833 instead of L298N
+controllers: [Arduino Mega 2560 (body, upside-down on the PCB deck), ESP32-CAM (brain on core 1 + camera on core 0)]
+drive: 2 x N20 6 V 300 rpm encoder motors, 43 mm wheels, DRV8833 (PWM capped at 80 %)
+battery: 2S LiPo 7.4 V 1500 mAh
+sensors:
+  - ESP32-CAM OV2640 (48 x 32 grid, ~15 fps)
+  - 8 x VL53L0X ToF (front, +-45 deg, two per side, back)
+  - 2 x HC-SR04
+  - 2 x TCS3200
+  - Pololu QTR-8RC line array
+  - L3G4200D gyro
+pcb:
+  type: round 144 mm PCB mid deck, 2 layers, all through-hole, 24 JST-XH + 4 pin-header connectors, Mega plugs on upside-down
+  rules: 0.3 mm signal tracks (0.2-0.25 mm on a few), 0.6-0.8 mm power, 0.25 mm clearance (0.2 mm min), 1.0/0.6 mm vias, 1.0 mm pin holes; DRC 0 errors
+  files: hardware/pcb_v4 (KiCad, Gerbers zip, toner-transfer PDFs, BOM, DRC report)
+budget:
+  currency: LKR
+  total: 20000
+  total_vero_fallback: 15500
+  note: 8 x VL53L0X (about Rs 600 each), ESP32-CAM + MB adapter (Rs 4,380), local PCB deck (about Rs 4,500, get a quote) + connectors and small parts, acrylic, hardware
+simulation:
+  judge: neutral judge supervisor, same arena as every version
+  section1_s: 24.1
+  maze_s: 61.6
+  end_s: 153.6
+  collisions: 0
+  firmware_sil_end_s: 170.3
+  firmware_sil_section3_restart_s: 131.5
+  result: full mission, piece placed
+files:
+  - the top-level folders of "Phase 02 - Final Round" (this is the current version)

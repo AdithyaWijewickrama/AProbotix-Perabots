@@ -61,7 +61,7 @@ struct Stream {
 typedef Stream HardwareSerial_;
 struct HardwareSerial : Stream { HardwareSerial(int) {} HardwareSerial() {} };
 extern HardwareSerial Serial, Serial2;
-extern volatile uint8_t PINB, PINE, PIND, PCMSK0, PCICR, TCCR3B, TCCR4B;
+extern volatile uint8_t PINB, PINE, PIND, PCMSK0, PCICR;
 #define PCINT2 2
 #define PCINT3 3
 #define PCINT4 4
@@ -69,3 +69,13 @@ extern volatile uint8_t PINB, PINE, PIND, PCMSK0, PCICR, TCCR3B, TCCR4B;
 #define PCINT6 6
 #define PCINT7 7
 #define PCIE0 0
+// ---- v4 additions
+#define A6 60
+#define A7 61
+#define A13 67
+#define A14 68
+#define A15 69
+extern volatile uint8_t PINA, PORTA, DDRA, TCCR3B, TCCR4B;
+inline void ledcAttach(int, int, int) {}
+inline void ledcWrite(int, int) {}
+inline size_t strnlen_s(const char *s, size_t n) { return strnlen(s, n); }

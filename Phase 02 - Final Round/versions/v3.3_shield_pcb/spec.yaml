@@ -2,7 +2,7 @@ id: v3.3
 name: GuardianBot v3 + Mega shield PCB
 tag: v3.3-pcb
 date: 2026-11-17
-status: latest - simulation + real firmware + CAD + PCB ready for a local shop
+status: superseded by v4.0 - simulation + real firmware + CAD + PCB
 summary: Same robot as v3.2, but all wiring is on a through-hole Mega shield with keyed JST-XH connectors (no loose jumpers). The ESP32-S3 plugs into the shield.
 body:
   shape: round 150 mm, 3 acrylic decks, rear pocket, camera mast, Mega shield on the top deck
@@ -25,7 +25,7 @@ sensors:
 pcb:
   type: Mega shield 107 x 83 mm, 2 layers, all through-hole, 25 JST-XH/terminal connectors
   rules: 0.4 mm tracks (0.3 mm on a few), 0.3 mm clearance, 1.0/0.6 mm vias, 1.0 mm pin holes
-  files: hardware/pcb_v3 (KiCad, Gerbers zip, toner-transfer PDFs, BOM, DRC report)
+  files: versions/v3.3_shield_pcb/pcb_v3 (KiCad, Gerbers zip, toner-transfer PDFs, BOM, DRC report)
 budget:
   currency: LKR
   total: 13750
@@ -40,4 +40,4 @@ simulation:
   firmware_sil_end_s: 187.8
   result: full mission, piece placed
 files:
-  - the top-level folders of "Phase 02 - Final Round" (this is the current version)
+  - versions/v3.3_shield_pcb (firmware, shield PCB + generator, v3 guide, old acrylic/prints) and git tag v3.3-pcb
