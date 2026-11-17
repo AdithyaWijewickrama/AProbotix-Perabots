@@ -1,12 +1,15 @@
 """
-make_acrylic_dxf.py - GuardianBot v3 laser-cut decks (3 mm acrylic or 3 mm plywood). Units: mm.
+make_acrylic_dxf.py - GuardianBot v4 laser-cut decks (3 mm acrylic or 3 mm plywood). Units: mm.
 
 Top view, +X = robot forward, +Y = robot left, origin = robot centre (wheel-axle centre).
-Writes into ../acrylic/:
-  deck_base_3mm.dxf    base: wheel notches, N20 clamps, caster, line array, floor TCS3200,
-                       Sharp side tower, front TCS bracket, pocket, battery strap slots
-  deck_mid_3mm.dxf     mid: L298N, 2 x LM2596, MPU6050, front Sharp hanger, servo cradles + hub notches
-  deck_top_3mm.dxf     top: Arduino Mega 2560, ESP32-S3 vero board, ESP32-CAM mast, 4 x HC-SR04 hangers, START/CAL, 2 LEDs
+The MIDDLE floor is the PCB deck (hardware/pcb_v4). Writes into ../acrylic/:
+  deck_base_3mm.dxf    base: wheel notches, N20 clamps, caster, QTR-8RC, floor TCS3200, 7 ToF posts,
+                       front TCS bracket, pocket, 2S LiPo strap slots, cable slots
+  deck_mid_3mm_vero_fallback.dxf
+                       ONLY if the PCB is not made: the same outline and holes as the PCB deck, plus
+                       slots for the wires; a vero board with the same circuit is screwed on top
+  deck_top_3mm.dxf     top: ESP32-CAM mast, 2 x HC-SR04 hangers, back ToF hanger, OLED, keypad, 2 LEDs,
+                       servo cradle caps, cable slots
   sheet_layout.dxf     all three decks on one 480 x 160 mm sheet
   deck_*.stl           3 mm plates (for the assembly preview)
 Every hole position comes from guardianbot_geometry.py (same numbers as the Webots model).
@@ -18,20 +21,20 @@ import os
 import cadquery as cq
 import ezdxf
 
-from guardianbot_geometry import (CAM_X, BASE_STANDOFFS, BATTERY, CASTER_X, HINGE_X, HINGE_Y, LINE_X, MID_R,
-                                  MODULES, POCKET_HW, POCKET_X, R_BODY, SERVO_BODY, SHARP, TCS_FLOOR,
-                                  TCS_FRONT, TOP_BUTTONS, TOP_LEDS, TOP_R, TOP_STANDOFFS, TRACK_HALF, US,
+import sys
+
+from guardianbot_geometry import (CAM_X, BASE_STANDOFFS, BATTERY, CASTER_X, LINE_X,
+                                  MODULES, POCKET_HW, POCKET_X, R_BODY, SERVO_TOP_HOLES, TCS_FLOOR,
+                                  TCS_FRONT, TOF, TOP_BUTTONS, TOP_LEDS, TOP_R, TOP_STANDOFFS, TRACK_HALF, US,
                                   WHEEL_R, WHEEL_W)
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "deck_v4"))
+import deck_design as DD  # noqa: E402
 
 MM = 1000.0
 T = 3.0
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "acrylic")
 M2, M25, M3 = 2.2, 2.7, 3.2
-
-# Arduino Mega 2560 mounting holes in board coordinates (mm, origin at the USB/power-jack corner)
-MEGA_HOLES = [(13.97, 2.54), (15.24, 50.8), (66.04, 7.62), (66.04, 35.56), (90.17, 50.8), (96.52, 2.54)]
-MEGA_L, MEGA_W = 101.6, 53.3
-
 
 def m(v):
     return v * MM
@@ -59,6 +62,16 @@ def standoffs(p, pts, d=M3):
         p.hole(m(x), m(y), d)
 
 
+TOF_POST_HOLES = (6.5, 14.0)   # the two M3 feet of a printed ToF post: distance behind the sensor face
+
+
+def tof_post_holes(p, name):
+    """Foot of a printed ToF post: 2 x M3 on the viewing axis, behind the sensor face."""
+    x, y, z, a = TOF[name]
+    for k in TOF_POST_HOLES:
+        p.hole(m(x) - k * math.cos(a), m(y) - k * math.sin(a), M3)
+
+
 # ------------------------------------------------------------------ base deck
 def base():
     p = Plate(m(R_BODY))
@@ -75,15 +88,14 @@ def base():
     for s in (1, -1):
         p.slot(m(CASTER_X), s * 9.5, 7.0, M25, 90)                      # ball caster (14-24 mm spacing)
     for s in (1, -1):
-        p.slot(m(LINE_X), s * 27.0, 8.0, M3, 90)                        # line array end holes
-    p.slot(m(LINE_X) - 9.0, 0, 12.0, 5.0, 90)
+        p.slot(m(LINE_X), s * 34.6, 6.0, 2.4, 90)                       # QTR-8RC end holes (#2 / M2)
+    p.slot(m(LINE_X) - 9.5, 0, 14.0, 5.0, 90)                          # QTR cable (11-pin header)
     tx, ty = m(TCS_FLOOR[0]), m(TCS_FLOOR[1])
     for dx, dy in ((-11.0, -11.0), (11.0, 11.0)):
         p.hole(tx + dx, ty + dy, M3)                                    # floor TCS3200
     p.cut_box(tx, ty, 10.0, 6.0)
-    sx = m(SHARP["ir_left"][0])
-    for dx in (-26.0, 18.0):
-        p.hole(sx + dx, 0, M3)                                          # Sharp side tower
+    for name in ("tof_front", "tof_fl", "tof_fr", "tof_lf", "tof_lr", "tof_rf", "tof_rr"):
+        tof_post_holes(p, name)                                         # 7 ToF posts stand on the base
     fx = m(TCS_FRONT[0]) - 8.0
     for s in (1, -1):
         p.hole(fx, s * 15.0, M3)                                        # front TCS bracket
@@ -92,46 +104,24 @@ def base():
             p.hole(x, s * 40.0, M25)                                    # pocket tabs
     (bx, by), (bl, bw, bh) = BATTERY
     for s in (1, -1):
-        p.slot(m(bx), s * (m(bw) / 2 + 4.0), 22.0, 3.2)                 # LiPo strap
+        p.slot(m(bx) - 6.0, s * (m(bw) / 2 + 4.0), 12.0, 3.2)           # LiPo strap (velcro)
     for s in (1, -1):
-        p.slot(-36.0, s * 46.0, 12.0, 6.0)                              # cables
+        p.slot(-46.0, s * 45.0, 10.0, 6.0)                              # cables up to the PCB deck
     return p
 
 
-# ------------------------------------------------------------------ mid deck
+# ------------------------------------------------------------------ mid deck (vero fallback only)
 def mid():
-    p = Plate(m(MID_R))
-    px, phw = m(POCKET_X), m(POCKET_HW)
-    p.cut_box((px - 80) / 2, 0, 80 + px, 2 * phw - 4.0)
-    standoffs(p, BASE_STANDOFFS)
-    standoffs(p, TOP_STANDOFFS)
-    for s in (1, -1):
-        hx, hy = m(HINGE_X), s * m(HINGE_Y)
-        p.hole(hx, hy, 10.0)                                            # servo output hub
-        p.cut_box(hx - 8.0, hy, 16.0, 10.0)                             # open to the edge
-        cx = hx + m(SERVO_BODY[0]) / 2 - 7.0
-        for dy in (-12.0, 12.0):
-            p.hole(cx + 4.0, hy + dy, M3)                               # servo cradle
-    (lx, ly), _, _ = MODULES["l298n"]
-    for dx in (-18.5, 18.5):
-        for dy in (-18.5, 18.5):
-            p.hole(m(lx) + dx, m(ly) + dy, M3)
-    for name in ("buck5", "buck6"):
-        (bx, by), _, _ = MODULES[name]
-        p.slot(m(bx) - 15.0, m(by) - 7.5, 6.0, M3)
-        p.slot(m(bx) + 15.0, m(by) + 7.5, 6.0, M3)
-    (ix, iy), _, _ = MODULES["mpu6050"]
-    for dx in (-7.6, 7.6):
-        p.hole(m(ix) + dx, m(iy) + 7.5, M3)
-    (vx, vy), _, _ = MODULES["level"]
-    for dx in (-8.0, 8.0):
-        p.slot(m(vx) + dx, m(vy), 5.0, 2.2, 90)
-    for s in (1, -1):
-        p.hole(46.0, s * 18.0, M3)                                      # front Sharp hanger
-    p.hole(58.0, 0, M3)
-    p.slot(12.0, 0, 16.0, 8.0)
-    for s in (1, -1):
-        p.slot(-36.0, s * 46.0, 12.0, 6.0)
+    """Acrylic copy of the PCB deck (same outline, cut-outs and holes) for the vero-board fallback."""
+    p = Plate(DD.R_DECK)
+    for x0, y0, x1, y1 in DD.CUTOUTS:
+        p.cut_box((x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0)
+    for hx, hy in DD.HUBS:
+        p.hole(hx, hy, DD.HUB_D)
+    for hx, hy, d in DD.HOLES:
+        p.hole(hx, hy, d)
+    for x, y in ((-6.0, 58.0), (-6.0, -58.0), (30.0, 0.0), (-40.0, 0.0), (55.0, 40.0), (55.0, -40.0)):
+        p.slot(x, y, 14.0, 6.0, 90)                                     # wire slots
     return p
 
 
@@ -139,23 +129,29 @@ def mid():
 def top():
     p = Plate(m(TOP_R))
     standoffs(p, TOP_STANDOFFS)
-    (mx, my), _, _ = MODULES["mega"]
-    for bx, by in MEGA_HOLES:
-        p.hole(m(mx) + (by - MEGA_W / 2), m(my) - (bx - MEGA_L / 2), M3)
-    (ex, ey), (el, ew, eh), _ = MODULES["esp32s3"]
-    for s in (1, -1):
-        p.hole(m(ex) - 8.0, s * (m(ew) / 2 + 4.0), M3)                  # ESP32-S3 vero board (rear)
-        p.hole(m(ex) + 8.0, s * (m(ew) / 2 + 4.0), M3)
     for s in (1, -1):
         p.hole(m(CAM_X) - 18.0, s * 10.0, M3)                           # camera mast foot
     for name, (x, y, z, a) in US.items():
         r = math.hypot(x, y) * MM - 14.0
         for k in (-12.0, 12.0):
             p.hole(r * math.cos(a) - k * math.sin(a), r * math.sin(a) + k * math.cos(a), M3)
+    x, y, z, a = TOF["tof_back"]
+    for k in (-6.0, 6.0):
+        p.hole(m(x) + 10.0, m(y) + k, M3)                               # back ToF hanger
+    (ox, oy), (ol, ow, oh), _ = MODULES["oled"]
+    for dx in (-ol * MM / 2 + 2.0, ol * MM / 2 - 2.0):
+        for dy in (-ow * MM / 2 + 2.0, ow * MM / 2 - 2.0):
+            p.hole(m(ox) + dx, m(oy) + dy, 2.2)                         # OLED M2 corner holes (check your module)
+    p.slot(m(ox) + 4.0, m(oy) - ow * MM / 2 - 4.0, 10.0, 4.0)          # OLED cable
+    (kx, ky), _, _ = MODULES["keypad"]
+    p.slot(m(kx) + 12.0, m(ky), 10.0, 3.0, 90)                          # keypad ribbon (keypad is self-adhesive)
+    for x, y in SERVO_TOP_HOLES:
+        p.hole(m(x), m(y), M3)                                          # servo cradle caps
     for x, y in TOP_BUTTONS.values():
         p.hole(m(x), m(y), 7.0)
     for x, y in TOP_LEDS.values():
         p.hole(m(x), m(y), 5.1)
+    p.slot(28.0, 0, 16.0, 6.0)                                          # ESP32-CAM / sonar cables
     return p
 
 
@@ -186,7 +182,7 @@ def layout(files):
 
 if __name__ == "__main__":
     files = []
-    for name, fn in (("deck_base_3mm", base), ("deck_mid_3mm", mid), ("deck_top_3mm", top)):
+    for name, fn in (("deck_base_3mm", base), ("deck_mid_3mm_vero_fallback", mid), ("deck_top_3mm", top)):
         p = fn()
         files.append(export(p, name))
         bb = p.solid.val().BoundingBox()

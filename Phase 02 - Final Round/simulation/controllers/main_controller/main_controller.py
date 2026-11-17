@@ -1,9 +1,9 @@
 # PeraBots 2026 - University Category Final Round
-# The Nine Seals of Pera - Autonomous Controller for GuardianBot v2
-#   v3 (final build): 4 x HC-SR04 (us_*), 5 x Sharp GP2Y0A21 (ir_*, 10-80 cm),
-#            5-ch TCRT5000 line array (gs*), 2 x TCS3200 (tcs_floor, tcs_front),
-#            ESP32-CAM (cam, 48x32), MPU6050, N20 hall encoders, two servo gripper arms.
-#   The real robot runs the same strategy in firmware/esp32s3_brain (C++).
+# The Nine Seals of Pera - Autonomous Controller for GuardianBot
+#   v4.0: 8 x VL53L0X ToF (tof_*, 3-120 cm), 2 x HC-SR04 (us_front, us_back),
+#         Pololu QTR-8RC line array (gs0..gs7), 2 x TCS3200 (tcs_floor, tcs_front),
+#         ESP32-CAM (cam, 48x32), L3G4200D gyro, N20 hall encoders, two servo gripper arms.
+#   The real robot runs the same strategy in firmware/esp32cam_brain (C++).
 #
 # Section 1 & 2: User's optimized A* path planner, sensor ray-casting,
 #                occupancy grid mapping, camera-based dead-end tile detection.
@@ -61,17 +61,19 @@ led_g.set(0)
 # name: (x, y, heading, max range)  - origins are the sensor faces (robot frame)
 SENS = {
     'us_front': (0.075, 0.0, 0.0, 2.50),
-    'us_left': (0.0, 0.075, HP, 2.50),
-    'us_right': (0.0, -0.075, -HP, 2.50),
     'us_back': (-0.075, 0.0, PI, 2.50),
-    'ir_front': (0.040, 0.0, 0.0, 0.80),
-    'ir_fl': (0.0389, 0.0389, PI / 4, 0.80),
-    'ir_fr': (0.0389, -0.0389, -PI / 4, 0.80),
-    'ir_left': (-0.004, 0.0165, HP, 0.80),
-    'ir_right': (-0.004, -0.0165, -HP, 0.80),
+    'tof_front': (0.068, 0.0, 0.0, 1.20),
+    'tof_fl': (0.050, 0.046, PI / 4, 1.20),
+    'tof_fr': (0.050, -0.046, -PI / 4, 1.20),
+    'tof_lf': (0.030, 0.064, HP, 1.20),
+    'tof_lr': (-0.036, 0.064, HP, 1.20),
+    'tof_rf': (0.030, -0.064, -HP, 1.20),
+    'tof_rr': (-0.036, -0.064, -HP, 1.20),
+    'tof_back': (-0.066, 0.030, PI, 1.20),
 }
-IR_MAP_MAX = 0.50
-IR_MIN = 0.101          # GP2Y0A21 is blind below 10 cm (reads 100 mm)
+TOF_MAP_MAX = 0.80      # VL53L0X noise grows with range: map only the first 80 cm
+TOF_MIN = 0.031         # nearer than 3 cm reads 30 mm
+SIDE_PAIR_DX = 0.066    # tof_lf / tof_lr (and rf / rr) are 66 mm apart: wall-angle fix
 DS_MAX = 2.49
 US_MAP_MAX = 0.40
 ds = {}
@@ -79,8 +81,8 @@ for n in SENS:
     ds[n] = robot.getDevice(n)
     ds[n].enable(TS)
 D = {n: 9.0 for n in SENS}
-AXIS_SENS = ('us_front', 'ir_left', 'ir_right', 'us_back')
-N_GS = 5
+AXIS_SENS = ('tof_front', 'tof_lf', 'tof_rf', 'tof_back')
+N_GS = 8
 GS = [robot.getDevice('gs%d' % i) for i in range(N_GS)]
 for g_ in GS:
     g_.enable(TS)
@@ -115,6 +117,7 @@ def wrap(a):
 
 px, py = 2.315, 0.125
 yaw = 0.0
+yaw_off = 0.0           # heading correction learned from the side ToF pairs (the real gyro drifts)
 _pl = _pr = None
 _last_l = _last_r = 0.0
 t_sim = 0.0
@@ -126,7 +129,7 @@ def step():
         raise SystemExit
     t_sim += TS / 1000.0
     l, r = le.getValue(), re_.getValue()
-    y2 = wrap(imu.getRollPitchYaw()[2])
+    y2 = wrap(imu.getRollPitchYaw()[2] + yaw_off)
     if _pl is not None:
         d = ((l - _pl) + (r - _pr)) * 0.5 * R_WHEEL
         mid = yaw + wrap(y2 - yaw) * 0.5
@@ -314,8 +317,8 @@ def maze_ray(n, fix):
     hit = d < mx
     if n.startswith('us_') and (not hit or not near_cardinal(0.12)):
         return                          # lost sonar echo != free space; oblique pings are unreliable
-    if n.startswith('ir_') and d <= IR_MIN:
-        fix = False                     # Sharp reads 10 cm for anything closer: still a wall, no position fix
+    if n.startswith('tof_') and d <= TOF_MIN:
+        fix = False                     # closer than 3 cm: still a wall, but no position fix
     L = d if hit else mx
     ux, uy = math.cos(a), math.sin(a)
     if abs(ux) > 1e-3:
@@ -356,12 +359,29 @@ def maze_ray(n, fix):
                         py += 0.25 * err
 
 
+def side_align():
+    """Two ToF sensors per side see the same straight wall: their difference is the robot's angle to it.
+    Corrects the heading slowly (the real L3G4200D drifts); does nothing while turning or without a wall."""
+    global yaw_off, yaw
+    if not near_cardinal(0.15) or abs(gyro.getValues()[2]) > 0.2:
+        return
+    for f, r in (('tof_lf', 'tof_lr'), ('tof_rf', 'tof_rr')):
+        df, dr = D[f], D[r]
+        if TOF_MIN < df < 0.20 and TOF_MIN < dr < 0.20 and abs(df - dr) < 0.03:
+            theta = math.atan2(dr - df, SIDE_PAIR_DX) * (1 if f == 'tof_lf' else -1)
+            k = round(yaw / HP)
+            err = wrap(yaw - k * HP) - theta           # what the gyro says minus what the wall says
+            yaw_off -= 0.02 * err
+            yaw = wrap(yaw - 0.02 * err)
+
+
 def maze_sense():
     if py < 1.2:
         return
     fix = near_cardinal(0.05)
     for n in SENS:
         maze_ray(n, fix and n in AXIS_SENS)
+    side_align()
     look()
 
 
@@ -616,7 +636,7 @@ def run_maze():
             rem = (tx - px) * ax + (ty - py) * ay
             if rem > 0.004:
                 set_vw(min(V_MAX, math.sqrt(2 * ACC * rem) + 0.01), 0.0)
-            if rem <= 0.004 or D['us_front'] < 0.0255:
+            if rem <= 0.004 or D['us_front'] < 0.0255 or D['tof_front'] < 0.036:
                 full_stop()
                 mode = 'stopped'
                 wait = 0
@@ -710,11 +730,11 @@ def s1_sense():
         d = D[n]
         if d >= rng_max(n) or (n.startswith('us_') and d > US_MAP_MAX):
             continue                    # wide sonar cone: only trust close echoes for the map
-        if n.startswith('ir_') and d > IR_MAP_MAX:
-            continue                    # Sharp: noisy past 50 cm (inside 10 cm it reads ~10 cm: still an obstacle)
+        if n.startswith('tof_') and d > TOF_MAP_MAX:
+            continue                    # ToF: noisy far away
         ox, oy, a = ray(n)
         hx, hy = ox + d * math.cos(a), oy + d * math.sin(a)
-        if fix and n in AXIS_SENS and d > IR_MIN:
+        if fix and n in AXIS_SENS and d > TOF_MIN:
             for face, isx in ((0.006, 1), (2.434, 1), (0.006, 0), (1.214, 0)):
                 if isx and abs(math.sin(a)) < 0.06 and abs(hx - face) < 0.03:
                     px += 0.25 * (face - hx)
@@ -878,7 +898,7 @@ def run_s1():
                 new_obs = False
                 if not line_ok(px, py, x0 + dist * math.cos(hd), y0 + dist * math.sin(hd)):
                     break
-            if D['us_front'] < 0.025:
+            if D['us_front'] < 0.025 or D['tof_front'] < 0.036:
                 break
             set_vw(min(V_MAX, math.sqrt(2 * ACC * rem) + 0.01), 0.0)
         full_stop()
@@ -954,7 +974,7 @@ def log_tick():
 GRIP_OPEN, GRIP_CLOSED = 0.0, 1.05
 POCKET_OFF = 0.033                  # piece centre is 33 mm behind the axle
 LINE_X = 0.045                      # line array is 45 mm ahead of the axle
-GS_Y = [(i - (N_GS - 1) / 2) * 0.012 for i in range(N_GS)]      # gs0 = right-most (5-ch TCRT5000)
+GS_Y = [(i - (N_GS - 1) / 2) * 0.009525 for i in range(N_GS)]   # gs0 = right-most (Pololu QTR-8RC)
 GS_WHITE, GS_BLACK = 350.0, 0.0     # overwritten by calibrate_line()
 
 XT = (0.50, 0.90, 1.30, 1.70)       # transverse lines (x)
@@ -1309,9 +1329,9 @@ def inspect_board():
     hits = {}
 
     def sample():
-        for n in ('ir_left', 'ir_right'):
+        for n in ('tof_lf', 'tof_lr', 'tof_rf', 'tof_rr'):
             d = D[n]
-            if d >= 0.20 or d <= IR_MIN:
+            if d >= 0.20 or d <= TOF_MIN:
                 continue
             ox, oy, a = ray(n)
             hx, hy = ox + d * math.cos(a), oy + d * math.sin(a)
