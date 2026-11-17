@@ -2,46 +2,61 @@
 
 PeraBots 2026, University category, final round (physical robot) – team AProbotix.
 
-Our robot is **GuardianBot**, a 130 mm round robot. It has a rear capture pocket with a
-servo gripper, 4 × HC-SR04 ultrasonic sensors, 4 × Sharp GP2Y0A41 IR sensors, an 8-channel
-line array, a camera for the tiles, and an ESP32-S3.
-Everything here (Webots model, laser-cut acrylic, 3-D prints, main PCB) is generated from one
-shared set of dimensions, `hardware/cad/guardianbot_geometry.py`.
+Our robot is **GuardianBot v3**: a 150 mm round robot built from the parts the team owns.
 
-![GuardianBot](docs/images/robot_iso.png)
+- **Controllers:** Arduino Mega 2560 (real-time I/O) and an ESP32-S3 (mission brain).
+- **Drive:** L298N with two N20 encoder motors, on a 3S LiPo.
+- **Sensors:**
+  - 4 × HC-SR04 ultrasonic
+  - 5 × Sharp GP2Y0A21 IR
+  - 2 × TCS3200 colour (one for floor tiles, one for piece colour)
+  - 5-ch TCRT5000 line array
+  - MPU6050
+- **Gripper:** a rear capture pocket with two Kpower M0170 servo arms.
 
+All the hardware (Webots model, laser-cut decks, 3-D prints) is generated from one file of
+dimensions, `hardware/cad/guardianbot_geometry.py`.
 
-## v3 (current): Arduino Mega build — `firmware/`
+![GuardianBot v3](docs/images/v3_robot_iso.png)
 
-The robot we are actually building for the final uses the parts we own (Arduino Mega 2560, L298N,
-2 × TCS3200 colour sensors, 2 × metal servos, 4 × HC-SR04, 2S LiPo) plus an MPU6050 and a 5-ch line
-array. Start with **`firmware/GuardianBot_v3_Mega_build_guide.md`** (parts list with Sri Lankan
-prices, wiring/pin map, build order, calibration and competition-day procedure).
+**Start here: [`docs/GuardianBot_v3_build_guide.md`](docs/GuardianBot_v3_build_guide.md).** It covers the parts,
+the Sri Lankan shopping list (under Rs 15,000), power and wiring, the pin map, the build order,
+calibration and the competition procedure.
 
-- `firmware/mega_guardian/` — Arduino Mega sketch (multi-tab). `config.h` has every pin and tunable.
-- `firmware/mega_guardian/game_logic.h` — maze path / turn counting / Lo Shu board logic in pure C.
-- `firmware/test/test_logic.c` — host unit test of that logic (`gcc -I../mega_guardian test_logic.c && ./a.out`).
+| What | Where |
+|---|---|
+| Arduino Mega firmware (body: encoders, wheel PID, gyro, sonar/IR/line/colour, servos, link) | `firmware/mega_body/` |
+| ESP32-S3 firmware (brain: Sections 1–3, the same strategy as the simulation) | `firmware/esp32s3_brain/` |
+| Software-in-the-loop: the real ESP32 C++ drives the Webots robot | `firmware/sil/` + `simulation/controllers/mega_sil/` |
+| Host compile check of both sketches | `firmware/hostcheck/check.sh` |
+| Earlier v3 draft: Mega-only sketch, based on assumed parts (2S LiPo, MG995, 65 mm wheels, front pocket). Keep it as a fallback only | `firmware/mega_guardian/`, `firmware/GuardianBot_v3_Mega_build_guide.md` |
 
-The v2 material below (Webots model, custom PCB, ESP32-S3) is kept as reference; the mission logic
-and arena geometry in the Mega firmware are ported from the v2 simulation controller.
+Latest Webots results, 0 collisions in every run:
+
+| Run | END reached |
+|---|---|
+| Python controller, full mission | 183.7 s |
+| ESP32 firmware (software-in-the-loop), full mission | 183.2 s |
+| ESP32 firmware, Section 3 restart with no saved clues (inspects the board, reads pieces with the front colour sensor) | 119 s |
 
 ## Folder map
 
 | Folder | What is inside |
 |---|---|
-| `docs/` | Final-round rulebook (PDF and extracted text). **`GuardianBot_build_guide_and_BOM.md`** has the parts list, wiring, pin map and build order. Also renders of the robot, rulebook figures, and a sample run log |
+| `docs/` | Final-round rulebook (PDF and extracted text), **`GuardianBot_v3_build_guide.md`**, robot renders, rulebook figures, sample run log |
 | `simulation/` | Webots R2025a project: arena, robot, controllers |
 | `simulation/worlds/` | `perabots_arena.wbt` (full mission), `section3_start.wbt` (restart at Section 3), `guardian_hw_test.wbt` (gripper/sensor self-test), `Arena.wbt` (same as perabots_arena) |
 | `simulation/protos/` | `Arena.proto` (Section 3 rebuilt from rulebook Figure 1), `Obstacles.proto`, `GuardianBot.proto` (generated) |
-| `simulation/controllers/` | `main_controller` (Sections 1, 2, 3; writes `run_log.txt` and `clues.json`) and `guardian_hw_test` |
+| `simulation/controllers/` | `main_controller` (Sections 1, 2, 3; writes `run_log.txt` and `clues.json`), `mega_sil` (runs the ESP32 firmware in the loop) and `guardian_hw_test` |
 | `simulation/make_guardianbot.py`, `make_world.py` | Regenerate the robot PROTO / the worlds |
 | `simulation/tools/` | `rebuild_section3.py`: rewrites the Section 3 part of `Arena.proto` |
-| `hardware/cad/` | Generator scripts: `guardianbot_geometry.py` (all dimensions), acrylic DXF, 3-D parts, PCB (netlist, placement, autorouter, schematic) |
-| `hardware/acrylic/` | Laser-cut DXF: 3 mm black base, 3 mm clear crown, combined sheet |
-| `hardware/3d_prints/` | STL and STEP for the 10 printed parts, plus a preview image |
-| `hardware/pcb/` | KiCad 7 main board (`.kicad_pro/.kicad_sch/.kicad_pcb`), schematic PDF, DRC report, BOM and placement CSVs, 3-D STEP, Gerbers, and **`guardianbot_main_gerbers_JLCPCB.zip`** ready to order |
+| `firmware/` | Robot firmware (see above) |
+| `hardware/cad/` | Generator scripts: `guardianbot_geometry.py` (all dimensions), `make_acrylic_dxf.py`, `make_printed_parts.py`. The PCB scripts belong to v2 (obsolete) |
+| `hardware/acrylic/` | Laser-cut DXF + STL: base, mid and top decks (3 mm), and all three on one sheet |
+| `hardware/3d_prints/` | STL and STEP for the 13 printed parts (v3) |
+| `hardware/pcb/` | v2 custom PCB (obsolete for v3, which is wired on a vero board) |
 | `analysis/` | Early investigation scripts (maze/obstacle extraction from the rulebook and the Phase 01 arena, frame checks) and the images extracted from the rulebook |
-| `archive/` | Earlier robot versions, kept for reference: `v1_TwoWheelRobot` (first attempt) and `v1_GuardianBot_ToF` (ToF-sensor version), plus the v2 project zip |
+| `archive/` | Earlier robot versions: `v1_TwoWheelRobot`, `v1_GuardianBot_ToF`, `v2_GuardianBot_HC-SR04_Sharp41` (v2 CAD, model generator, build guide) and the v2 project zip |
 
 ## Run the simulation
 
@@ -49,9 +64,14 @@ and arena geometry in the Mega firmware are ported from the v2 simulation contro
 2. Press run (fast mode recommended). The controller prints its progress and also writes
    `simulation/controllers/main_controller/run_log.txt`.
 
-Last full run: Section 1 at 25.9 s, maze explored at 84.8 s (3 blue + 2 green tiles),
-cylinder placed in position 7, END reached at 181.6 s, 0 collisions
-(`docs/sample_full_run_log.txt`).
+Last full run (v3): Section 1 at 18.5 s, maze explored at 87 s (3 blue + 2 green tiles),
+cylinder placed in position 7, END reached at 183.7 s, 0 collisions.
+
+**Run the real firmware in Webots (software-in-the-loop).**
+
+1. Build the brain with `firmware/sil/build_sil.sh` (Linux, WSL or MinGW g++).
+2. Set the robot's `controller` to `mega_sil`.
+3. Run as usual. The brain's log goes to `simulation/controllers/mega_sil/sil_log.txt`.
 
 `section3_start.wbt` starts the robot in the maze exit cell. It uses the clues saved in
 `clues.json`, as the real robot would after a judge-ordered restart.
@@ -64,15 +84,12 @@ python make_guardianbot.py      # protos/GuardianBot.proto
 python make_world.py            # worlds/*.wbt
 
 cd ../hardware/cad
-python make_acrylic_dxf.py      # ../acrylic/*.dxf            (needs: pip install ezdxf)
+python make_acrylic_dxf.py      # ../acrylic/*.dxf + .stl     (needs: pip install cadquery ezdxf)
 python make_printed_parts.py    # ../3d_prints/*.stl/.step    (needs: pip install cadquery)
-python make_pcb.py place        # ../pcb/*.kicad_pcb          (KiCad 7 python; set FP in pcb_design.py)
-python autoroute.py             # routes the board + GND pours
-python make_schematic.py        # ../pcb/*.kicad_sch
 ```
 
 Change a dimension in `hardware/cad/guardianbot_geometry.py`, then rerun the generators.
-The robot model, acrylic, prints and PCB stay consistent with each other.
+The robot model, acrylic and prints stay consistent with each other.
 
 ## Key facts from the rulebook
 
