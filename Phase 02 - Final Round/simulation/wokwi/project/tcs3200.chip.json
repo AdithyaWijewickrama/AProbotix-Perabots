@@ -1,0 +1,10 @@
+{
+  "name": "TCS3200",
+  "author": "AProbotix (GuardianBot v4)",
+  "pins": ["VCC", "GND", "S0", "S1", "S2", "S3", "OUT", "LED"],
+  "controls": [
+    { "id": "red", "label": "Red", "type": "range", "min": 0, "max": 255, "step": 1 },
+    { "id": "green", "label": "Green", "type": "range", "min": 0, "max": 255, "step": 1 },
+    { "id": "blue", "label": "Blue", "type": "range", "min": 0, "max": 255, "step": 1 }
+  ]
+}

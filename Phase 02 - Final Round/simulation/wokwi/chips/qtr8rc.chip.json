@@ -1,0 +1,10 @@
+{
+  "name": "QTR-8RC",
+  "author": "AProbotix (GuardianBot v4)",
+  "pins": ["VCC", "GND", "LEDON", "1", "2", "3", "4", "5", "6", "7", "8", ""],
+  "controls": [
+    { "id": "line_mm", "label": "Black line centre (mm, + = left of the array centre)", "type": "range", "min": -60, "max": 60, "step": 1 },
+    { "id": "line_on", "label": "Black line under the array (1 = yes)", "type": "range", "min": 0, "max": 1, "step": 1 },
+    { "id": "width_mm", "label": "Line width (mm)", "type": "range", "min": 5, "max": 60, "step": 1 }
+  ]
+}

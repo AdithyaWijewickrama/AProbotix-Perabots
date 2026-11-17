@@ -1,0 +1,11 @@
+{
+  "name": "DRV8833 + N20",
+  "author": "AProbotix (GuardianBot v4)",
+  "pins": ["IN1", "IN2", "SLP", "GND", "", "ENC_A", "ENC_B", "VCC"],
+  "controls": [
+    { "id": "vbat_dV", "label": "Battery (0.1 V)", "type": "range", "min": 60, "max": 84, "step": 1 },
+    { "id": "load", "label": "Load (%)", "type": "range", "min": 0, "max": 100, "step": 5 },
+    { "id": "cpr", "label": "Encoder counts per wheel turn (x4)", "type": "range", "min": 400, "max": 8000, "step": 20 },
+    { "id": "reverse", "label": "Encoder reversed (right wheel = 1)", "type": "range", "min": 0, "max": 1, "step": 1 }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "VL53L0X",
+  "author": "AProbotix (GuardianBot v4)",
+  "pins": ["VIN", "GND", "SCL", "SDA", "XSHUT", "GPIO1"],
+  "controls": [
+    { "id": "distance", "label": "Distance to target (mm, over 1200 = nothing)", "type": "range", "min": 0, "max": 2000, "step": 5 },
+    { "id": "noise", "label": "Noise (mm)", "type": "range", "min": 0, "max": 20, "step": 1 }
+  ]
+}

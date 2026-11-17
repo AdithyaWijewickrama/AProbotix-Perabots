@@ -1,11 +1,13 @@
 # Rebuilds the GuardianBot version-comparison website and publishes it on GitHub Pages
-# whenever anything in "Phase 02 - Final Round/versions" changes.
+# whenever the versions folder, or a hardware file / doc that the 3-D viewer offers, changes.
 # One-time setup: repo Settings -> Pages -> Source: "GitHub Actions".
 name: versions-site
 on:
   push:
     paths:
       - "Phase 02 - Final Round/versions/**"
+      - "Phase 02 - Final Round/hardware/**"
+      - "Phase 02 - Final Round/docs/*.md"
       - ".github/workflows/versions-site.yml"
   workflow_dispatch:
 permissions:

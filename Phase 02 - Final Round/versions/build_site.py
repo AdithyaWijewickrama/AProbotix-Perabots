@@ -1,7 +1,10 @@
 """
 build_site.py - builds the GuardianBot version-comparison website from versions/*/spec.yaml.
 
-    python build_site.py            -> versions/_site/index.html (+ img/)
+    python build_site.py            -> versions/_site/index.html (+ img/), viewer.html (+ models/, lib/)
+viewer.html shows each version's PCB, printed parts and laser-cut decks in 3-D, with downloads. Its models
+come from versions/<folder>/models/manifest.json (made by export_models.py); the files the manifest names are
+copied here from wherever they live in the repo.
 GitHub Actions (.github/workflows/versions-site.yml at the repo root) runs this on every push that
 changes the versions folder and publishes _site to GitHub Pages, so the page updates by itself.
 To add a version: make a new folder vX.Y_name/ with spec.yaml (+ images/iso.jpg) and push.
@@ -17,6 +20,7 @@ import shutil
 import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)                  # "Phase 02 - Final Round"
 OUT = os.path.join(HERE, "_site")
 
 
@@ -39,6 +43,7 @@ def load():
         b = d.get("budget") or {}
         lkr = b.get("total") if b.get("currency") == "LKR" else b.get("total_lkr_approx")
         d["_budget_lkr"] = lkr
+        d["_models"] = os.path.exists(os.path.join(os.path.dirname(f), "models", "manifest.json"))
         vs.append(d)
     vs.sort(key=vkey)
     return vs
@@ -75,6 +80,8 @@ PAGE = r"""<!DOCTYPE html>
   --good: #0ca30c; --bad: #e66767;
 }
 * { box-sizing: border-box; }
+.viewlink { display: inline-block; margin-top: 8px; color: var(--series-1); text-decoration: none; font-weight: 600; }
+.viewlink:hover { text-decoration: underline; }
 body { margin: 0; }
 .viz-root { background: var(--surface-0); color: var(--text-primary); min-height: 100vh;
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -128,7 +135,8 @@ footer { margin-top: 40px; color: var(--text-muted); font-size: 12.5px; }
   <h1>GuardianBot - every version side by side</h1>
   <p class="sub">PeraBots 2026 University Final, team AProbotix. Speeds are from the same Webots arena with a neutral
   judge supervisor (Section 1 = robot enters the maze, Section 2 = robot leaves the maze, END = reaches the END point).
-  Latest version: <b id="latestname"></b>.</p>
+  Latest version: <b id="latestname"></b>.
+  <a class="viewlink" href="viewer.html">Open the PCBs, printed parts and decks in 3-D &rarr;</a></p>
 
   <h2>Versions</h2>
   <div class="grid" id="cards"></div>
@@ -180,6 +188,7 @@ $("#cards").innerHTML = V.map(v => `
       <span>END reached</span><span>${fmt(v.simulation?.end_s, "s")}</span>
       <span>PCB</span><span>${esc(v.pcb?.type)}</span>
     </div>
+    ${v._models ? `<a class="viewlink" href="viewer.html?v=${encodeURIComponent(v.id)}">3-D PCB, parts &amp; files &rarr;</a>` : ""}
   </div>`).join("");
 
 // ---- bar charts: one measure each, one series (no legend), value at the bar end, tooltip on hover
@@ -282,6 +291,49 @@ $("#all").innerHTML = "<tr>" + cols.map(c => `<th style="width:auto">${c[0]}</th
 </html>
 """
 
+def build_viewer(vs):
+    """viewer.html + models/<id>/... + lib/ (three.js, vendored so the page needs no CDN)."""
+    models = []
+    for v in vs:
+        mf = os.path.join(HERE, v["folder"], "models", "manifest.json")
+        if not os.path.exists(mf):
+            continue
+        man = json.load(open(mf, encoding="utf-8"))
+        dst = os.path.join(OUT, "models", v["id"])
+        os.makedirs(dst, exist_ok=True)
+
+        def put(src):
+            p = os.path.join(ROOT, src)
+            if not os.path.exists(p):
+                print("  missing:", src)
+                return None
+            shutil.copy(p, os.path.join(dst, os.path.basename(p)))
+            return "models/%s/%s" % (v["id"], os.path.basename(p))
+        items = []
+        for it in man["items"]:
+            it = dict(it)
+            if it.get("src"):
+                it["href"] = put(it["src"])
+            if it.get("svg"):
+                it["svgHref"] = put(it["svg"])
+            if it.get("dxf"):
+                it["dxfHref"] = put(it["dxf"])
+            if it.get("href") or it.get("svgHref"):
+                items.append(it)
+        files = []
+        for f in man["files"]:
+            h = put(f["src"])
+            if h:
+                files.append({"name": f["name"], "href": h, "kb": f["kb"]})
+        models.append({"id": v["id"], "name": v["name"], "items": items, "files": files})
+    shutil.copytree(os.path.join(HERE, "viewer_lib"), os.path.join(OUT, "lib"))
+    page = open(os.path.join(HERE, "viewer.html"), encoding="utf-8").read()
+    page = page.replace("/*MODELS*/[]", json.dumps(models, ensure_ascii=False))
+    open(os.path.join(OUT, "viewer.html"), "w", encoding="utf-8").write(page)
+    n = sum(len(m["items"]) for m in models)
+    print("viewer: %d versions, %d models" % (len(models), n))
+
+
 if __name__ == "__main__":
     import datetime
     if os.path.isdir(OUT):
@@ -292,4 +344,5 @@ if __name__ == "__main__":
                .replace("__BUILT__", datetime.date.today().isoformat())
     open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(page)
     open(os.path.join(OUT, ".nojekyll"), "w").write("")
+    build_viewer(vs)
     print("built %d versions -> %s" % (len(vs), os.path.join(OUT, "index.html")))

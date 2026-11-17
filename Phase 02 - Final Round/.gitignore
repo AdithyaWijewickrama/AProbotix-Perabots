@@ -11,3 +11,10 @@ hardware/pcb/*-backups/
 **/.history/
 **/*-backups/
 versions/v2.0_GuardianBot/hardware/pcb/.history/
+# built by versions/build_site.py (GitHub Actions publishes it)
+versions/_site/
+# Wokwi / SPICE build output
+simulation/wokwi/build/
+simulation/wokwi/test/_build/
+simulation/wokwi/test/_deps/
+hardware/spice/_*.txt

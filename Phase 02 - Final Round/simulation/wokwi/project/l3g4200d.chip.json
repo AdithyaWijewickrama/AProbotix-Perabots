@@ -1,0 +1,9 @@
+{
+  "name": "L3G4200D",
+  "author": "AProbotix (GuardianBot v4)",
+  "pins": ["VCC", "GND", "SCL", "SDA", "SDO", "CS", "INT1", "INT2"],
+  "controls": [
+    { "id": "rate", "label": "Turn rate Z (deg/s, + = left / CCW)", "type": "range", "min": -500, "max": 500, "step": 5 },
+    { "id": "bias", "label": "Zero-rate offset (digits)", "type": "range", "min": -100, "max": 100, "step": 1 }
+  ]
+}

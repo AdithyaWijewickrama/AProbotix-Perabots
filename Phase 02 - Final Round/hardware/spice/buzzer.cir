@@ -1,0 +1,13 @@
+* D9 -> R9 1k -> Q2 BC547 base; collector -> active buzzer (5 V, ~30 mA) -> +5V
+.include models.lib
+V5 v5 0 5
+Vd9 d9 0 PULSE(0 5 100u 50n 50n 1m 2m)
+R9 d9 b 1k
+Q2 c b 0 BC547
+Rbuz v5 c 167
+.tran 1u 2.2m
+.control
+run
+wrdata _buzzer.txt v(b) v(c)
+.endc
+.end

@@ -1,0 +1,169 @@
+{
+ "id": "v4.0",
+ "items": [
+  {
+   "group": "PCB",
+   "name": "PCB with parts",
+   "kind": "glb",
+   "src": "versions/v4.0_esp32cam_pcbdeck/models/pcb.glb",
+   "info": {
+    "w": 144.1,
+    "h": 144.1,
+    "t": 1.6
+   }
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "camera mast",
+   "kind": "stl",
+   "src": "hardware/3d_prints/camera_mast.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "caster spacer",
+   "kind": "stl",
+   "src": "hardware/3d_prints/caster_spacer.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "deck spacer 33p4",
+   "kind": "stl",
+   "src": "hardware/3d_prints/deck_spacer_33p4.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "deck spacer 54p5",
+   "kind": "stl",
+   "src": "hardware/3d_prints/deck_spacer_54p5.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "gripper arm left",
+   "kind": "stl",
+   "src": "hardware/3d_prints/gripper_arm_left.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "gripper arm right",
+   "kind": "stl",
+   "src": "hardware/3d_prints/gripper_arm_right.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "hcsr04 hanger",
+   "kind": "stl",
+   "src": "hardware/3d_prints/hcsr04_hanger.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "n20 clamp",
+   "kind": "stl",
+   "src": "hardware/3d_prints/n20_clamp.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "pocket",
+   "kind": "stl",
+   "src": "hardware/3d_prints/pocket.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "servo cradle",
+   "kind": "stl",
+   "src": "hardware/3d_prints/servo_cradle.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "tcs floor spacer",
+   "kind": "stl",
+   "src": "hardware/3d_prints/tcs_floor_spacer.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "tcs front bracket",
+   "kind": "stl",
+   "src": "hardware/3d_prints/tcs_front_bracket.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "tof back hanger",
+   "kind": "stl",
+   "src": "hardware/3d_prints/tof_back_hanger.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "tof post 40",
+   "kind": "stl",
+   "src": "hardware/3d_prints/tof_post_40.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "tof post 60",
+   "kind": "stl",
+   "src": "hardware/3d_prints/tof_post_60.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "deck base 3mm",
+   "kind": "stl",
+   "svg": "versions/v4.0_esp32cam_pcbdeck/models/deck_base_3mm.svg",
+   "dxf": "hardware/acrylic/deck_base_3mm.dxf",
+   "src": "hardware/acrylic/deck_base_3mm.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "deck mid 3mm vero fallback",
+   "kind": "stl",
+   "svg": "versions/v4.0_esp32cam_pcbdeck/models/deck_mid_3mm_vero_fallback.svg",
+   "dxf": "hardware/acrylic/deck_mid_3mm_vero_fallback.dxf",
+   "src": "hardware/acrylic/deck_mid_3mm_vero_fallback.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "deck top 3mm",
+   "kind": "stl",
+   "svg": "versions/v4.0_esp32cam_pcbdeck/models/deck_top_3mm.svg",
+   "dxf": "hardware/acrylic/deck_top_3mm.dxf",
+   "src": "hardware/acrylic/deck_top_3mm.stl"
+  },
+  {
+   "group": "Laser-cut decks",
+   "name": "sheet layout",
+   "kind": "svg",
+   "svg": "versions/v4.0_esp32cam_pcbdeck/models/sheet_layout.svg",
+   "dxf": "hardware/acrylic/sheet_layout.dxf"
+  }
+ ],
+ "files": [
+  {
+   "name": "guardianbot_v4_pcb_deck_gerbers.zip",
+   "src": "hardware/pcb_v4/guardianbot_v4_pcb_deck_gerbers.zip",
+   "kb": 464
+  },
+  {
+   "name": "guardianbot_v4_pcb_deck_schematic.pdf",
+   "src": "hardware/pcb_v4/guardianbot_v4_pcb_deck_schematic.pdf",
+   "kb": 336
+  },
+  {
+   "name": "guardianbot_v4_pcb_deck_BOM.csv",
+   "src": "hardware/pcb_v4/guardianbot_v4_pcb_deck_BOM.csv",
+   "kb": 3
+  },
+  {
+   "name": "guardianbot_v4_pcb_deck-assembly_top_silkscreen.pdf",
+   "src": "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_top_silkscreen.pdf",
+   "kb": 183
+  },
+  {
+   "name": "guardianbot_v4_pcb_deck-assembly_bottom_silkscreen_mirrored.pdf",
+   "src": "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_bottom_silkscreen_mirrored.pdf",
+   "kb": 186
+  },
+  {
+   "name": "GuardianBot_v4_build_guide.md",
+   "src": "docs/GuardianBot_v4_build_guide.md",
+   "kb": 12
+  }
+ ]
+}

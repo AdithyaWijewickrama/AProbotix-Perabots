@@ -181,6 +181,10 @@ The robot weighs about 570 g, stands 152 mm tall at the mast, and nothing sticks
 
 ## 6. Firmware, calibration and competition procedure
 
+**Try it before you solder:** `simulation/wokwi/` runs the Mega firmware on a virtual Mega in Wokwi (like Tinkercad),
+with every sensor, the motors and a stand-in for the ESP32-CAM, all wired as on the PCB deck. `hardware/spice/` checks
+the deck's link circuit, battery divider and power rails.
+
 See `firmware/README.md` for the boards, libraries and first power-up checklist. In short:
 
 1. Flash `mega_body`. The OLED must show `ToF 8/8 gyro ok`.
