@@ -8,3 +8,6 @@ simulation/controllers/main_controller/run_log.txt
 fp-info-cache
 hardware/pcb/.history/
 hardware/pcb/*-backups/
+**/.history/
+**/*-backups/
+versions/v2.0_GuardianBot/hardware/pcb/.history/
