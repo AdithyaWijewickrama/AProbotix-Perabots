@@ -1,7 +1,9 @@
 """
-make_guardianbot.py - generates protos/GuardianBot.proto  (v2: HC-SR04 + Sharp IR build)
+make_guardianbot.py - generates protos/GuardianBot.proto  (v3: final-round build)
 
-GuardianBot: buildable 130 mm round differential-drive robot for PeraBots 2026.
+GuardianBot v3: 150 mm round differential-drive robot for PeraBots 2026, built from the
+team's own parts (Arduino Mega + ESP32-S3, L298N, N20 12 V encoder motors, HC-SR04,
+Sharp GP2Y0A21, TCS3200, TCRT5000 line array, MPU6050, Kpower M0170 servos, 3S LiPo).
 Every part in the model is a real component from GuardianBot_BOM.md with its
 real size and position.  Dimensions come from ../hardware/cad/guardianbot_geometry.py,
 the same file the acrylic DXF, 3-D printed STL and PCB generators use.
@@ -17,9 +19,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "hardware", "cad"))
 from guardianbot_geometry import *          # noqa: E402,F401,F403
 
-PLATE_Z0, PLATE_Z1 = BASE_Z0, BASE_Z1       # names used by the part helpers
-TOP_Z0, TOP_Z1 = PCB_Z0, PCB_Z1
-ENC_RES = 2 * math.pi / (12 * 51.45)        # 12 CPR encoder x 51.45:1 gearbox
 
 # ---------------------------------------------------------------- materials
 def pbr(c, rough=0.5, metal=0.0, emis=None):
@@ -81,43 +80,48 @@ ROT_X_AXIS = "0 1 0 1.5708"       # cylinder axis -> x
 
 
 
+
 # ------------------------------------------------------------------ sensors
 ACRYLIC = "PBRAppearance { baseColor 0.85 0.92 0.95 roughness 0.05 metalness 0 transparency 0.45 }"
 ACRYLIC_BLACK = pbr((0.02, 0.02, 0.025), 0.15, 0.0)
-SOLDERMASK = pbr((0.02, 0.18, 0.10), 0.35, 0.1)
 SHARP_GREY = pbr((0.12, 0.12, 0.13), 0.7, 0.0)
+MEGA_BLUE = pbr((0.0, 0.32, 0.55), 0.4, 0.1)
+L298_RED = pbr((0.70, 0.05, 0.05), 0.45, 0.1)
+HEATSINK = pbr((0.10, 0.10, 0.11), 0.35, 0.6)
+TERMINAL_BLUE = pbr((0.05, 0.25, 0.75), 0.5, 0.0)
+SERVO_BLACK = pbr((0.05, 0.05, 0.05), 0.5, 0.0)
+YELLOW = pbr((0.95, 0.8, 0.1), 0.5, 0.0)
 
 
-def sharp(name, x, y, z, a):
-    """Sharp GP2Y0A41SK0F, long axis vertical. Lens face at (x,y,z)."""
+def sharp21(name, x, y, z, a):
+    """Sharp GP2Y0A21YK0F lying flat (long axis tangential). Lens face at (x, y, z)."""
     d, w, h = SHARP_BODY
     vis = [
-        box((-d / 2, 0, 0), (d, w, h - 0.004), SHARP_GREY),
-        box((-d / 2, 0, 0), (0.0025, w + 0.0075, 0.004), SHARP_GREY),       # mounting tabs
-        box((-0.0012, 0, 0.0075), (0.0026, 0.0095, 0.0095), BLACK_PLASTIC),  # emitter lens
-        box((-0.0012, 0, -0.0075), (0.0026, 0.0095, 0.0095), BLACK_PLASTIC), # receiver lens
-        box((-d - 0.002, 0, -0.008), (0.004, 0.008, 0.006), WHITE_PLASTIC),  # JST-PH socket
-        box((-d / 2 - 0.004, 0, 0), (0.003, 0.018, 0.034), accent()),        # printed bracket
+        box((-d / 2, 0, 0), (d, w - 0.008, h), SHARP_GREY),
+        box((-d / 2, 0, 0), (0.0025, w, 0.004), SHARP_GREY),                      # mounting tabs
+        box((-0.0012, 0.0095, 0), (0.0026, 0.010, 0.010), BLACK_PLASTIC),         # emitter lens
+        box((-0.0012, -0.0095, 0), (0.0026, 0.010, 0.010), BLACK_PLASTIC),        # receiver lens
+        box((-d - 0.002, 0, 0), (0.004, 0.008, 0.006), WHITE_PLASTIC),            # JST socket
     ]
     return """DistanceSensor {
       translation %s
       rotation 0 0 1 %.5f
       name "%s"
-      # Sharp GP2Y0A41SK0F: 4-30 cm. Firmware converts volts->mm. <4 cm reads 40, >30 cm reads 300.
-      lookupTable [ 0 40 0, 0.04 40 0.02, 0.30 300 0.03, 0.31 300 0 ]
+      # Sharp GP2Y0A21YK0F: 10-80 cm. Firmware converts volts->mm. <10 cm reads 100, >80 cm reads 800.
+      lookupTable [ 0 100 0, 0.10 100 0.02, 0.80 800 0.03, 0.81 800 0 ]
       children [ %s ]
     }""" % (v3((x, y, z)), a, name, " ".join(vis))
 
 
 def hcsr04(name, x, y, z, a):
-    """HC-SR04: transducer faces at (x,y,z); PCB 12 mm behind."""
+    """HC-SR04: transducer faces at (x, y, z); PCB 12 mm behind."""
     t, w, h = US_PCB
     vis = [box((-0.0128, 0, 0), (t, w, h), PCB_BLUE)]
     for s in (1, -1):
         vis.append(cyl((-0.0060, s * 0.013, 0), 0.0080, 0.0120, SILVER, ROT_X_AXIS))
         vis.append(cyl((0.0001, s * 0.013, 0), 0.0068, 0.0004, pbr((0.25, 0.25, 0.25), 0.9, 0.0), ROT_X_AXIS))
-    vis.append(box((-0.0145, 0, -0.0105), (0.0025, 0.010, 0.0025), BLACK_PLASTIC))   # 4-pin header
-    vis.append(box((-0.0115, 0, 0.0075), (0.002, 0.008, 0.0035), SILVER))             # crystal
+    vis.append(box((-0.0145, 0, -0.0105), (0.0025, 0.010, 0.0025), BLACK_PLASTIC))
+    vis.append(box((-0.0115, 0, 0.0075), (0.002, 0.008, 0.0035), SILVER))
     return """DistanceSensor {
       translation %s
       rotation 0 0 1 %.5f
@@ -131,11 +135,30 @@ def hcsr04(name, x, y, z, a):
     }""" % (v3((x, y, z)), a, name, " ".join(vis))
 
 
+def tcs3200(name, xyz, rot, note):
+    """GY-31 TCS3200 colour sensor, modelled as a 4x4 camera with a short near plane."""
+    return """Camera {
+      translation %s
+      rotation %s
+      name "%s"
+      # %s
+      fieldOfView 0.9
+      width 4
+      height 4
+      near 0.002
+      children [ %s %s %s ]
+    }""" % (v3(xyz), rot, name, note,
+            box((-0.004, 0, 0), (0.0016, 0.028, 0.028), PCB_BLUE),
+            box((-0.002, 0, 0), (0.003, 0.012, 0.012), BLACK_PLASTIC),
+            " ".join(sph((-0.0025, 0.009 * sx, 0.009 * sy), 0.0018, pbr((1, 1, 0.95), 0.3, 0, (0.7, 0.7, 0.6)))
+                     for sx in (1, -1) for sy in (1, -1)))
+
+
 def prism(poly, z0, z1):
     n = len(poly)
     pts = [(x, y, z0) for x, y in poly] + [(x, y, z1) for x, y in poly]
-    faces = [list(range(n, 2 * n))]                        # top (CCW from above)
-    faces.append(list(reversed(range(n))))                 # bottom
+    faces = [list(range(n, 2 * n))]
+    faces.append(list(reversed(range(n))))
     for i in range(n):
         j = (i + 1) % n
         faces.append([i, j, n + j, n + i])
@@ -145,38 +168,41 @@ def prism(poly, z0, z1):
 
 
 def ground_sensor(i):
-    y = (i - 3.5) * 0.008
+    y = (i - (LINE_N - 1) / 2) * LINE_PITCH
     return """DistanceSensor {
       translation %s
       rotation 0 1 0 1.5708
       name "gs%d"
       type "infra-red"
-      # QTRX-MD-08A channel: high on white, low on the 20 mm black line
+      # TCRT5000 channel (analog): high on white, low on the 20 mm black line
       lookupTable [ 0 1023 0.01, 0.020 0 0.01 ]
       children [ %s ]
-    }""" % (v3((LINE_X, y, PLATE_Z0 - 0.0031)), i,
-            box((0, 0, 0.0005), (0.0032, 0.0028, 0.0012), CHIP))
+    }""" % (v3((LINE_X, y, LINE_SENSOR_Z)), i,
+            box((0, 0, 0.0005), (0.0058, 0.010, 0.0035), BLACK_PLASTIC))
+
+
+# -------------------------------------------------------------- drivetrain
+ENC_RES = 2 * math.pi / (7 * 2 * 100)      # N20 hall encoder: 7 pulses/motor rev, x2 edges, 1:100 gearbox
 
 
 def wheel(side):
     s = 1 if side == "left" else -1
     y = s * TRACK_HALF
-    # dark lightening pockets on the outer face of the white hub
     spokes = " ".join(
-        cyl((0.0105 * math.cos(k * 1.2566), 0.0105 * math.sin(k * 1.2566), 0), 0.0032, WHEEL_W + 0.0008, BLACK_PLASTIC)
+        cyl((0.012 * math.cos(k * 1.2566), 0.012 * math.sin(k * 1.2566), 0), 0.0035, WHEEL_W * 0.6, BLACK_PLASTIC)
         for k in range(5))
     return """HingeJoint {
       jointParameters HingeJointParameters { axis 0 1 0 anchor %s }
       device [
         RotationalMotor {
           name "%s_wheel_motor"
-          # Pololu 50:1 HPCB micro metal gearmotor: 650 rpm @ 6 V, 0.74 kg.cm stall
-          maxVelocity 68
-          maxTorque 0.085
+          # N20 12 V 1:100 encoder gear motor (~300 rpm no-load, ~1.6 kg.cm stall) via L298N
+          maxVelocity 31
+          maxTorque 0.12
         }
         PositionSensor {
           name "%s_wheel_sensor"
-          # 12 CPR magnetic encoder x 51.45:1 = 617 counts / wheel rev
+          # 7 PPR hall encoder x 2 edges x 100:1 = 1400 counts / wheel rev
           resolution %.6f
         }
       ]
@@ -187,56 +213,50 @@ def wheel(side):
           Shape { appearance %s geometry Cylinder { radius %.4f height %.4f } }
           Shape { appearance %s geometry Cylinder { radius 0.0165 height %.4f } }
           %s
-          %s
         ]
         name "%s_wheel"
         contactMaterial "tire"
         boundingObject Cylinder { radius %.4f height %.4f }
-        physics Physics { density -1 mass 0.0045 }
+        physics Physics { density -1 mass 0.016 }
       }
     }""" % (v3((0, y, AXLE_Z)), side, side, ENC_RES, v3((0, y, AXLE_Z)),
-            SILICONE, WHEEL_R, WHEEL_W, WHITE_PLASTIC, WHEEL_W + 0.0006,
-            spokes, cyl((0, 0, 0), 0.004, WHEEL_W + 0.0012, WHITE_PLASTIC),
+            SILICONE, WHEEL_R, WHEEL_W, YELLOW, WHEEL_W + 0.0006, spokes,
             side, WHEEL_R, WHEEL_W)
 
 
-def gearmotor(s):
-    """Micro metal gearmotor + bracket + magnetic encoder, shaft along y."""
-    y_out = s * (TRACK_HALF - WHEEL_W / 2 - 0.0020)   # gearbox output face
-    parts = []
+def n20(s):
+    """N20 gear motor + hall encoder, shaft along y, held by a printed clamp on the base."""
+    y_out = s * (TRACK_HALF - WHEEL_W / 2 - 0.002)
     gb_c = y_out - s * 0.0045
-    can_c = y_out - s * (0.009 + 0.008)
-    enc_c = y_out - s * (0.025 + 0.0015)
-    parts.append(box((0, gb_c, AXLE_Z), (0.010, 0.009, 0.012), SILVER))
-    parts.append(box((0, can_c, AXLE_Z), (0.010, 0.016, 0.012), SILVER))
-    parts.append(box((0, can_c, AXLE_Z), (0.0102, 0.010, 0.0122), BLACK_PLASTIC))
-    parts.append(box((0, enc_c, AXLE_Z), (0.012, 0.0012, 0.013), PCB_GREEN))
-    parts.append(cyl((0, enc_c - s * 0.0015, AXLE_Z), 0.003, 0.002, BLACK_PLASTIC, ROT_Y_AXIS))
-    parts.append(cyl((0, y_out + s * 0.0010, AXLE_Z), 0.0015, 0.004, STEEL, ROT_Y_AXIS))
-    # bracket (Pololu #989 style) holding the motor down to the bottom PCB
-    parts.append(box((0, gb_c, (PLATE_Z1 + AXLE_Z + 0.007) / 2), (0.018, 0.010, AXLE_Z + 0.007 - PLATE_Z1), BLACK_PLASTIC))
-    return parts
+    can_c = y_out - s * (0.009 + 0.0075)
+    enc_c = y_out - s * (0.024 + 0.002)
+    return [
+        box((0, gb_c, AXLE_Z), (0.012, 0.009, 0.010), SILVER),
+        box((0, can_c, AXLE_Z), (0.012, 0.015, 0.010), SILVER),
+        box((0, enc_c, AXLE_Z), (0.013, 0.003, 0.013), PCB_GREEN),
+        cyl((0, enc_c - s * 0.002, AXLE_Z), 0.0045, 0.002, BLACK_PLASTIC, ROT_Y_AXIS),
+        cyl((0, y_out + s * 0.002, AXLE_Z), 0.0015, 0.006, STEEL, ROT_Y_AXIS),
+        box((0, (gb_c + can_c) / 2, (BASE_Z1 + AXLE_Z + 0.008) / 2), (0.020, 0.020, AXLE_Z + 0.008 - BASE_Z1), accent()),
+    ]
 
 
 # ------------------------------------------------------------------ gripper
 def gripper_arm(side):
+    """Each arm sits directly on its own Kpower M0170 servo (no linkage)."""
     s = 1 if side == "left" else -1
     hy = s * HINGE_Y
-    lim = "minPosition 0 maxPosition 1.3" if s > 0 else "minPosition -1.3 maxPosition 0"
-    mult = 1 if s > 0 else -1
+    lim = "minPosition 0 maxPosition 1.4" if s > 0 else "minPosition -1.4 maxPosition 0"
     return """HingeJoint {
       jointParameters HingeJointParameters { axis 0 0 1 anchor %s }
       device [
         RotationalMotor {
-          # one MG90S servo drives both arms through a push-rod linkage;
-          # modelled as two coupled motors (same "gripper::" prefix)
-          name "gripper::%s"
-          multiplier %d
+          # Kpower M0170 metal-gear servo: ~6 kg.cm, 0.17 s/60 deg at 6 V
+          name "grip_%s"
           %s
-          maxVelocity 8
-          maxTorque 0.06
+          maxVelocity 6
+          maxTorque 0.08
         }
-        PositionSensor { name "gripper_sensor_%s" }
+        PositionSensor { name "grip_%s_sensor" }
       ]
       endPoint Solid {
         translation %s
@@ -244,203 +264,181 @@ def gripper_arm(side):
           %s
           %s
           %s
-          %s
         ]
         name "gripper_arm_%s"
         contactMaterial "chassis"
         boundingObject Pose { translation %s children [ Box { size %s } ] }
-        physics Physics { density -1 mass 0.004 }
+        physics Physics { density -1 mass 0.006 }
       }
-    }""" % (v3((HINGE_X, hy, 0.03)), side, mult, lim, side, v3((HINGE_X, hy, 0)),
-            box((-ARM_L / 2, 0, 0.024), (ARM_L, 0.003, 0.032), accent(0.6)),
-            box((-ARM_L / 2 - 0.002, -s * 0.0020, 0.024), (ARM_L - 0.008, 0.0012, 0.026), TPU),
-            cyl((0, 0, 0.024), 0.0040, 0.032, accent(0.6)),
-            cyl((0, 0, (0.040 + TOP_Z1) / 2), 0.0015, TOP_Z1 - 0.040 + 0.002, STEEL),
-            side, v3((-ARM_L / 2, 0, 0.024)), v3((ARM_L, 0.003, 0.032)))
+    }""" % (v3((HINGE_X, hy, 0.03)), side, lim, side, v3((HINGE_X, hy, 0)),
+            box((-ARM_L / 2, 0, 0.026), (ARM_L, 0.003, 0.032), accent(0.6)),
+            box((-ARM_L / 2 - 0.002, -s * 0.0020, 0.026), (ARM_L - 0.008, 0.0012, 0.026), TPU),
+            cyl((0, 0, (0.010 + MID_Z0) / 2), 0.0045, MID_Z0 - 0.010, accent(0.6)),
+            side, v3((-ARM_L / 2, 0, 0.026)), v3((ARM_L, 0.003, 0.032)))
 
 
-
-def pcb_parts(tz):
-    """Simple 3-D bodies for every footprint on the main board (top side above, bottom side below)."""
-    from pcb_design import PARTS
-    out = []
-    for ref, val, fpid, x, y, rot, side, pinmap, desc in PARTS:
-        if ref in ("J1", "J3"):
-            continue                                   # DevKit sockets drawn separately
-        fp = fpid.split(":")[1]
-        n = len(pinmap)
-        x, y = x / 1000.0, y / 1000.0
-        # footprint +X (KiCad) maps to robot -y at rot 0; rotation is CCW in the KiCad view
-        a = math.radians(rot) - math.pi / 2
-        if "JST_XH" in fp:
-            size, col, h = (0.0025 * n + 0.0024, 0.00575), WHITE_PLASTIC, 0.007
-            off = 0.0025 * (n - 1) / 2
-        elif "JST_SH" in fp:
-            size, col, h, off = (0.006, 0.0042), WHITE_PLASTIC, 0.003, 0.0
-        elif "PinHeader" in fp or "PinSocket" in fp:
-            size, col, h = (0.00254 * n, 0.00254), BLACK_PLASTIC, 0.0085
-            off = 0.00254 * (n - 1) / 2
-        elif "SSOP" in fp or "SOIC" in fp:
-            size, col, h, off = ((0.0179, 0.0075) if "SOIC" in fp else (0.0082, 0.0053)), CHIP, 0.0018, 0.0
-            a += math.pi / 2
-        elif "XT30" in fp:
-            size, col, h, off = (0.010, 0.0052), pbr((0.85, 0.75, 0.1), 0.5), 0.010, 0.0025
-        elif "SW_PUSH" in fp:
-            size, col, h, off = (0.006, 0.006), BLACK_PLASTIC, 0.0035, 0.0
-        elif "CP_Elec" in fp:
-            size, col, h, off = (0.0066, 0.0066), SILVER, 0.0077, 0.0
-        elif "SOT-23" in fp:
-            size, col, h, off = (0.003, 0.0014), CHIP, 0.0011, 0.0
-        else:                                          # 0805 / 1206 passives and LEDs
-            size, col, h, off = ((0.0032, 0.0016) if "1206" in fp else (0.002, 0.00125)), \
-                (pbr((0.85, 0.85, 0.85), 0.3, 0, (0.2, 0.35, 1.0) if val == "BLUE" else (0.1, 0.9, 0.2))
-                 if val in ("BLUE", "GREEN") else CHIP), 0.0008, 0.0
-        if side == "B":
-            a2 = -a
-            cx, cy = x + off * math.cos(a2), y + off * math.sin(a2)
-            z = PCB_Z0 - h / 2
-            aa = a2
-        else:
-            cx, cy = x + off * math.cos(a), y + off * math.sin(a)
-            z = tz + h / 2
-            aa = a
-        out.append(box((cx, cy, z), (size[0], size[1], h), col, "0 0 1 %.4f" % aa))
-        if "SW_PUSH" in fp:
-            out.append(cyl((cx, cy, z + h / 2 + 0.0008), 0.0017, 0.0016,
-                           pbr((0.85, 0.1, 0.1) if val == "START" else (0.95, 0.85, 0.1), 0.4)))
-    return out
-
-
-# ------------------------------------------------------------------- build
 def pocket_wall_boxes():
-    """Back wall + straight side walls + flared lead-ins: [(centre xy, size xy, rotation-or-None)]."""
     t = POCKET_WALL_T
     out = [((POCKET_X - t / 2, 0.0), (t, 2 * (POCKET_IN_HW + t)), None)]
     for s in (1, -1):
         L = POCKET_X - POCKET_FLARE_X
         out.append((((POCKET_X + POCKET_FLARE_X) / 2, s * (POCKET_IN_HW + t / 2)), (L, t), None))
         x0, y0 = POCKET_FLARE_X, s * (POCKET_IN_HW + t / 2)
-        x1, y1 = HINGE_X + 0.004, s * (POCKET_MOUTH_HW + t / 2)
+        x1, y1 = HINGE_X + 0.005, s * (POCKET_MOUTH_HW + t / 2)
         L2 = math.hypot(x1 - x0, y1 - y0)
         ang = math.atan2(y1 - y0, x1 - x0)
         out.append((((x0 + x1) / 2, (y0 + y1) / 2), (L2 + 0.002, t), "0 0 1 %.4f" % ang))
     return out
 
 
+def module_visual(name, cx, cy, sx, sy, h, z0):
+    """Simple but recognisable bodies for the off-the-shelf modules."""
+    z = z0 + h / 2
+    v = []
+    if name == "mega":
+        v.append(box((cx, cy, z0 + 0.0008), (sx, sy, 0.0016), MEGA_BLUE))
+        v.append(box((cx + 0.012, cy - 0.020, z0 + 0.003), (0.012, 0.012, 0.0025), CHIP))          # ATmega2560
+        v.append(box((cx - 0.018, cy + 0.045, z0 + 0.0055), (0.012, 0.016, 0.011), SILVER))        # USB-B
+        v.append(box((cx - 0.019, cy + 0.020, z0 + 0.0055), (0.009, 0.013, 0.011), BLACK_PLASTIC))  # DC jack
+        for dx in (-0.0225, 0.0225):
+            v.append(box((cx + dx, cy - 0.004, z0 + 0.0058), (0.0026, 0.075, 0.0085), BLACK_PLASTIC))
+        v.append(box((cx, cy - 0.047, z0 + 0.0058), (0.050, 0.0052, 0.0085), BLACK_PLASTIC))       # 36-pin double header
+    elif name == "esp32s3":
+        v.append(box((cx, cy, z0 + 0.0084), (sx, sy, 0.0016), PCB_BLACK))
+        v.append(box((cx, cy + 0.018, z0 + 0.0108), (0.018, 0.0255, 0.0032), SILVER))
+        for s in (1, -1):
+            v.append(box((cx + s * 0.0065, cy - 0.031, z0 + 0.0106), (0.009, 0.0075, 0.0032), SILVER))
+            v.append(box((cx + s * 0.0114, cy, z0 + 0.004), (0.0026, 0.0559, 0.0076), BLACK_PLASTIC))
+    elif name == "l298n":
+        v.append(box((cx, cy, z0 + 0.0008), (sx, sy, 0.0016), L298_RED))
+        v.append(box((cx - 0.004, cy, z0 + 0.014), (0.016, 0.023, 0.025), HEATSINK))
+        for dy in (-0.017, 0.017):
+            v.append(box((cx + 0.016, cy + dy, z0 + 0.006), (0.0075, 0.0085, 0.010), TERMINAL_BLUE))
+        v.append(box((cx - 0.017, cy, z0 + 0.006), (0.0075, 0.013, 0.010), TERMINAL_BLUE))
+        v.append(cyl((cx + 0.010, cy + 0.006, z0 + 0.007), 0.004, 0.011, BLACK_PLASTIC))
+    elif name.startswith("buck"):
+        v.append(box((cx, cy, z0 + 0.0008), (sx, sy, 0.0016), PCB_BLUE))
+        v.append(box((cx - 0.008, cy, z0 + 0.0055), (0.012, 0.012, 0.008), BLACK_PLASTIC))         # inductor
+        v.append(cyl((cx + 0.010, cy + 0.004, z0 + 0.007), 0.004, 0.011, BLACK_PLASTIC))
+        v.append(box((cx + 0.014, cy - 0.006, z0 + 0.004), (0.006, 0.0035, 0.0065), TERMINAL_BLUE))  # trimmer
+    else:
+        v.append(box((cx, cy, z), (sx, sy, h), PCB_BLUE))
+        v.append(box((cx, cy, z0 + h + 0.0006), (0.004, 0.004, 0.0012), CHIP))
+    return v
+
+
+# ------------------------------------------------------------------- build
 def build():
     polys = chassis_polys()
     vis, dev, bnd = [], [], []
 
-    # 3 mm acrylic base plate (laser cut, black)
+    # decks: black acrylic base, clear acrylic mid + top
     for p in polys:
         vis.append(shape(ACRYLIC_BLACK, prism(p, BASE_Z0, BASE_Z1)))
-    # main PCB = top deck (green soldermask, gold edge ring)
-    vis.append(cyl((0, 0, (PCB_Z0 + PCB_Z1) / 2), R_BODY, PCB_Z1 - PCB_Z0, SOLDERMASK))
-    # crown: clear 3 mm acrylic disc carrying the 4 ultrasonics
-    vis.append(cyl((0, 0, (CROWN_Z0 + CROWN_Z1) / 2), CROWN_R, CROWN_Z1 - CROWN_Z0, ACRYLIC))
-
+    vis.append(cyl((0, 0, (MID_Z0 + MID_Z1) / 2), MID_R, MID_Z1 - MID_Z0, ACRYLIC))
+    vis.append(cyl((0, 0, (TOP_Z0 + TOP_Z1) / 2), TOP_R, TOP_Z1 - TOP_Z0, ACRYLIC))
     for x, y in BASE_STANDOFFS:
-        vis.append(cyl((x, y, (BASE_Z1 + PCB_Z0) / 2), 0.0025, PCB_Z0 - BASE_Z1, BRASS))
-    for x, y in CROWN_STANDOFFS:
-        vis.append(cyl((x, y, (PCB_Z1 + CROWN_Z0) / 2), 0.0025, CROWN_Z0 - PCB_Z1, BRASS))
-        vis.append(cyl((x, y, CROWN_Z1 + 0.0012), 0.0028, 0.0024, SILVER))
+        vis.append(cyl((x, y, (BASE_Z1 + MID_Z0) / 2), 0.0025, MID_Z0 - BASE_Z1, BRASS))
+    for x, y in TOP_STANDOFFS:
+        vis.append(cyl((x, y, (MID_Z1 + TOP_Z0) / 2), 0.0025, TOP_Z0 - MID_Z1, BRASS))
+        vis.append(cyl((x, y, TOP_Z1 + 0.0012), 0.0028, 0.0024, SILVER))
 
-    # rear pocket (PETG print: back wall + 2 side walls)
-    wz0, wz1 = 0.006, PCB_Z0
+    # rear pocket (printed)
+    wz0, wz1 = 0.006, MID_Z0
     wzc, wh = (wz0 + wz1) / 2, wz1 - wz0
     pocket_boxes = pocket_wall_boxes()
     for c, sz, rot in pocket_boxes:
         vis.append(box((c[0], c[1], wzc), (sz[0], sz[1], wh), accent(), rot))
-    # drivetrain
+
+    # drivetrain, caster, line array, battery
     for s in (1, -1):
-        vis += gearmotor(s)
-    vis.append(cyl((CASTER_X, 0, (0.0070 + BASE_Z0) / 2), 0.0075, BASE_Z0 - 0.0070, BLACK_PLASTIC))
-    # line array
-    vis.append(box((LINE_X, 0, BASE_Z0 - 0.0015), LINE_BOARD, PCB_BLACK))
-    # battery + strap
+        vis += n20(s)
+    vis.append(cyl((CASTER_X, 0, (2 * CASTER_BALL_R + BASE_Z0) / 2), 0.009, BASE_Z0 - 2 * CASTER_BALL_R + 0.002, accent()))
+    vis.append(box((LINE_X, 0, LINE_SENSOR_Z + 0.004), LINE_BOARD, PCB_BLUE))
+    for s in (1, -1):
+        vis.append(cyl((LINE_X, s * 0.026, (LINE_SENSOR_Z + 0.004 + BASE_Z0) / 2), 0.002,
+                       BASE_Z0 - LINE_SENSOR_Z - 0.004, BRASS))
     (bx, by), bs = BATTERY
     vis.append(box((bx, by, BASE_Z1 + bs[2] / 2), bs, LIPO))
     vis.append(box((bx, by, BASE_Z1 + bs[2] / 2), (0.010, bs[1] + 0.002, bs[2] + 0.001), pbr((0.1, 0.1, 0.1), 0.9)))
-    # anti-tip PTFE skid holders (the low-friction domes are modelled as free balls below)
-    for s in (1, -1):
-        vis.append(cyl((-0.040, s * 0.045, (0.0075 + BASE_Z0) / 2), 0.0040, BASE_Z0 - 0.0075, WHITE_PLASTIC))
+    vis.append(box((bx - 0.022, by + 0.020, BASE_Z1 + 0.006), (0.010, 0.016, 0.008), YELLOW))     # XT60
 
-    # ---- PCB population
-    tz = PCB_Z1
-    (dx, dy), (dsx, dsy) = DEVKIT
-    for s in (1, -1):                                   # female headers
-        vis.append(box((dx + s * 0.01143, dy, tz + 0.00425), (0.0026, 0.0559, 0.0085), BLACK_PLASTIC))
-    vis.append(box((dx, dy, tz + 0.0093), (dsx, dsy, 0.0016), PCB_BLACK))
-    vis.append(box((dx, dy + 0.018, tz + 0.0118), (0.018, 0.0255, 0.0032), SILVER))
+    # Sharp brackets (printed), visual only
+    for n, (x, y, z, a) in SHARP.items():
+        d = SHARP_BODY[0]
+        cx, cy = x - (d + 0.003) * math.cos(a), y - (d + 0.003) * math.sin(a)
+        vis.append(box((cx, cy, (BASE_Z1 + z) / 2), (0.006, 0.020, z - BASE_Z1), accent(), "0 0 1 %.4f" % a))
+
+    # modules on the decks
+    # Mega shield PCB (green) above the Mega
+    shz = TOP_Z1 + SHIELD["z"]
+    vis.append(box(((SHIELD["x0"] + SHIELD["x1"]) / 2, (SHIELD["y0"] + SHIELD["y1"]) / 2, shz + SHIELD["t"] / 2),
+                   (SHIELD["x1"] - SHIELD["x0"], SHIELD["y1"] - SHIELD["y0"], SHIELD["t"]), PCB_GREEN))
+    for k in range(9):                                           # rear rows of white JST-XH connectors
+        for row, xr in ((0, SHIELD["x0"] + 0.005), (1, SHIELD["x0"] + 0.016)):
+            vis.append(box((xr, SHIELD["y1"] - 0.008 - k * 0.0108, shz + SHIELD["t"] + 0.003), (0.0058, 0.0085, 0.006), WHITE_PLASTIC))
+    for k in range(6):                                           # front row
+        vis.append(box((SHIELD["x1"] - 0.012, SHIELD["y1"] - 0.010 - k * 0.0165, shz + SHIELD["t"] + 0.003), (0.0058, 0.013, 0.006), WHITE_PLASTIC))
+    for name, ((cx, cy), (sx, sy, h), deck) in MODULES.items():
+        z0 = MID_Z1 if deck == "mid" else (shz + SHIELD["t"]) if deck == "shield" else TOP_Z1
+        vis += module_visual(name, cx, cy, sx, sy, h, z0)
+
+    # gripper servos on the mid deck (shaft down through the deck to the arm hubs)
+    L, W, H = SERVO_BODY
     for s in (1, -1):
-        vis.append(box((dx + s * 0.0065, dy - 0.031, tz + 0.0115), (0.009, 0.0075, 0.0032), SILVER))  # 2 x USB-C
-    # every part of the real main board, at its real position (from hardware/cad/pcb_design.py)
-    vis += pcb_parts(tz)
-    # BNO085 IMU breakout on top of the crown (Qwiic cable to J16)
-    (ix, iy), (isx, isy) = BNO085
-    vis.append(box((ix, iy, CROWN_Z1 + 0.0010), (isx, isy, 0.0016), PCB_BLUE))
-    vis.append(box((ix, iy, CROWN_Z1 + 0.0024), (0.0052, 0.0038, 0.0011), CHIP))
-    # gripper servo (MG90S) + push-rods + hinge collars
-    sx, sy = SERVO_XY
-    vis.append(box((sx, sy, tz + 0.0115), (0.0225, 0.0122, 0.0225), SERVO_BLUE))
-    vis.append(box((sx, sy, tz + 0.0170), (0.032, 0.0122, 0.0025), SERVO_BLUE))
-    hx, hy = SERVO_HORN
-    vis.append(cyl((hx, hy, tz + 0.0245), 0.0025, 0.004, WHITE_PLASTIC))
-    for s in (1, -1):
-        ddx, ddy = HINGE_X - hx, s * HINGE_Y - hy
-        L = math.hypot(ddx, ddy)
-        vis.append(box(((hx + HINGE_X) / 2, s * HINGE_Y / 2, tz + 0.0030), (L, 0.0012, 0.0012), STEEL,
-                       "0 0 1 %.4f" % math.atan2(ddy, ddx)))
-        vis.append(cyl((HINGE_X, s * HINGE_Y, tz + 0.0025), 0.0045, 0.0030, accent()))
-    # camera mast on the crown front edge
-    vis.append(box((CAM_X - 0.006, 0, (CROWN_Z1 + CAM_Z) / 2 - 0.004), (0.004, 0.018, CAM_Z - CROWN_Z1 - 0.004), accent()))
+        cx = HINGE_X + L / 2 - 0.007
+        vis.append(box((cx, s * HINGE_Y, MID_Z1 + H / 2), (L, W, H), SERVO_BLACK))
+        vis.append(box((cx, s * HINGE_Y, MID_Z1 + 0.019), (0.038, W, 0.0025), SERVO_BLACK))
+        vis.append(cyl((HINGE_X, s * HINGE_Y, MID_Z0 - 0.002), 0.003, 0.004, WHITE_PLASTIC))
+
+    # buttons and clan LEDs on the top deck
+    for k, (x, y) in TOP_BUTTONS.items():
+        vis.append(box((x, y, TOP_Z1 + 0.002), (0.012, 0.012, 0.004), BLACK_PLASTIC))
+        vis.append(cyl((x, y, TOP_Z1 + 0.0048), 0.0035, 0.0015,
+                       pbr((0.85, 0.1, 0.1) if k == "start" else (0.95, 0.85, 0.1), 0.4)))
 
     # ---- sensors
     for n, (x, y, z, a) in SHARP.items():
-        dev.append(sharp(n, x, y, z, a))
+        dev.append(sharp21(n, x, y, z, a))
     for n, (x, y, z, a) in US.items():
         dev.append(hcsr04(n, x, y, z, a))
-    for i in range(8):
+    for i in range(LINE_N):
         dev.append(ground_sensor(i))
+    dev.append(tcs3200("tcs_floor", TCS_FLOOR, "0 1 0 1.5708",
+                       "TCS3200 #1 facing the floor: maze tiles, red zones, collection pads"))
+    dev.append(tcs3200("tcs_front", TCS_FRONT, "0 0 1 0",
+                       "TCS3200 #2 facing forward at piece height: piece colour"))
+    # ESP32-CAM on its mast (front of the top deck), lens pitched down
+    bw, bh, bt = ESP32CAM_BOARD
+    vis.append(box((CAM_X - 0.010, 0, TOP_Z1 + 0.0015), (0.022, 0.034, 0.003), accent()))            # mast foot
+    vis.append(box((CAM_X - 0.012, 0, (TOP_Z1 + CAM_Z) / 2 + 0.004), (0.004, 0.030, CAM_Z - TOP_Z1 + 0.012), accent()))
+    vis.append(box((CAM_X - 0.008, 0, CAM_Z - 0.008), (bt, bw, bh), PCB_BLACK, "0 1 0 %.4f" % CAM_PITCH))
     dev.append("""Camera {
       translation %s
       rotation 0 1 0 %.4f
       name "cam"
-      # XIAO ESP32S3 Sense (OV2640/OV3660) down-sampled to 48x32 for tile colour
-      fieldOfView 0.8
-      width 48
-      height 32
+      # ESP32-CAM OV2640, cropped and averaged to a %dx%d grid by firmware/esp32cam_vision
+      fieldOfView %.3f
+      width %d
+      height %d
       near 0.01
-      children [ %s %s %s %s ]
-    }""" % (v3((CAM_X, 0, CAM_Z)), CAM_PITCH,
-            box((-0.004, 0, 0), (0.0035, 0.0175, 0.021), PCB_BLACK),
-            box((-0.0015, 0, 0), (0.0012, 0.008, 0.008), CHIP),
-            cyl((0.0008, 0, 0), 0.0030, 0.0035, BLACK_PLASTIC, ROT_X_AXIS),
-            cyl((0.0027, 0, 0), 0.0020, 0.0004, GLASS, ROT_X_AXIS)))
-    dev.append("""Camera {
-      translation %s
-      rotation 0 0 1 3.14159
-      name "piece_cam"
-      # TCS34725 colour sensor (with white LED) on the pocket back wall
-      fieldOfView 1.0
-      width 4
-      height 4
-      near 0.0005
       children [ %s %s ]
-    }""" % (v3((POCKET_X - 0.0005, 0, 0.020)),
-            box((-0.0009, 0, 0), (0.0016, 0.020, 0.020), PCB_BLUE),
-            sph((0.0002, 0, 0.004), 0.0012, pbr((1, 1, 0.95), 0.3, 0, (0.6, 0.6, 0.5)))))
-    (ix, iy), _ = BNO085
-    dev.append('InertialUnit { translation %s name "imu" noise 0.0005 }' % v3((ix, iy, CROWN_Z1 + 0.003)))
-    dev.append('Gyro { translation %s name "gyro" }' % v3((ix, iy, CROWN_Z1 + 0.003)))
-    dev.append('Accelerometer { translation %s name "accel" }' % v3((ix, iy, CROWN_Z1 + 0.003)))
-    for n, y, col in (("led_blue", 0.012, (0, 0.2, 1)), ("led_green", -0.012, (0, 1, 0.2))):
+    }""" % (v3((CAM_X, 0, CAM_Z)), CAM_PITCH, CAM_W, CAM_H, CAM_FOV, CAM_W, CAM_H,
+            cyl((-0.002, 0, 0), 0.0042, 0.005, BLACK_PLASTIC, ROT_X_AXIS),
+            cyl((0.0006, 0, 0), 0.0025, 0.0005, GLASS, ROT_X_AXIS)))
+    (ix, iy), _, _ = MODULES["mpu6050"]
+    imu_xyz = v3((ix, iy, MID_Z1 + 0.003))
+    dev.append('InertialUnit { translation %s name "imu" noise 0.001 }' % imu_xyz)
+    dev.append('Gyro { translation %s name "gyro" }' % imu_xyz)
+    dev.append('Accelerometer { translation %s name "accel" }' % imu_xyz)
+    for n, (x, y) in TOP_LEDS.items():
+        col = (0, 0.2, 1) if n == "led_blue" else (0, 1, 0.2)
         dev.append("""LED {
       translation %s
       name "%s"
       color [ %.1f %.1f %.1f ]
-      children [ Shape { appearance PBRAppearance { baseColor 0.9 0.9 0.9 roughness 0.2 metalness 0 emissiveColor 0 0 0 } geometry Box { size 0.005 0.005 0.0016 } } ]
-    }""" % (v3((0.057, 0.020 if n == "led_blue" else -0.020, PCB_Z1 + 0.0012)), n, *col))
+      children [ Shape { appearance PBRAppearance { baseColor 0.9 0.9 0.9 roughness 0.2 metalness 0 emissiveColor 0 0 0 } geometry Sphere { radius 0.0028 subdivision 2 } } ]
+    }""" % (v3((x, y, TOP_Z1 + 0.0025)), n, *col))
     dev.append(wheel("left"))
     dev.append(wheel("right"))
     dev.append(gripper_arm("left"))
@@ -453,11 +451,10 @@ def build():
         name "caster_ball"
         contactMaterial "caster"
         boundingObject Sphere { radius %.5f }
-        physics Physics { density -1 mass 0.0035 }
+        physics Physics { density -1 mass 0.008 }
       }
     }""" % (v3((CASTER_X, 0, CASTER_BALL_R)), v3((CASTER_X, 0, CASTER_BALL_R)), STEEL, CASTER_BALL_R, CASTER_BALL_R))
-
-    for s in (1, -1):        # PTFE anti-tip skids: 1.5 mm above the floor, slide with ~no friction
+    for s in (1, -1):
         dev.append("""BallJoint {
       jointParameters BallJointParameters { anchor %s }
       endPoint Solid {
@@ -468,36 +465,34 @@ def build():
         boundingObject Sphere { radius 0.0035 }
         physics Physics { density -1 mass 0.001 }
       }
-    }""" % (v3((-0.040, s * 0.045, 0.0050)), v3((-0.040, s * 0.045, 0.0050)), WHITE_PLASTIC, "left" if s > 0 else "right"))
+    }""" % (v3((-0.050, s * 0.050, 0.0050)), v3((-0.050, s * 0.050, 0.0050)), WHITE_PLASTIC, "left" if s > 0 else "right"))
 
     # ---- collision envelope
     for p in polys:
-        bnd.append(prism(p, BASE_Z0, PCB_Z1))
+        bnd.append(prism(p, BASE_Z0, BASE_Z1))
     for c, sz, rot in pocket_boxes:
         bnd.append("Pose { translation %s %s children [ Box { size %s } ] }" % (
-            v3((c[0], c[1], 0.034)), ("rotation " + rot) if rot else "", v3((sz[0], sz[1], 0.056))))
+            v3((c[0], c[1], 0.038)), ("rotation " + rot) if rot else "", v3((sz[0], sz[1], 0.064))))
     bnd.append("Pose { translation %s children [ Cylinder { radius %.4f height %.4f } ] }" % (
-        v3((0, 0, (PCB_Z0 + PCB_Z1) / 2)), R_BODY, PCB_Z1 - PCB_Z0))
-    bnd.append("Pose { translation %s children [ Cylinder { radius %.4f height %.4f } ] }" % (
-        v3((0, 0, 0.0835)), 0.0675, 0.034))          # ultrasonic ring + crown
-    bnd.append("Pose { translation %s children [ Box { size 0.012 0.020 0.020 } ] }" % v3((CAM_X - 0.004, 0, CAM_Z - 0.002)))
-
+        v3((0, 0, (MID_Z0 + TOP_Z1) / 2)), TOP_R, TOP_Z1 - MID_Z0))
+    bnd.append("Pose { translation %s children [ Box { size 0.035 0.074 0.026 } ] }" % v3((BATTERY[0][0], 0, BASE_Z1 + 0.013)))
+    bnd.append("Pose { translation %s children [ Box { size 0.060 0.040 0.030 } ] }" % v3((0.010, 0, 0.050)))
 
     proto = """#VRML_SIM R2025a utf8
 # license: Apache License 2.0
-# GuardianBot v2 - PeraBots 2026 "Nine Seals of Pera" competition robot.
-# 130 mm round differential drive, rear capture pocket + servo gripper.
-# Sensors: 4 x HC-SR04 ultrasonic (crown), 4 x Sharp GP2Y0A41SK0F IR, QTRX-MD-08A line array,
-#          XIAO ESP32S3 Sense camera, TCS34725 piece colour, BNO085 IMU, 617 cpr wheel encoders.
-# Generated by make_guardianbot.py - edit the generator / hardware/cad/guardianbot_geometry.py, not this file.
+# GuardianBot v3 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
+# 150 mm round, 3 acrylic decks, rear capture pocket with 2 servo arms.
+# Controllers: Arduino Mega 2560 (real-time I/O) + ESP32-S3 (mission brain); L298N; 3S LiPo.
+# Sensors: 4 x HC-SR04, 5 x Sharp GP2Y0A21YK0F, 5-ch TCRT5000 line array,
+#          2 x TCS3200 (floor + front), ESP32-CAM (cam), MPU6050, N20 hall encoders.
+# Generated by simulation/make_guardianbot.py from hardware/cad/guardianbot_geometry.py.
 #
 # Devices
 #   left_wheel_motor right_wheel_motor  left_wheel_sensor right_wheel_sensor
-#   us_front us_left us_right us_back        (mm, 20..2500)
-#   ir_fl ir_fr ir_left ir_right             (mm, 40..300)
-#   gs0..gs7  line array (gs0 = right-most)  cam  piece_cam
-#   gripper::left (+ coupled gripper::right)  0 = open, 1.05 = closed
-#   imu gyro accel   led_blue led_green
+#   us_front us_left us_right us_back            (mm, 20..2500)
+#   ir_front ir_fl ir_fr ir_left ir_right         (mm, 100..800)
+#   gs0..gs4 line array (gs0 = right-most)        tcs_floor tcs_front (4x4 colour)
+#   grip_left grip_right  (0 = open, +-1.05 = closed)   imu gyro accel   led_blue led_green
 
 PROTO GuardianBot [
   field SFVec3f    translation    0 0 0
@@ -530,8 +525,8 @@ PROTO GuardianBot [
     boundingObject Group { children [ %s ] }
     physics Physics {
       density -1
-      mass 0.255
-      centerOfMass [ 0.008 0 0.040 ]
+      mass 0.58
+      centerOfMass [ 0.012 0 0.048 ]
     }
   }
 }

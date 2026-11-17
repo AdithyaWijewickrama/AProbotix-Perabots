@@ -1,5 +1,6 @@
 """
-autoroute.py - a small 2-layer grid autorouter for the GuardianBot main board (no external tools needed).
+autoroute.py - a small 2-layer grid autorouter (no external tools needed). Used by shield_v3/make_shield.py;
+running it directly routes the old v2 main board.
 
 Approach: 0.2 mm routing grid on F.Cu and B.Cu, A* search with 45-degree moves and vias,
 net by net with rip-up-and-retry ordering.  Before each net, the foreign copper is dilated by
@@ -21,7 +22,6 @@ import pcbnew
 from scipy import ndimage
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from make_pcb import PCB, pour  # noqa: E402
 
 G = 0.15                       # grid pitch, mm
 CLR = 0.15
@@ -399,6 +399,7 @@ def gnd_stitch(board, grid, pads, net_id):
 
 
 if __name__ == "__main__":
+    from make_pcb import PCB, pour  # noqa: E402  (v2 board; the v3 shield uses shield_v3/make_shield.py)
     t0 = time.time()
     board = pcbnew.LoadBoard(PCB)
     for t in list(board.GetTracks()):

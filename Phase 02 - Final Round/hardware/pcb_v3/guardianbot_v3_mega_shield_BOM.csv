@@ -1,0 +1,40 @@
+Qty,Value,Footprint,References,Note
+2,1x22 female header 2.54 mm,PinSocket_1x22,U1 U2,ESP32-S3-DevKitC-1 sockets
+1,"Arduino stacking/long male headers: 8,8,8,8,10,8,8 pin + 2x18",-,MEGA1,"solder under the shield, plug into the Mega"
+5,10uF,CP_Radial_D5.0mm_P2.00mm,C1 C2 C3 C4 C5,Sharp supply decoupling
+1,100uF 10V,CP_Radial_D5.0mm_P2.00mm,C10,ESP32-CAM supply bursts
+2,470uF 16V,CP_Radial_D10.0mm_P5.00mm,C6 C7,5 V bulk
+2,100nF,C_Disc_D3.0mm_W1.6mm_P2.50mm,C8 C9,ADC filter
+1,US_FRONT,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J1,HC-SR04 front
+1,TCS_FLOOR,JST_XH_B8B-XH-A_1x08_P2.50mm_Vertical,J10,TCS3200 floor: VCC GND S0 S1 S2 S3 OUT LED
+1,TCS_FRONT,JST_XH_B8B-XH-A_1x08_P2.50mm_Vertical,J11,TCS3200 front: VCC GND S0 S1 S2 S3 OUT LED
+1,LINE,JST_XH_B7B-XH-A_1x07_P2.50mm_Vertical,J12,5-ch TCRT5000: VCC GND OUT1(right-most)..OUT5
+1,L298N,JST_XH_B8B-XH-A_1x08_P2.50mm_Vertical,J13,L298N logic: ENA IN1 IN2 IN3 IN4 ENB +5V GND (remove its 5 V jumper)
+1,MPU6050,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J14,MPU6050: VCC GND SCL SDA
+1,ENC_L,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J15,left N20 encoder: VCC GND A B
+1,ENC_R,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J16,right N20 encoder
+1,ESP32CAM,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J17,ESP32-CAM: 5V GND U0TXD U0RXD
+1,BUTTONS,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,J18,"START, CAL (to GND)"
+1,LEDS,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,J19,"clan LEDs: blue, green anodes"
+1,US_LEFT,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J2,HC-SR04 left
+1,5V_IN,"TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",J20,from LM2596 #1 (5.1 V)
+1,6V_IN,"TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",J21,"from LM2596 #2 (6.0 V, servos)"
+1,VBAT,"TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",J22,switched battery + (sense only)
+1,SERVO_L,PinHeader_1x03_P2.54mm_Vertical,J23,left gripper servo: S + -
+1,SERVO_R,PinHeader_1x03_P2.54mm_Vertical,J24,right gripper servo: S + -
+1,BUZZER,JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,J25,5 V active buzzer: + -
+1,US_RIGHT,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J3,HC-SR04 right
+1,US_BACK,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,J4,HC-SR04 back
+1,IR_FRONT,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,J5,Sharp GP2Y0A21 front: Vo GND VCC
+1,IR_FL,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,J6,Sharp front-left
+1,IR_FR,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,J7,Sharp front-right
+1,IR_LEFT,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,J8,Sharp left
+1,IR_RIGHT,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,J9,Sharp right
+1,2N7000,TO-92_Inline_Wide,Q1,ESP TX -> Mega RX2 level shifter (S G D)
+1,BC547,TO-92_Inline_Wide,Q2,buzzer driver (C B E)
+1,1k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,R1,buzzer base
+1,20k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,R2,battery divider top
+3,10k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,R3 R6 R7,battery divider bottom
+1,1.8k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,R4,Mega TX2 -> ESP RX divider (top)
+1,3.3k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,R5,divider (bottom): 5 V -> 3.2 V
+2,330,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,R8 R9,blue LED

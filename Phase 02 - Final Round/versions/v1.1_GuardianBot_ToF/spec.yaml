@@ -1,0 +1,40 @@
+id: v1.1
+name: GuardianBot ToF
+tag: v1.1-tof
+date: 2026-11-15
+status: simulation only
+summary: First round GuardianBot. 130 mm round body, rear capture pocket, ring of 10 ToF sensors, XIAO camera.
+body:
+  shape: round, 130 mm, rear capture pocket
+  size_mm: [130, 130, 105]
+  height_mm: 105
+  decks: 2 (custom PCB bottom deck + carbon top plate)
+  gripper: rear pocket + 2 servo arms (1 x MG90S)
+weight_g: 225
+weight_note: estimate from the BOM
+controllers: [ESP32-S3, XIAO ESP32S3 Sense (vision)]
+drive: 2 x Pololu HPCB 50:1 + magnetic encoders, 40 mm wheels
+battery: 2S LiPo 450-550 mAh
+sensors:
+  - 10 x VL53L1X ToF on a ring
+  - 8-ch IR line array
+  - XIAO ESP32S3 Sense camera
+  - TCS34725 colour (held piece)
+  - BNO085 IMU
+pcb:
+  type: custom round 130 mm bottom-deck PCB (planned, not designed)
+budget:
+  currency: USD
+  total: 330
+  total_lkr_approx: 99000
+  note: imported Pololu/Adafruit parts, about USD 270 without the parts the team already had
+simulation:
+  judge: neutral judge supervisor, same arena
+  section1_s: 25.1
+  maze_s: 76.6
+  end_s: null
+  collisions: 0
+  result: cleared Sections 1 and 2, then stopped on the Nine-Point Board at (1.21, 3.54)
+files:
+  - simulation/
+  - GuardianBot_BOM_v1_ToF.md

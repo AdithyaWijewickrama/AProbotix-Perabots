@@ -1,0 +1,41 @@
+id: v3.2
+name: GuardianBot v3 + ESP32-CAM
+tag: v3.2-camera
+date: 2026-11-17
+status: simulation + real firmware (software-in-the-loop) + CAD
+summary: Adds an ESP32-CAM on a front mast. The robot reads dead ends 1-2 cells ahead instead of driving into them.
+body:
+  shape: round 150 mm, 3 acrylic decks, rear pocket, camera mast
+  size_mm: [150, 150, 152]
+  height_mm: 152
+  decks: 3 (3 mm acrylic)
+  gripper: rear pocket + 2 arms, one Kpower M0170 servo each
+weight_g: 595
+weight_note: model mass + ESP32-CAM and mast
+controllers: [Arduino Mega 2560 (body), ESP32-S3 DevKitC-1 (brain), ESP32-CAM (eye)]
+drive: 2 x N20 12 V encoder motors, 43 mm wheels, L298N
+battery: 3S LiPo 1000-1500 mAh
+sensors:
+  - ESP32-CAM OV2640 (48 x 32 grid, ~15 fps)
+  - 4 x HC-SR04
+  - 5 x Sharp GP2Y0A21
+  - 2 x TCS3200
+  - 5-ch TCRT5000 line array
+  - MPU6050
+pcb:
+  type: vero board + Dupont jumpers
+budget:
+  currency: LKR
+  total: 10050
+  total_with_spare_lipo: 14480
+  note: essentials incl. ESP32-CAM + adapter (Rs 4,380)
+simulation:
+  judge: neutral judge supervisor, same arena
+  section1_s: 19.5
+  maze_s: 60.4
+  end_s: 152.1
+  collisions: 0
+  firmware_sil_end_s: 187.8
+  result: full mission, piece placed
+files:
+  - git tag v3.2-camera (commit fa9ce86)

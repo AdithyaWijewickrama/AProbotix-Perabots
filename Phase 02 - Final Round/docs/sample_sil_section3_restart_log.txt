@@ -1,0 +1,22 @@
+[   0.00] GuardianBot brain ready - press START (hold CAL + START for a Section 3 restart)
+[   0.16] camera frames so far: 1
+[   0.02] ========== SECTION 3: BATTLE OF THE TWO GUARDIANS ==========
+[   0.02] [S3] restart - clues from flash: blue=0 green=0 right=0 left=0
+[   0.02] [S3] robot plays for the Blue Sentinels (cylinder)
+[   0.02] [S3] clue 1 value 0 unusable
+[   0.02] [S3] clue 2 value 0 unusable
+[   0.02] [S3] clue 3 value 0 unusable
+[   0.02] [S3] clue 4 value 0 unusable
+[   3.30] [S3] line sensors calibrated: white=444 black=0
+[  16.37] [S3] picked BLUE piece
+[  55.42] [S3] inspection: 4 occupied positions
+[  67.45] [S3] front colour sensor at position 2 reads GREEN (0/15)
+[  83.92] [S3] front colour sensor at position 3 reads BLUE (15/0)
+[  96.89] [S3] front colour sensor at position 4 reads GREEN (0/15)
+[  98.41]         G . G 
+[  98.41]         . B B 
+[  98.41]         . . . 
+[  98.41] [S3] winning move: position 7 completes 7-5-3
+[ 113.40] [S3] piece released in position 7 at (1.10, 2.75)
+[ 129.31] [S3] reached the END zone  t=129.3s
+[ 129.31] ==================== MISSION COMPLETE ====================

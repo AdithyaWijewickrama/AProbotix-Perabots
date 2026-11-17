@@ -2,7 +2,7 @@
 guardian_hw_test.py - GuardianBot hardware self-test (Webots controller).
 
 Use it to check the robot on its own before running main_controller:
-  1. prints every distance sensor, the 8 line sensors and the piece colour sensor
+  1. prints every distance sensor, the 5 line sensors and both TCS3200 colour sensors
   2. backs the rear pocket over the blue collection piece (10 cm behind the robot)
   3. closes the gripper, spins 180 deg and drives 20 cm carrying the piece
   4. opens the gripper and drives away, leaving the piece behind
@@ -14,7 +14,7 @@ import math
 from controller import Robot
 
 TS = 16
-R_WHEEL, HALF_TRACK = 0.020, 0.0555
+R_WHEEL, HALF_TRACK = 0.0215, 0.062
 
 robot = Robot()
 lm, rm = robot.getDevice("left_wheel_motor"), robot.getDevice("right_wheel_motor")
@@ -26,18 +26,19 @@ le.enable(TS)
 re_.enable(TS)
 imu = robot.getDevice("imu")
 imu.enable(TS)
-grip = robot.getDevice("gripper::left")          # coupled: also moves gripper::right
-grip_pos = robot.getDevice("gripper_sensor_left")
+grip_l, grip_r = robot.getDevice("grip_left"), robot.getDevice("grip_right")   # one servo per arm
+grip_pos = robot.getDevice("grip_left_sensor")
 grip_pos.enable(TS)
-TOF = ["us_front", "us_left", "us_right", "us_back", "ir_fl", "ir_fr", "ir_left", "ir_right"]
+TOF = ["us_front", "us_left", "us_right", "us_back", "ir_front", "ir_fl", "ir_fr", "ir_left", "ir_right"]
 tof = {n: robot.getDevice(n) for n in TOF}
 for d in tof.values():
     d.enable(TS)
-gs = [robot.getDevice("gs%d" % i) for i in range(8)]
+gs = [robot.getDevice("gs%d" % i) for i in range(5)]
 for d in gs:
     d.enable(TS)
-pcam = robot.getDevice("piece_cam")
-pcam.enable(TS)
+tcs_floor, tcs_front = robot.getDevice("tcs_floor"), robot.getDevice("tcs_front")
+tcs_floor.enable(TS)
+tcs_front.enable(TS)
 
 GRIP_OPEN, GRIP_CLOSED = 0.0, 1.05
 
@@ -80,7 +81,12 @@ def turn(angle):
     step(10)
 
 
-def piece_colour():
+def grip(pos):
+    grip_l.setPosition(pos)
+    grip_r.setPosition(-pos)
+
+
+def colour(pcam):
     img = pcam.getImage()
     r = g = b = 0
     for y in range(pcam.getHeight()):
@@ -98,21 +104,21 @@ def piece_colour():
 step(20)
 print("distance sensors (mm):", {n: int(d.getValue()) for n, d in tof.items()})
 print("line sensors:", [int(d.getValue()) for d in gs])
+print("floor colour: %s   front colour: %s" % (colour(tcs_floor), colour(tcs_front)))
 
-grip.setPosition(GRIP_OPEN)
+grip(GRIP_OPEN)
 print("backing into the piece ...")
 drive(-0.10, 0.06)
-print("colour sensor sees %s" % piece_colour())
-grip.setPosition(GRIP_CLOSED)
+grip(GRIP_CLOSED)
 step(40)
 print("gripper closed at %.2f rad" % grip_pos.getValue())
 turn(math.pi)
 drive(0.20, 0.15)
-print("after 180 deg turn + 20 cm: colour sensor sees %s" % piece_colour())
-grip.setPosition(GRIP_OPEN)
+print("after 180 deg turn + 20 cm, gripper at %.2f rad" % grip_pos.getValue())
+grip(GRIP_OPEN)
 step(40)
 drive(0.10, 0.10)
-print("released, colour sensor sees %s" % piece_colour())
+print("released")
 print("HW TEST DONE")
 while robot.step(TS) != -1:
     pass

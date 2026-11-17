@@ -1,7 +1,9 @@
 # PeraBots 2026 - University Category Final Round
 # The Nine Seals of Pera - Autonomous Controller for GuardianBot v2
-#   sensors: 4 x HC-SR04 (us_*), 4 x Sharp GP2Y0A41 (ir_*), 8-ch line array (gs*),
-#            camera, piece colour sensor, IMU, wheel encoders; servo gripper.
+#   v3 (final build): 4 x HC-SR04 (us_*), 5 x Sharp GP2Y0A21 (ir_*, 10-80 cm),
+#            5-ch TCRT5000 line array (gs*), 2 x TCS3200 (tcs_floor, tcs_front),
+#            ESP32-CAM (cam, 48x32), MPU6050, N20 hall encoders, two servo gripper arms.
+#   The real robot runs the same strategy in firmware/esp32s3_brain (C++).
 #
 # Section 1 & 2: User's optimized A* path planner, sensor ray-casting,
 #                occupancy grid mapping, camera-based dead-end tile detection.
@@ -18,12 +20,12 @@ import heapq
 from controller import Robot
 
 TS = 16
-R_WHEEL = 0.02
-HALF_TRACK = 0.0555   # 111 mm track
+R_WHEEL = 0.0215
+HALF_TRACK = 0.062    # 124 mm track
 PIV_X = 0.0           # origin = axle centre
 
 MAX_DV = 4.0
-V_MAX = 0.2
+V_MAX = 0.30
 ACC = 3.8
 W_RUN = 0.15
 
@@ -44,7 +46,7 @@ rm = robot.getDevice('right_wheel_motor')
 for m in (lm, rm):
     m.setPosition(float('inf'))
     m.setVelocity(0.0)
-W_MAX = min(lm.getMaxVelocity(), 10.0)
+W_MAX = min(lm.getMaxVelocity(), 15.0)
 
 le = robot.getDevice('left_wheel_sensor')
 re_ = robot.getDevice('right_wheel_sensor')
@@ -58,15 +60,18 @@ led_g.set(0)
 
 # name: (x, y, heading, max range)  - origins are the sensor faces (robot frame)
 SENS = {
-    'us_front': (0.067, 0.0, 0.0, 2.50),
-    'us_left': (0.0, 0.067, HP, 2.50),
-    'us_right': (0.0, -0.067, -HP, 2.50),
-    'us_back': (-0.067, 0.0, PI, 2.50),
-    'ir_fl': (0.0424, 0.0424, PI / 4, 0.30),
-    'ir_fr': (0.0424, -0.0424, -PI / 4, 0.30),
-    'ir_left': (-0.030, 0.053, HP, 0.30),
-    'ir_right': (-0.030, -0.053, -HP, 0.30),
+    'us_front': (0.075, 0.0, 0.0, 2.50),
+    'us_left': (0.0, 0.075, HP, 2.50),
+    'us_right': (0.0, -0.075, -HP, 2.50),
+    'us_back': (-0.075, 0.0, PI, 2.50),
+    'ir_front': (0.040, 0.0, 0.0, 0.80),
+    'ir_fl': (0.0389, 0.0389, PI / 4, 0.80),
+    'ir_fr': (0.0389, -0.0389, -PI / 4, 0.80),
+    'ir_left': (-0.004, 0.0165, HP, 0.80),
+    'ir_right': (-0.004, -0.0165, -HP, 0.80),
 }
+IR_MAP_MAX = 0.50
+IR_MIN = 0.101          # GP2Y0A21 is blind below 10 cm (reads 100 mm)
 DS_MAX = 2.49
 US_MAP_MAX = 0.40
 ds = {}
@@ -75,22 +80,28 @@ for n in SENS:
     ds[n].enable(TS)
 D = {n: 9.0 for n in SENS}
 AXIS_SENS = ('us_front', 'ir_left', 'ir_right', 'us_back')
-GS = [robot.getDevice('gs%d' % i) for i in range(8)]
+N_GS = 5
+GS = [robot.getDevice('gs%d' % i) for i in range(N_GS)]
 for g_ in GS:
     g_.enable(TS)
-GSV = [0.0] * 8
-grip = robot.getDevice('gripper::left')          # coupled with gripper::right
-grip.setPosition(1.05)
-pcam = robot.getDevice('piece_cam')
-pcam.enable(TS)
+GSV = [0.0] * N_GS
+grip_l = robot.getDevice('grip_left')
+grip_r = robot.getDevice('grip_right')
+grip_l.setPosition(1.05)
+grip_r.setPosition(-1.05)
+tcs_floor = robot.getDevice('tcs_floor')
+tcs_floor.enable(TS)
+tcs_front = robot.getDevice('tcs_front')
+tcs_front.enable(TS)
+TCS_FLOOR_XY = (0.012, 0.030)          # floor colour sensor position (robot frame)
+cam = robot.getDevice('cam')            # ESP32-CAM: the real robot receives the same 48x32 grid over UART
+cam.enable(TS)
+CW, CH = cam.getWidth(), cam.getHeight()
 
 
 def rng_max(n):
     return SENS[n][3] - 0.005
 
-cam = robot.getDevice('cam')
-cam.enable(TS)
-CW, CH = cam.getWidth(), cam.getHeight()
 
 imu = robot.getDevice('imu')
 imu.enable(TS)
@@ -124,7 +135,7 @@ def step():
     _pl, _pr, yaw = l, r, y2
     for n in SENS:
         D[n] = ds[n].getValue() / 1000.0
-    for i in range(8):
+    for i in range(N_GS):
         GSV[i] = GS[i].getValue()
     if LOG:
         log_tick()
@@ -195,9 +206,9 @@ def stop_now(n=4):
         step()
 
 
-CAM_X, CAM_Z, CAM_P = 0.062 - PIV_X, 0.112, 0.4
-_f = (CW / 2) / math.tan(0.8 / 2)
-PIX = []
+CAM_X, CAM_Z, CAM_P, CAM_FOV = 0.062 - PIV_X, 0.140, 0.50, 0.90
+_f = (CW / 2) / math.tan(CAM_FOV / 2)
+PIX = []                                # (byte index, ground x, ground y) for every 2nd pixel that sees the floor
 for v in range(1, CH, 2):
     for u in range(1, CW, 2):
         x, y, z = _f, -(u + 0.5 - CW / 2), -(v + 0.5 - CH / 2)
@@ -207,10 +218,26 @@ for v in range(1, CH, 2):
             continue
         t = -CAM_Z / z2
         gx, gy = CAM_X + t * x2, t * y
-        if gx < 0.7:
+        if gx < 0.75:
             PIX.append((4 * (v * CW + u), gx, gy))
 
 BLUE, GREEN, FLOOR, JUNK = 1, 2, 0, -1
+
+
+def tcs_rgb(dev):
+    """Average colour seen by a TCS3200 (4x4 camera in the simulation)."""
+    img = dev.getImage()
+    if not img:
+        return 0, 0, 0
+    w, h = dev.getWidth(), dev.getHeight()
+    r = g = b = 0
+    for yy in range(h):
+        for xx in range(w):
+            r += dev.imageGetRed(img, w, xx, yy)
+            g += dev.imageGetGreen(img, w, xx, yy)
+            b += dev.imageGetBlue(img, w, xx, yy)
+    n = w * h
+    return r / n, g / n, b / n
 
 
 def classify(r, g, b):
@@ -287,6 +314,8 @@ def maze_ray(n, fix):
     hit = d < mx
     if n.startswith('us_') and (not hit or not near_cardinal(0.12)):
         return                          # lost sonar echo != free space; oblique pings are unreliable
+    if n.startswith('ir_') and d <= IR_MIN:
+        fix = False                     # Sharp reads 10 cm for anything closer: still a wall, no position fix
     L = d if hit else mx
     ux, uy = math.cos(a), math.sin(a)
     if abs(ux) > 1e-3:
@@ -365,30 +394,37 @@ def can_see(cx, cy, key):
 
 
 def look():
+    """Tile colours: camera votes for every cell it can see (through open walls), floor TCS3200 for the cell below."""
     global map_dirty
     if abs(gyro.getValues()[2]) > 1.0:
         return
-    img = cam.getImage()
-    if not img:
-        return
     c_, s_ = math.cos(yaw), math.sin(yaw)
-    camx, camy = px + c_ * CAM_X, py + s_ * CAM_X
-    ok = {}
     hits = {}
-    for i, gx, gy in PIX:
-        k = classify(img[i + 2], img[i + 1], img[i])
-        if k == JUNK:
-            continue
-        wx = px + c_ * gx - s_ * gy
-        wy = py + s_ * gx + c_ * gy
-        fx, fy = (wx - MX0) / CELL, (wy - MY0) / CELL
+    img = cam.getImage()
+    if img:
+        camx, camy = px + c_ * CAM_X, py + s_ * CAM_X
+        ok = {}
+        for i, gx, gy in PIX:
+            k = classify(img[i + 2], img[i + 1], img[i])
+            if k == JUNK:
+                continue
+            wx = px + c_ * gx - s_ * gy
+            wy = py + s_ * gx + c_ * gy
+            fx, fy = (wx - MX0) / CELL, (wy - MY0) / CELL
+            c, r = int(math.floor(fx)), int(math.floor(fy))
+            if not in_grid(c, r) or abs(fx - c - 0.5) > 0.36 or abs(fy - r - 0.5) > 0.36:
+                continue
+            if (c, r) not in ok:
+                ok[(c, r)] = can_see(camx, camy, (c, r))
+            if ok[(c, r)]:
+                hits.setdefault((c, r), [0, 0, 0])[k] += 1
+    k = classify(*tcs_rgb(tcs_floor))
+    if k != JUNK:
+        tx, ty = TCS_FLOOR_XY
+        fx, fy = (px + c_ * tx - s_ * ty - MX0) / CELL, (py + s_ * tx + c_ * ty - MY0) / CELL
         c, r = int(math.floor(fx)), int(math.floor(fy))
-        if not in_grid(c, r) or abs(fx - c - 0.5) > 0.36 or abs(fy - r - 0.5) > 0.36:
-            continue
-        if (c, r) not in ok:
-            ok[(c, r)] = can_see(camx, camy, (c, r))
-        if ok[(c, r)]:
-            hits.setdefault((c, r), [0, 0, 0])[k] += 1
+        if in_grid(c, r) and abs(fx - c - 0.5) <= 0.35 and abs(fy - r - 0.5) <= 0.35:
+            hits.setdefault((c, r), [0, 0, 0])[k] += 3          # the floor sensor is the most trusted vote
     for key, h in hits.items():
         v = votes.setdefault(key, [0, 0, 0])
         for j in range(3):
@@ -482,6 +518,7 @@ def end_bonus():
 
 
 def explore_goal(c, r, h):
+    """Stand where the camera sees an undecided possible dead end 1 or 2 cells ahead."""
     nc, nr = c + DIRS[h][0], r + DIRS[h][1]
     if not in_grid(nc, nr) or edge(c, r, h) == WALL:
         return False
@@ -596,7 +633,7 @@ def run_maze():
                 if (c, r) == END and not exploring:
                     return
                 wait += 1
-                if wait > 4:
+                if wait > 4:                         # looking at the cells ahead: decide on the votes so far
                     cc, cr = c, r
                     for _ in range(2):
                         if edge(cc, cr, h) != OPEN:
@@ -626,7 +663,7 @@ def run_maze():
 
 G = 0.02
 NX, NY = 122, 68
-R_HARD, R_INF, R_SOFT = 0.078, 0.09, 0.13   # 67.5 mm robot radius + margin
+R_HARD, R_INF, R_SOFT = 0.086, 0.096, 0.14   # 75 mm robot radius + 2 cm grid quantisation margin
 occ = bytearray(NX * NY)
 clear = [9.0] * (NX * NY)
 _OFF = []
@@ -663,6 +700,7 @@ mark_rect(0, 0, 0.006, 1.22)
 mark_rect(2.434, 0, 2.44, 1.22)
 mark_rect(0, 1.214, 0.101, 1.36)
 mark_rect(0.339, 1.214, 2.44, 1.36)
+WALL_CELL = bytes(occ)                  # arena walls: never forgotten
 
 
 def s1_sense():
@@ -672,21 +710,25 @@ def s1_sense():
         d = D[n]
         if d >= rng_max(n) or (n.startswith('us_') and d > US_MAP_MAX):
             continue                    # wide sonar cone: only trust close echoes for the map
+        if n.startswith('ir_') and d > IR_MAP_MAX:
+            continue                    # Sharp: noisy past 50 cm (inside 10 cm it reads ~10 cm: still an obstacle)
         ox, oy, a = ray(n)
         hx, hy = ox + d * math.cos(a), oy + d * math.sin(a)
-        if fix and n in AXIS_SENS:
+        if fix and n in AXIS_SENS and d > IR_MIN:
             for face, isx in ((0.006, 1), (2.434, 1), (0.006, 0), (1.214, 0)):
                 if isx and abs(math.sin(a)) < 0.06 and abs(hx - face) < 0.03:
                     px += 0.25 * (face - hx)
                 elif not isx and abs(math.cos(a)) < 0.06 and abs(hy - face) < 0.03                         and (face < 1 or hx < 0.09 or hx > 0.35):
                     py += 0.25 * (face - hy)
         if 0.012 < hx < 2.428 and 0.012 < hy < 1.208:
-            ex, ey = hx + 0.01 * math.cos(a), hy + 0.01 * math.sin(a)
             mark(int(hx / G), int(hy / G))
-            mark(int(ex / G), int(ey / G))
+            if n.startswith('us_'):
+                ex, ey = hx + 0.01 * math.cos(a), hy + 0.01 * math.sin(a)
+                mark(int(ex / G), int(ey / G))
 
 
-def astar(sx, sy, gx, gy):
+def astar(sx, sy, gx, gy, hard=None):
+    hard = R_HARD if hard is None else hard
     si, sj = int(sx / G), int(sy / G)
     gi, gj = int(gx / G), int(gy / G)
     s, g = sj * NX + si, gj * NX + gi
@@ -712,7 +754,7 @@ def astar(sx, sy, gx, gy):
                 continue
             k2 = b * NX + a
             cl = clear[k2]
-            if cl < R_HARD:
+            if cl < hard:
                 continue
             if cl < R_INF:
                 m = 25.0
@@ -769,6 +811,25 @@ def s1_done():
     return py > 1.12 and abs(px - 0.22) < 0.03
 
 
+def forget_near(rad):
+    """Drop sensed obstacle cells within rad of the robot (arena walls stay) and rebuild the clearance map.
+    Used when the map has closed every way out: noisy marks get re-sensed on the next look around."""
+    global new_obs
+    for j in range(NY):
+        for i in range(NX):
+            k = j * NX + i
+            if occ[k] and math.hypot((i + 0.5) * G - px, (j + 0.5) * G - py) < rad and not WALL_CELL[k]:
+                occ[k] = 0
+    for k in range(NX * NY):
+        clear[k] = 9.0
+    cells = [k for k in range(NX * NY) if occ[k]]
+    for k in cells:
+        occ[k] = 0
+    for k in cells:
+        mark(k % NX, k // NX)
+    new_obs = True
+
+
 def back_off():
     for _ in range(15):
         set_vw(-0.08, 0)
@@ -781,12 +842,22 @@ def run_s1():
     global new_obs, sense_hook
     sense_hook = s1_sense
     stuck = 0
+    fails = 0
     while not s1_done():
         path = astar(px, py, *S1_GOAL)
-        new_obs = False
         if not path:
-            turn_to(wrap(yaw + 1.0))
+            path = astar(px, py, *S1_GOAL, hard=0.078)      # squeeze: body radius + 3 mm
+        if not path:
+            fails += 1
+            if fails >= 2:
+                print('S1: no way out on the map - forgetting obstacles within 35 cm and looking again')
+                forget_near(0.35)
+                fails = 0
+            turn_to(wrap(yaw + 1.6))
+            new_obs = False
             continue
+        fails = 0
+        new_obs = False
         hd, dist = pick_seg(path)
         if abs(wrap(hd - yaw)) > 0.01:
             turn_to(hd, 0.008)
@@ -832,13 +903,7 @@ def where_am_i():
         px = 0.101 + w - wd[2][1]
         turn_to(-HP, 0.01)
         stop_now(3)
-        img = cam.getImage()
-        far = 0.0
-        for i, gx, gy in PIX:
-            r, g, b = img[i + 2], img[i + 1], img[i]
-            if abs(gy) < 0.08 and r > 100 and r > 2 * g and r > 2 * b:
-                far = max(far, gx)
-        py = 1.214 + far if far > 0.15 else 1.275
+        py = 1.214 + D['us_front'] + SENS['us_front'][0] if D['us_front'] < 0.3 else 1.275
         print('starting at the maze entrance y~%.3f' % py)
         return 2
     xs = 2.434 - e - wd[0][1]
@@ -888,8 +953,8 @@ def log_tick():
 # ==============================================================================
 GRIP_OPEN, GRIP_CLOSED = 0.0, 1.05
 POCKET_OFF = 0.033                  # piece centre is 33 mm behind the axle
-LINE_X = 0.040                      # line array is 40 mm ahead of the axle
-GS_Y = [(i - 3.5) * 0.008 for i in range(8)]      # gs0 = right-most
+LINE_X = 0.045                      # line array is 45 mm ahead of the axle
+GS_Y = [(i - (N_GS - 1) / 2) * 0.012 for i in range(N_GS)]      # gs0 = right-most (5-ch TCRT5000)
 GS_WHITE, GS_BLACK = 350.0, 0.0     # overwritten by calibrate_line()
 
 XT = (0.50, 0.90, 1.30, 1.70)       # transverse lines (x)
@@ -973,7 +1038,7 @@ def line_correct(seg):
     if abs(den) < 0.7:
         return
     m, nd = line_reading()
-    if m is None or nd >= 6:
+    if m is None or nd >= N_GS - 1:
         return
     sx, sy = px + c * LINE_X, py + s * LINE_X
     m_exp = -(nx * (sx - x0) + ny * (sy - y0)) / den
@@ -990,7 +1055,7 @@ def crossing_correct(ux, uy):
     """When the whole array sees black we are over a perpendicular line: fix the along-track position."""
     global px, py
     m, nd = line_reading()
-    if nd < 6:
+    if nd < N_GS - 1:
         return
     c, s = math.cos(yaw), math.sin(yaw)
     sx, sy = px + c * LINE_X, py + s * LINE_X
@@ -1198,24 +1263,15 @@ def winning_cell(board, clan):
 
 # ------------------------------------------------------------------ gripper
 def grip_set(pos, sec=0.6):
-    grip.setPosition(pos)
+    grip_l.setPosition(pos)
+    grip_r.setPosition(-pos)
     wait(sec)
 
 
 def piece_colour():
-    img = pcam.getImage()
-    w, h = pcam.getWidth(), pcam.getHeight()
-    r = g = b = 0
-    for yy in range(h):
-        for xx in range(w):
-            r += pcam.imageGetRed(img, w, xx, yy)
-            g += pcam.imageGetGreen(img, w, xx, yy)
-            b += pcam.imageGetBlue(img, w, xx, yy)
-    if b > 1.3 * g and b > 1.3 * r:
-        return 'BLUE'
-    if g > 1.3 * b and g > 1.3 * r:
-        return 'GREEN'
-    return None
+    """Front TCS3200 colour (BLUE / GREEN / None)."""
+    k = classify(*tcs_rgb(tcs_front))
+    return 'BLUE' if k == BLUE else 'GREEN' if k == GREEN else None
 
 
 def pick_piece(clan):
@@ -1229,9 +1285,8 @@ def pick_piece(clan):
     grip_set(GRIP_OPEN)
     drive_line(cx, cy - sgn * POCKET_OFF, 0.05, reverse=True, follow=False)
     grip_set(GRIP_CLOSED, 0.8)
-    col = piece_colour()
-    ok = D['us_back'] < 0.06 or col is not None
-    print('[S3] picked %s piece (colour sensor: %s, %s)' % (clan, col, 'held' if ok else 'NOT DETECTED'))
+    ok = True
+    print('[S3] picked %s piece' % clan)
     drive_line(COLLECT_JUNC[0], COLLECT_JUNC[1], 0.12)
     return ok
 
@@ -1256,7 +1311,7 @@ def inspect_board():
     def sample():
         for n in ('ir_left', 'ir_right'):
             d = D[n]
-            if d >= 0.20 or d <= 0.041:
+            if d >= 0.20 or d <= IR_MIN:
                 continue
             ox, oy, a = ray(n)
             hx, hy = ox + d * math.cos(a), oy + d * math.sin(a)
@@ -1283,21 +1338,20 @@ def inspect_board():
 
 
 def look_colour(pos):
-    """Stop on the transverse line facing the cell and classify the piece with the camera."""
+    """Drive up to the piece (without touching it) and read it with the front TCS3200."""
     cx, cy = POS_CELL[pos]
     go((cx + 0.20, cy), 0.12)
     turn_to(PI, 0.01)
-    wait(0.2)
-    img = cam.getImage()
+    drive_line(cx + 0.108, cy, 0.05, follow=False)       # sensor ~1.2 cm from the piece face
     nb = ng = 0
-    for v in range(CH // 3, CH):
-        for u in range(CW // 4, 3 * CW // 4):
-            i = 4 * (v * CW + u)
-            k = classify(img[i + 2], img[i + 1], img[i])
-            nb += k == BLUE
-            ng += k == GREEN
+    for _ in range(15):
+        step()
+        c = piece_colour()
+        nb += c == 'BLUE'
+        ng += c == 'GREEN'
     col = 'BLUE' if nb > ng else 'GREEN' if ng > nb else None
-    print('[S3] camera at position %d sees %s (blue px %d, green px %d)' % (pos, col, nb, ng))
+    print('[S3] front colour sensor at position %d reads %s (%d blue / %d green samples)' % (pos, col, nb, ng))
+    drive_line(cx + 0.20, cy, 0.06, reverse=True, follow=False)
     return col
 
 
@@ -1317,7 +1371,7 @@ def run_phase3(saved=None):
             json.dump([nb, ng, R, L], open(CLUE_FILE, 'w'))
         except OSError:
             pass
-    clan = 'BLUE' if nb > ng else 'GREEN'
+    clan = 'BLUE' if nb >= ng else 'GREEN'          # same rule as show_majority() (tie -> blue)
     led_b.set(1 if clan == 'BLUE' else 0)
     led_g.set(1 if clan == 'GREEN' else 0)
     print('[S3] majority %s -> robot plays for the %s' % (clan, 'Blue Sentinels (cylinder)' if clan == 'BLUE' else 'Green Keepers (cube)'))

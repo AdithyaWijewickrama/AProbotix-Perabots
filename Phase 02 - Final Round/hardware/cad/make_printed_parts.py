@@ -1,198 +1,235 @@
 """
-make_printed_parts.py - 3-D printed parts for GuardianBot (CadQuery).  Units: mm.
-Outputs STL (for slicing) and STEP (for Fusion/SolidWorks/FreeCAD) into ../3d_prints/.
+make_printed_parts.py - GuardianBot v3 3-D printed parts (CadQuery). Units: mm.
+Outputs STL (slicer) and STEP (CAD) into ../3d_prints/. Hole positions match make_acrylic_dxf.py.
 
-Print settings: PETG, 0.2 mm layers, 4 walls, 40 % gyroid.  Gripper pads: TPU 95A.
-Heat-set inserts: M2.5 x 4 mm (pocket), M2 x 3 mm (brackets).
-
+Print: PETG or PLA+, 0.2 mm layers, 4 walls, 40 % infill. Pads: TPU 95A (or glue on rubber strip).
 Parts (quantity):
-  pocket.stl            (1)  rear capture pocket: 55 mm throat, flared mouth, top flange, base tabs
-  gripper_arm_left.stl  (1)  arm + hub on a 3 mm steel hinge pin
-  gripper_arm_right.stl (1)
-  gripper_pad.stl       (2)  TPU pad, glue into the arm groove
-  hinge_lever.stl       (2)  sits on the pin above the PCB, push-rod eye
-  servo_cradle.stl      (1)  MG90S holder on the PCB
-  sharp_bracket.stl     (4)  vertical GP2Y0A41SK0F holder on the base plate
-  hcsr04_hanger.stl     (4)  hangs an HC-SR04 under the crown
-  camera_mast.stl       (1)  XIAO ESP32S3 Sense cradle, 23 deg down
-  caster_spacer.stl     (1)  sets the ball-caster height
+  n20_clamp            (2)  saddle over the N20 gearbox, 2 x M2.5 into the base
+  sharp_side_tower     (1)  5 mm centre plate carrying ir_left + ir_right back to back (lens at z 46)
+  sharp_front_hanger   (1)  hangs ir_front, ir_fl (+45 deg), ir_fr (-45 deg) under the mid deck (lens at z 58)
+  hcsr04_hanger        (4)  holds an HC-SR04 under the top deck (transducers at z 92)
+  servo_cradle         (2)  clamps a Kpower M0170 on the mid deck, shaft pointing down
+  gripper_arm_left/right (1+1) arm on the servo spline hub, reaches down to piece mid-height
+  pocket               (1)  rear capture pocket, 55 mm throat, flared mouth (z 6 -> 70)
+  tcs_front_bracket    (1)  GY-31 facing forward at z 28 (piece colour)
+  tcs_floor_spacer     (2)  8 mm spacers: floor GY-31 lens 8 mm above the floor
+  caster_spacer        (1)  sets the ball-caster height (sand to level the robot)
+  camera_mast          (1)  ESP32-CAM cradle on the top deck, lens 140 mm high, pitched 29 deg down
+  deck_spacer_54p5     (4)  base -> mid deck spacer tube on M3 threaded rod
+  deck_spacer_32       (4)  mid -> top deck spacer tube on M3 threaded rod
+Run:  python make_printed_parts.py
 """
 import math
 import os
 
 import cadquery as cq
 
-from guardianbot_geometry import (BASE_Z1, HINGE_X, HINGE_Y, PCB_Z0, POCKET_FLARE_X, POCKET_IN_HW,
-                                  POCKET_MOUTH_HW, POCKET_WALL_T, POCKET_X)
+from guardianbot_geometry import (CAM_PITCH, CAM_X, CAM_Z, ESP32CAM_BOARD, TOP_Z1, ARM_L, BASE_Z1, HINGE_X, HINGE_Y, MID_Z0, POCKET_FLARE_X, POCKET_IN_HW,
+                                  POCKET_MOUTH_HW, POCKET_WALL_T, POCKET_X, SERVO_BODY, SHARP, TCS_FRONT,
+                                  TOP_Z0, US)
 
 MM = 1000.0
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "3d_prints")
-M2, M25, M3 = 2.2, 2.7, 3.2
-INS_M2, INS_M25 = 3.2, 3.6          # heat-set insert holes
+M25, M3 = 2.7, 3.2
+INS_M3 = 4.0                       # M3 heat-set insert hole (or tap M3 directly into 2.5 mm)
+SHARP_TAB = 37.0                   # GP2Y0A21 mounting-hole spacing
+BASE_TOP = BASE_Z1 * MM            # 15.5
+MID_BOT = MID_Z0 * MM              # 70.0
+TOP_BOT = TOP_Z0 * MM              # 105.0
+
+
+def box(x, y, z, at=(0, 0, 0), centered=(True, True, False)):
+    return cq.Workplane("XY").box(x, y, z, centered=centered).translate(at)
+
+
+def zhole(d, h, at):
+    return cq.Workplane("XY").circle(d / 2).extrude(h).translate(at)
 
 
 def save(shape, name):
     os.makedirs(OUT, exist_ok=True)
     cq.exporters.export(shape, os.path.join(OUT, name + ".stl"), tolerance=0.02, angularTolerance=0.1)
     cq.exporters.export(shape, os.path.join(OUT, name + ".step"))
-    return name
 
 
-# ------------------------------------------------------------------ pocket
-def pocket():
-    t = POCKET_WALL_T * MM
-    px = POCKET_X * MM
-    ihw = POCKET_IN_HW * MM
-    fx = POCKET_FLARE_X * MM
-    mhw = POCKET_MOUTH_HW * MM
-    hx = HINGE_X * MM + 4.0
-    z0, z1 = 6.0, PCB_Z0 * MM            # 6 mm above the floor up to the PCB underside
-    h = z1 - z0
-    # back wall
-    body = cq.Workplane("XY").box(t, 2 * (ihw + t), h, centered=(False, True, False)).translate((px - t, 0, z0))
-    for s in (1, -1):
-        # straight side wall
-        sw = cq.Workplane("XY").box(px - fx, t, h, centered=(False, False, False)).translate(
-            (fx, ihw if s > 0 else -ihw - t, z0))
-        body = body.union(sw)
-        # flared lead-in wall (polygon extrusion)
-        y_in0, y_in1 = s * ihw, s * mhw
-        pts = [(fx, y_in0), (hx, y_in1), (hx, y_in1 + s * t), (fx, y_in0 + s * t)]
-        fl = cq.Workplane("XY").polyline(pts).close().extrude(h).translate((0, 0, z0))
-        body = body.union(fl)
-        # lower hinge bushing (3 mm pin) at the mouth
-        bush = cq.Workplane("XY").circle(4.0).extrude(3.0).translate((HINGE_X * MM, s * HINGE_Y * MM, z0 - 1.0))
-        bridge = cq.Workplane("XY").box(6.0, 4.0, 3.0, centered=(True, True, False)).translate(
-            ((HINGE_X * MM + hx) / 2 + 1.0, s * (mhw + 1.0), z0 - 1.0))
-        body = body.union(bush).union(bridge)
-        body = body.cut(cq.Workplane("XY").circle(1.6).extrude(10).translate((HINGE_X * MM, s * HINGE_Y * MM, z0 - 3)))
-        # base-plate tab (sits on top of the 3 mm base, M2.5 insert from below)
-        tab = cq.Workplane("XY").box(10.0, 12.0, 3.0, centered=(True, False, False)).translate(
-            (-20.0, s * (ihw + t) if s > 0 else -(ihw + t) - 12.0, BASE_Z1 * MM))
-        body = body.union(tab)
-        body = body.cut(cq.Workplane("XY").circle(INS_M25 / 2).extrude(4).translate((-20.0, s * 39.0, BASE_Z1 * MM - 0.5)))
-    # top flange under the PCB with two M2.5 inserts
-    fl_w = 2 * (ihw + t) + 14.0
-    top = cq.Workplane("XY").box(px - fx + t + 4.0, fl_w, 3.0, centered=(False, True, False)).translate(
-        (fx - 4.0, 0, z1 - 3.0))
-    body = body.union(top)
-    for s in (1, -1):
-        body = body.cut(cq.Workplane("XY").circle(INS_M25 / 2).extrude(5).translate((-15.0, s * 36.0, z1 - 4.5)))
-    # window for the TCS34725 colour sensor (sensor sits behind the back wall)
-    win = cq.Workplane("XY").box(t + 2, 10.0, 10.0).translate((px - t / 2, 0, 20.0))
-    body = body.cut(win)
-    # piece clearance check volume is the open space between the walls (nothing to cut)
-    return body
+def n20_clamp():
+    """Saddle over a 12 x 10 mm N20 gearbox; screws 22 mm apart."""
+    b = box(30, 10, 12.5)
+    b = b.cut(box(12.4, 12, 10.3, at=(0, 0, -0.1)))                     # gearbox channel
+    for x in (-11, 11):
+        b = b.cut(zhole(M25, 20, (x, 0, -1)))
+    return b
 
 
-# ------------------------------------------------------------------ gripper
-def gripper_arm(side):
-    s = 1 if side == "left" else -1
-    L, T, H = 32.0, 3.0, 30.0
-    hub = cq.Workplane("XY").circle(4.0).extrude(H)
-    arm = cq.Workplane("XY").box(L, T, H, centered=(False, True, False)).translate((-L, 0, 0))
-    body = hub.union(arm)
-    body = body.cut(cq.Workplane("XY").circle(1.55).extrude(H + 2).translate((0, 0, -1)))       # 3 mm pin press-fit
-    # grub-screw hole (M2) across the hub
-    body = body.cut(cq.Workplane("YZ").circle(0.9).extrude(10).translate((0, 0, H / 2)).translate((0, 0, 0)))
-    # groove for the TPU pad on the inner face (inner face points to -y for the left arm)
-    groove = cq.Workplane("XY").box(L - 8.0, 1.2, H - 6.0, centered=(False, True, False)).translate(
-        (-L + 2.0, -s * (T / 2 - 0.5), 3.0))
-    body = body.cut(groove)
-    return body
+def sharp_side_tower():
+    """Centre plate 5 mm thick, sensors screw on both faces (M3 through), lens centre 46 mm above floor."""
+    zc = SHARP["ir_left"][2] * MM - BASE_TOP                             # 30.5 above the base top
+    L = 54.0
+    plate = box(L, 5, zc + 12, at=(0, 0, 0))
+    foot = box(L + 10, 14, 4)
+    b = plate.union(foot)
+    for dx in (-SHARP_TAB / 2, SHARP_TAB / 2):
+        b = b.cut(cq.Workplane("XZ").circle(M3 / 2).extrude(10, both=True).translate((dx, 0, zc)))
+    for dx in (-22.0, 22.0):                                             # base screws (base holes -26/+18 from sensor x)
+        b = b.cut(zhole(M3, 10, (dx, 0, -1)))
+    # cable notch under each sensor connector
+    b = b.cut(box(10, 7, 6, at=(0, 0, zc - 13)))
+    return b
 
 
-def gripper_pad():
-    return cq.Workplane("XY").box(23.6, 1.8, 23.6).edges("|Z").fillet(0.6)
-
-
-def hinge_lever():
-    hub = cq.Workplane("XY").circle(4.5).extrude(4.0)
-    arm = cq.Workplane("XY").box(12.0, 5.0, 2.5, centered=(False, True, False))
-    eye = cq.Workplane("XY").circle(2.5).extrude(2.5).translate((12.0, 0, 0))
-    body = hub.union(arm).union(eye)
-    body = body.cut(cq.Workplane("XY").circle(1.55).extrude(6).translate((0, 0, -1)))
-    body = body.cut(cq.Workplane("XY").circle(0.65).extrude(6).translate((12.0, 0, -1)))   # 1 mm push-rod
-    body = body.cut(cq.Workplane("YZ").circle(0.9).extrude(10).translate((0, 0, 2.0)))       # M2 grub screw
-    return body
-
-
-def servo_cradle():
-    """MG90S: body 22.8 x 12.2, mounting tabs 32.3 long, tab underside 15.9 mm above the body base."""
-    W, D, H = 36.0, 18.0, 15.9
-    body = cq.Workplane("XY").box(W, D, H, centered=(True, True, False))
-    body = body.cut(cq.Workplane("XY").box(23.2, 12.6, H + 2, centered=(True, True, False)).translate((0, 0, -1)))
-    for x in (-13.75, 13.75):                               # tab screws (M2 inserts)
-        body = body.cut(cq.Workplane("XY").circle(INS_M2 / 2).extrude(5).translate((x, 0, H - 4.5)))
-    for x in (-15.5, 15.5):                                  # M2 screws down into the PCB
-        for y in (-6.5, 6.5):
-            body = body.cut(cq.Workplane("XY").circle(M2 / 2).extrude(H + 2).translate((x, y, -1)))
-    body = body.cut(cq.Workplane("XY").box(8.0, D + 2, 4.0, centered=(True, True, False)).translate((0, 0, -0.01)))  # cable exit
-    return body
-
-
-# ------------------------------------------------------------------ sensor mounts
-def sharp_bracket():
-    """Upright for a GP2Y0A41SK0F mounted vertically (holes 37 mm apart), foot on the base plate."""
-    up_w, up_h, t = 14.0, 44.0, 2.5
-    foot = cq.Workplane("XY").box(10.0, 24.0, 3.0, centered=(False, True, False)).translate((-10.0, 0, 0))
-    upright = cq.Workplane("XY").box(t, up_w, up_h, centered=(False, True, False))
-    body = foot.union(upright)
-    for k in (-6.0, 6.0):
-        body = body.cut(cq.Workplane("XY").circle(M2 / 2).extrude(5).translate((-5.0, k, -1)))
-    zc = 22.0
-    for dz in (-18.5, 18.5):
-        body = body.cut(cq.Workplane("YZ").circle(M25 / 2).extrude(t + 2).translate((-1.0, 0, zc + dz)))
-    # gusset
-    g = cq.Workplane("XZ").polyline([(-8.0, 3.0), (0.0, 3.0), (0.0, 14.0)]).close().extrude(2.0).translate((0, 1.0, 0))
-    body = body.union(g)
-    return body
+def sharp_front_hanger():
+    """Hangs three GP2Y0A21 under the mid deck: front (0 deg) and +-45 deg, lens centre z 58."""
+    drop = MID_BOT - SHARP["ir_front"][2] * MM                           # 12 mm below the deck to lens centre
+    top = box(30, 46, 3, at=(52 - 50, 0, 0))
+    b = cq.Workplane("XY").box(1, 1, 1).translate((0, 0, -100))
+    plate = top
+    for name in ("ir_front", "ir_fl", "ir_fr"):
+        x, y, z, a = SHARP[name]
+        r = math.hypot(x, y) * MM
+        # vertical plate behind the sensor body (sensor back face at r - 13.5)
+        p = box(3, 48, drop + 10, at=(0, 0, -(drop + 10) + 3))
+        for dy in (-SHARP_TAB / 2, SHARP_TAB / 2):
+            p = p.cut(cq.Workplane("YZ").circle(M3 / 2).extrude(10, both=True).translate((0, dy, -drop)))
+        p = p.translate((r - 13.5 - 1.5 - 50, 0, 0)).rotate((-50, 0, 0), (-50, 0, 1), math.degrees(a))
+        plate = plate.union(p)
+    # deck screws (mid deck holes at (46, +-18) and (58, 0)); part origin x = 50 in robot frame
+    for (hx, hy) in ((46, 18), (46, -18), (58, 0)):
+        plate = plate.cut(zhole(M3, 6, (hx - 50, hy, -1)))
+    del b
+    return plate.mirror("XY")          # print flat side down
 
 
 def hcsr04_hanger():
-    """Flange screws under the crown; plate holds the two 16 mm transducers (26 mm apart)."""
-    flange = cq.Workplane("XY").box(16.0, 32.0, 3.0, centered=(False, True, False)).translate((-8.0, 0, 0))
-    plate = cq.Workplane("XY").box(3.0, 47.0, 27.0, centered=(False, True, False)).translate((8.0, 0, -24.0))
-    body = flange.union(plate)
+    """Flange under the top deck; vertical plate holds the HC-SR04 (16 mm transducers 26 mm apart)."""
+    zc = TOP_BOT - US["us_front"][2] * MM                                # 13 mm below the deck
+    flange = box(16, 34, 3, at=(-8, 0, 0), centered=(False, True, False))
+    plate = box(3, 47, zc + 12, at=(5, 0, -(zc + 12) + 3), centered=(False, True, False))
+    b = flange.union(plate)
     for k in (-12.0, 12.0):
-        body = body.cut(cq.Workplane("XY").circle(INS_M2 / 2).extrude(4).translate((0.0, k, -0.5)))
+        b = b.cut(zhole(M3, 6, (-2.0, k, -1)))
     for k in (-13.0, 13.0):
-        body = body.cut(cq.Workplane("YZ").circle(8.3).extrude(5).translate((7.0, k, -14.5)))
-    # small ledge the HC-SR04 PCB rests on
-    body = body.union(cq.Workplane("XY").box(3.0, 40.0, 2.0, centered=(False, True, False)).translate((5.0, 0, -24.0)))
-    return body
+        b = b.cut(cq.Workplane("YZ").circle(8.3).extrude(5).translate((4.0, k, 3 - zc)))
+    return b
+
+
+def servo_cradle():
+    """Clamps the M0170 body (28.5 x 13 x 27): open frame with two M3 feet 24 mm apart."""
+    L, W, H = SERVO_BODY[0] * MM, SERVO_BODY[1] * MM, 20.0
+    b = box(L + 6, W + 6, H)
+    b = b.cut(box(L + 0.4, W + 0.4, H + 2, at=(0, 0, -1)))
+    feet = box(10, W + 30, 3)
+    b = b.union(feet.translate((4.0 + 7.0 - L / 2 + L / 2 - 7.0, 0, 0)))
+    for dy in (-12.0, 12.0):
+        b = b.cut(zhole(M3, 6, (4.0, dy * 1.0 if abs(dy) > (W + 6) / 2 else dy, -1)))
+    b = b.cut(box(6, W + 8, 5, at=(-L / 2, 0, -0.01)))                  # cable exit
+    return b
+
+
+def gripper_arm(side):
+    """Hub on the servo spline (horn screwed on top) down to the arm; arm length = ARM_L."""
+    s = 1 if side == "left" else -1
+    hub_h = MID_BOT - 8.0                                                # from z 8 up to the deck underside
+    hub = cq.Workplane("XY").circle(4.5).extrude(hub_h)
+    hub = hub.cut(cq.Workplane("XY").circle(1.3).extrude(hub_h + 2).translate((0, 0, -1)))   # horn screw
+    arm_h = 34.0
+    arm = box(ARM_L * MM, 3.5, arm_h, centered=(False, True, False)).translate((-ARM_L * MM, 0, 0))
+    b = hub.union(arm)
+    # small cross-plate on top to screw the servo's single-arm horn (2 x M2 self-tappers)
+    horn = box(18, 6, 2.5, at=(-4, 0, hub_h - 2.5))
+    b = b.union(horn)
+    for x in (-10.0, 2.0):
+        b = b.cut(zhole(1.6, 6, (x, 0, hub_h - 4)))
+    # pad groove on the inner face
+    b = b.cut(box(ARM_L * MM - 8, 1.2, arm_h - 8, at=(-ARM_L * MM + 3, -s * 1.3, 4), centered=(False, True, False)))
+    return b
+
+
+def pocket():
+    t = POCKET_WALL_T * MM
+    px, ihw, fx, mhw = POCKET_X * MM, POCKET_IN_HW * MM, POCKET_FLARE_X * MM, POCKET_MOUTH_HW * MM
+    hx = HINGE_X * MM + 6.0
+    z0, z1 = 6.0, BASE_TOP + 20.0                                        # walls reach 20 mm above the base
+    h = z1 - z0
+    b = box(t, 2 * (ihw + t), h, at=(px, 0, z0), centered=(False, True, False))
+    for s in (1, -1):
+        b = b.union(box(px - fx, t, h, at=(fx, s * (ihw + t / 2), z0), centered=(False, True, False)))
+        pts = [(fx, s * ihw), (hx, s * mhw), (hx, s * (mhw + t)), (fx, s * (ihw + t))]
+        b = b.union(cq.Workplane("XY").polyline(pts).close().extrude(h).translate((0, 0, z0)))
+        # tabs that sit on the base top, M2.5 holes at x -20 / -48, y +-40
+        tab = box(36, 12, 3, at=(-34, s * 40, BASE_TOP))
+        bridge = box(36, 40 - ihw, 3, at=(-34, s * (ihw + (40 - ihw) / 2), BASE_TOP))
+        b = b.union(tab).union(bridge)
+        for x in (-20.0, -48.0):
+            b = b.cut(zhole(M25, 6, (x, s * 40, BASE_TOP - 1)))
+    return b
+
+
+def tcs_front_bracket():
+    """GY-31 (33 x 33 mm) standing upright at the nose, lens at z 28 facing forward."""
+    zc = TCS_FRONT[2] * MM - BASE_TOP
+    foot = box(12, 40, 3, at=(-6, 0, 0))
+    wall = box(3, 36, zc + 17, at=(0, 0, 0), centered=(False, True, False))
+    b = foot.union(wall)
+    for s in (1, -1):
+        b = b.cut(zhole(M3, 6, (-6, s * 15, -1)))
+        b = b.cut(cq.Workplane("YZ").circle(M3 / 2).extrude(6).translate((-1, s * 12, zc)))
+    b = b.cut(cq.Workplane("YZ").circle(6).extrude(6).translate((-1, 0, zc)))   # LED / lens window
+    return b
+
+
+def tcs_floor_spacer():
+    return cq.Workplane("XY").circle(3.5).extrude(4.5).cut(zhole(M3, 6, (0, 0, -1)))
 
 
 def camera_mast():
-    base = cq.Workplane("XY").box(14.0, 22.0, 3.0, centered=(True, True, False))
-    for k in (-6.0, 6.0):
-        base = base.cut(cq.Workplane("XY").circle(M2 / 2).extrude(5).translate((0, k, -1)))
-    post = cq.Workplane("XY").box(4.0, 18.0, 9.0, centered=(True, True, False)).translate((-4.0, 0, 3.0))
-    cradle = (cq.Workplane("XY").box(24.0, 21.0, 4.0)
-              .cut(cq.Workplane("XY").box(21.6, 18.0, 4.0).translate((0.6, 0, 1.2)))   # XIAO pocket, open on top
-              .cut(cq.Workplane("XY").box(6.0, 9.5, 6.0).translate((-10.5, 0, 0)))      # USB-C opening
-              .rotate((0, 0, 0), (0, 1, 0), 23).translate((2.0, 0, 13.5)))
-    return base.union(post).union(cradle)
+    """Holds the ESP32-CAM (27 x 40.5 mm, no mounting holes) in a slotted cradle, lens at
+    (CAM_X, CAM_Z) and pitched CAM_PITCH down. Foot: 2 x M3 into the top deck at (CAM_X - 18, +-10)."""
+    bw, bh, bt = (v * MM for v in ESP32CAM_BOARD)
+    foot = box(26, 30, 3, at=(-18 + 4, 0, 0))
+    for s in (1, -1):
+        foot = foot.cut(zhole(M3, 6, (-18, s * 10, -1)))
+    # cradle: back plate with two side rails and a bottom lip, built upright then tilted back
+    back = box(2.5, bw + 6, bh, at=(-2.5 / 2 - bt / 2, 0, 0))
+    rails = box(bt + 4.5, 3, bh, at=(0, (bw + 3) / 2, 0)).union(box(bt + 4.5, 3, bh, at=(0, -(bw + 3) / 2, 0)))
+    groove = box(bt + 0.4, bw + 0.6, bh + 2, at=(0, 0, 1.5))                 # board slides in from the top
+    lip = box(bt + 4.5, bw + 6, 2.5, at=(0, 0, 0))
+    cradle = back.union(rails).union(lip).cut(groove)
+    cradle = cradle.cut(box(10, 16, 14, at=(3, 0, bh - 22)))                 # window: camera + flash LED side
+    lens_h = bh - 9.0                                                         # lens ~9 mm below the board top
+    zl = CAM_Z * MM - TOP_Z1 * MM
+    cradle = cradle.translate((0, 0, -lens_h)).rotate((0, 0, 0), (0, 1, 0), math.degrees(CAM_PITCH))
+    cradle = cradle.translate((-2.0, 0, zl))
+    post = box(6, 20, zl - 4, at=(-9, 0, 3))
+    return foot.union(post).union(cradle).intersect(box(80, 60, 80, at=(0, 0, 0)))
 
 
-def caster_spacer(thickness=1.6):
-    body = cq.Workplane("XY").box(10.0, 22.0, thickness, centered=(True, True, False))
-    for k in (-6.35, 6.35):
-        body = body.cut(cq.Workplane("XY").circle(M2 / 2).extrude(5).translate((0, k, -1)))
-    return body
+def deck_spacer(length):
+    """Spacer tube between decks, clamped by M3 threaded rod (base-mid 54.5 mm, mid-top 32 mm)."""
+    return cq.Workplane("XY").circle(3.75).extrude(length).cut(zhole(3.5, length + 2, (0, 0, -1)))
+
+
+def caster_spacer(thickness=2.0):
+    b = box(10, 30, thickness)
+    for k in (-9.5, 9.5):
+        b = b.cut(cq.Workplane("XY").slot2D(7, M25, 90).extrude(5).translate((0, k, -1)))
+    return b
 
 
 PARTS = {
-    "pocket": pocket,
+    "n20_clamp": n20_clamp,
+    "sharp_side_tower": sharp_side_tower,
+    "sharp_front_hanger": sharp_front_hanger,
+    "hcsr04_hanger": hcsr04_hanger,
+    "servo_cradle": servo_cradle,
     "gripper_arm_left": lambda: gripper_arm("left"),
     "gripper_arm_right": lambda: gripper_arm("right"),
-    "gripper_pad": gripper_pad,
-    "hinge_lever": hinge_lever,
-    "servo_cradle": servo_cradle,
-    "sharp_bracket": sharp_bracket,
-    "hcsr04_hanger": hcsr04_hanger,
-    "camera_mast": camera_mast,
+    "pocket": pocket,
+    "tcs_front_bracket": tcs_front_bracket,
+    "tcs_floor_spacer": tcs_floor_spacer,
     "caster_spacer": caster_spacer,
+    "camera_mast": camera_mast,
+    "deck_spacer_54p5": lambda: deck_spacer(54.5),
+    "deck_spacer_32": lambda: deck_spacer(32.0),
 }
 
 if __name__ == "__main__":
@@ -200,4 +237,4 @@ if __name__ == "__main__":
         shp = fn()
         bb = shp.val().BoundingBox()
         save(shp, name)
-        print("%-18s %5.1f x %5.1f x %5.1f mm   %.1f cm3" % (name, bb.xlen, bb.ylen, bb.zlen, shp.val().Volume() / 1000))
+        print("%-20s %5.1f x %5.1f x %5.1f mm   %5.1f cm3" % (name, bb.xlen, bb.ylen, bb.zlen, shp.val().Volume() / 1000))
