@@ -1,0 +1,11 @@
+* battery sense: R1 20k, R2 10k, C4 100nF -> A0 (ADC sample-and-hold 14 pF through 3k)
+Vbat b 0 7.4
+R1 b a0 20k
+R2 a0 0 10k
+C4 a0 0 100n
+.dc Vbat 5 9 0.5
+.control
+run
+wrdata _vbat_adc.txt v(b) v(a0)
+.endc
+.end

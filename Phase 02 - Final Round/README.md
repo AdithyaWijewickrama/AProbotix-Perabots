@@ -37,6 +37,8 @@ Everything physical is generated from one file of dimensions, `hardware/cad/guar
 | ESP32-CAM firmware (brain: Sections 1–3, the same strategy as the simulation, plus the camera task) | `firmware/esp32cam_brain/` |
 | Software-in-the-loop: the real ESP32 C++ drives the Webots robot | `firmware/sil/` + `simulation/controllers/mega_sil/` |
 | Host compile check of both sketches | `firmware/hostcheck/check.sh` |
+| **Circuit simulation (like Tinkercad)**: the real Mega firmware on a virtual Mega in Wokwi, every sensor as a custom chip with sliders; checked by unit tests and a simavr co-simulation | `simulation/wokwi/` |
+| **SPICE checks** of the PCB deck: link levels and timing at 250 kbaud, battery divider, buzzer driver, power-rail dips | `hardware/spice/` |
 | **PCB mid deck** (144 mm round, through-hole, for a local PCB shop) | `hardware/pcb_v4/`, made by `hardware/cad/deck_v4/` |
 | **Every earlier version + comparison website** (bodies, PCBs, budget, speed, weight, parts) | `versions/` (website on GitHub Pages, with a 3-D viewer for the PCBs, printed parts and decks) |
 

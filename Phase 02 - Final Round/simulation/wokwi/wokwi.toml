@@ -1,0 +1,28 @@
+[wokwi]
+version = 1
+firmware = "build/sketch.ino.hex"
+elf = "build/sketch.ino.elf"
+
+[[chip]]
+name = "vl53l0x"
+binary = "chips/vl53l0x.chip.wasm"
+
+[[chip]]
+name = "l3g4200d"
+binary = "chips/l3g4200d.chip.wasm"
+
+[[chip]]
+name = "tcs3200"
+binary = "chips/tcs3200.chip.wasm"
+
+[[chip]]
+name = "qtr8rc"
+binary = "chips/qtr8rc.chip.wasm"
+
+[[chip]]
+name = "n20motor"
+binary = "chips/n20motor.chip.wasm"
+
+[[chip]]
+name = "brainstub"
+binary = "chips/brainstub.chip.wasm"

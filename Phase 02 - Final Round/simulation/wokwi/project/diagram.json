@@ -1,0 +1,1117 @@
+{
+  "version": 1,
+  "author": "AProbotix - GuardianBot v4",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-mega",
+      "id": "mega",
+      "top": 300,
+      "left": 380,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-ssd1306",
+      "id": "oled",
+      "top": 120,
+      "left": 760,
+      "attrs": {
+        "i2cAddress": "0x3c"
+      }
+    },
+    {
+      "type": "chip-l3g4200d",
+      "id": "gyro",
+      "top": 140,
+      "left": 1000,
+      "attrs": {
+        "rate": "0",
+        "bias": "8"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_front",
+      "top": 20,
+      "left": 20,
+      "attrs": {
+        "distance": "300",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_fl",
+      "top": 130,
+      "left": 20,
+      "attrs": {
+        "distance": "450",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_fr",
+      "top": 240,
+      "left": 20,
+      "attrs": {
+        "distance": "450",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_lf",
+      "top": 350,
+      "left": 20,
+      "attrs": {
+        "distance": "120",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_lr",
+      "top": 20,
+      "left": 190,
+      "attrs": {
+        "distance": "125",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_rf",
+      "top": 130,
+      "left": 190,
+      "attrs": {
+        "distance": "140",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_rr",
+      "top": 240,
+      "left": 190,
+      "attrs": {
+        "distance": "135",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "chip-vl53l0x",
+      "id": "tof_back",
+      "top": 350,
+      "left": 190,
+      "attrs": {
+        "distance": "800",
+        "noise": "2"
+      }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "us_front",
+      "top": 520,
+      "left": 20,
+      "attrs": {
+        "distance": "600"
+      }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "us_back",
+      "top": 650,
+      "left": 20,
+      "attrs": {
+        "distance": "900"
+      }
+    },
+    {
+      "type": "chip-tcs3200",
+      "id": "tcs_floor",
+      "top": 300,
+      "left": 1000,
+      "attrs": {
+        "red": "200",
+        "green": "200",
+        "blue": "200"
+      }
+    },
+    {
+      "type": "chip-tcs3200",
+      "id": "tcs_front",
+      "top": 430,
+      "left": 1000,
+      "attrs": {
+        "red": "40",
+        "green": "60",
+        "blue": "200"
+      }
+    },
+    {
+      "type": "chip-qtr8rc",
+      "id": "qtr",
+      "top": 560,
+      "left": 1000,
+      "attrs": {
+        "line_mm": "0",
+        "line_on": "1",
+        "width_mm": "20"
+      }
+    },
+    {
+      "type": "chip-n20motor",
+      "id": "motor_l",
+      "top": 700,
+      "left": 1000,
+      "attrs": {
+        "vbat_dV": "74",
+        "load": "20",
+        "cpr": "2800",
+        "reverse": "0"
+      }
+    },
+    {
+      "type": "chip-n20motor",
+      "id": "motor_r",
+      "top": 820,
+      "left": 1000,
+      "attrs": {
+        "vbat_dV": "74",
+        "load": "20",
+        "cpr": "2800",
+        "reverse": "1"
+      }
+    },
+    {
+      "type": "chip-brainstub",
+      "id": "brain",
+      "top": 120,
+      "left": 1260,
+      "attrs": {
+        "enable": "1",
+        "v_left": "0",
+        "v_right": "0",
+        "servo_left": "90",
+        "servo_right": "90",
+        "outputs": "0",
+        "zero": "0"
+      }
+    },
+    {
+      "type": "wokwi-logic-analyzer",
+      "id": "logic",
+      "top": 330,
+      "left": 1260,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo_l",
+      "top": 820,
+      "left": 120,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo_r",
+      "top": 930,
+      "left": 120,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "key1",
+      "top": 820,
+      "left": 420,
+      "attrs": {
+        "color": "green",
+        "key": "1",
+        "label": "K1 GO"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "key2",
+      "top": 820,
+      "left": 515,
+      "attrs": {
+        "color": "blue",
+        "key": "2",
+        "label": "K2 MAZE"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "key3",
+      "top": 820,
+      "left": 610,
+      "attrs": {
+        "color": "yellow",
+        "key": "3",
+        "label": "K3 S3"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "key4",
+      "top": 820,
+      "left": 705,
+      "attrs": {
+        "color": "red",
+        "key": "4",
+        "label": "K4 CAL"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_blue",
+      "top": 820,
+      "left": 820,
+      "attrs": {
+        "color": "blue"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_led_blue",
+      "top": 860,
+      "left": 880,
+      "attrs": {
+        "value": "330"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_green",
+      "top": 820,
+      "left": 880,
+      "attrs": {
+        "color": "green"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_led_green",
+      "top": 860,
+      "left": 940,
+      "attrs": {
+        "value": "330"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer",
+      "top": 1000,
+      "left": 820,
+      "attrs": {
+        "volume": "0.1"
+      }
+    },
+    {
+      "type": "wokwi-slide-potentiometer",
+      "id": "battery",
+      "top": 1060,
+      "left": 380,
+      "attrs": {
+        "travelLength": "30"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "oled:GND",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "oled:VCC",
+      "mega:5V",
+      "red",
+      []
+    ],
+    [
+      "oled:SCL",
+      "mega:21",
+      "blue",
+      []
+    ],
+    [
+      "oled:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "gyro:VCC",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "gyro:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "gyro:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "gyro:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_front:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_front:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_front:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_front:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_front:XSHUT",
+      "mega:30",
+      "orange",
+      []
+    ],
+    [
+      "tof_fl:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_fl:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_fl:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_fl:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_fl:XSHUT",
+      "mega:31",
+      "orange",
+      []
+    ],
+    [
+      "tof_fr:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_fr:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_fr:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_fr:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_fr:XSHUT",
+      "mega:32",
+      "orange",
+      []
+    ],
+    [
+      "tof_lf:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_lf:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_lf:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_lf:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_lf:XSHUT",
+      "mega:33",
+      "orange",
+      []
+    ],
+    [
+      "tof_lr:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_lr:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_lr:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_lr:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_lr:XSHUT",
+      "mega:34",
+      "orange",
+      []
+    ],
+    [
+      "tof_rf:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_rf:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_rf:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_rf:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_rf:XSHUT",
+      "mega:35",
+      "orange",
+      []
+    ],
+    [
+      "tof_rr:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_rr:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_rr:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_rr:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_rr:XSHUT",
+      "mega:36",
+      "orange",
+      []
+    ],
+    [
+      "tof_back:VIN",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "tof_back:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "tof_back:SCL",
+      "mega:21",
+      "green",
+      []
+    ],
+    [
+      "tof_back:SDA",
+      "mega:20",
+      "green",
+      []
+    ],
+    [
+      "tof_back:XSHUT",
+      "mega:37",
+      "orange",
+      []
+    ],
+    [
+      "us_front:VCC",
+      "mega:5V",
+      "purple",
+      []
+    ],
+    [
+      "us_front:TRIG",
+      "mega:39",
+      "purple",
+      []
+    ],
+    [
+      "us_front:ECHO",
+      "mega:10",
+      "purple",
+      []
+    ],
+    [
+      "us_front:GND",
+      "mega:GND.1",
+      "purple",
+      []
+    ],
+    [
+      "us_back:VCC",
+      "mega:5V",
+      "purple",
+      []
+    ],
+    [
+      "us_back:TRIG",
+      "mega:40",
+      "purple",
+      []
+    ],
+    [
+      "us_back:ECHO",
+      "mega:11",
+      "purple",
+      []
+    ],
+    [
+      "us_back:GND",
+      "mega:GND.1",
+      "purple",
+      []
+    ],
+    [
+      "tcs_floor:VCC",
+      "mega:5V",
+      "gray",
+      []
+    ],
+    [
+      "tcs_floor:GND",
+      "mega:GND.1",
+      "gray",
+      []
+    ],
+    [
+      "tcs_floor:S0",
+      "mega:5V",
+      "gray",
+      []
+    ],
+    [
+      "tcs_floor:S1",
+      "mega:GND.1",
+      "gray",
+      []
+    ],
+    [
+      "tcs_floor:S2",
+      "mega:41",
+      "gray",
+      []
+    ],
+    [
+      "tcs_floor:S3",
+      "mega:42",
+      "gray",
+      []
+    ],
+    [
+      "tcs_floor:OUT",
+      "mega:50",
+      "gray",
+      []
+    ],
+    [
+      "tcs_floor:LED",
+      "mega:43",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:VCC",
+      "mega:5V",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:GND",
+      "mega:GND.1",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:S0",
+      "mega:5V",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:S1",
+      "mega:GND.1",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:S2",
+      "mega:41",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:S3",
+      "mega:42",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:OUT",
+      "mega:51",
+      "gray",
+      []
+    ],
+    [
+      "tcs_front:LED",
+      "mega:44",
+      "gray",
+      []
+    ],
+    [
+      "qtr:VCC",
+      "mega:5V",
+      "green",
+      []
+    ],
+    [
+      "qtr:GND",
+      "mega:GND.1",
+      "green",
+      []
+    ],
+    [
+      "qtr:LEDON",
+      "mega:38",
+      "green",
+      []
+    ],
+    [
+      "qtr:1",
+      "mega:22",
+      "yellow",
+      []
+    ],
+    [
+      "qtr:2",
+      "mega:23",
+      "yellow",
+      []
+    ],
+    [
+      "qtr:3",
+      "mega:24",
+      "yellow",
+      []
+    ],
+    [
+      "qtr:4",
+      "mega:25",
+      "yellow",
+      []
+    ],
+    [
+      "qtr:5",
+      "mega:26",
+      "yellow",
+      []
+    ],
+    [
+      "qtr:6",
+      "mega:27",
+      "yellow",
+      []
+    ],
+    [
+      "qtr:7",
+      "mega:28",
+      "yellow",
+      []
+    ],
+    [
+      "qtr:8",
+      "mega:29",
+      "yellow",
+      []
+    ],
+    [
+      "motor_l:IN1",
+      "mega:5",
+      "brown",
+      []
+    ],
+    [
+      "motor_l:IN2",
+      "mega:6",
+      "brown",
+      []
+    ],
+    [
+      "motor_l:SLP",
+      "mega:4",
+      "brown",
+      []
+    ],
+    [
+      "motor_l:GND",
+      "mega:GND.1",
+      "brown",
+      []
+    ],
+    [
+      "motor_l:VCC",
+      "mega:5V",
+      "brown",
+      []
+    ],
+    [
+      "motor_l:ENC_A",
+      "mega:2",
+      "brown",
+      []
+    ],
+    [
+      "motor_l:ENC_B",
+      "mega:3",
+      "brown",
+      []
+    ],
+    [
+      "motor_r:IN1",
+      "mega:7",
+      "brown",
+      []
+    ],
+    [
+      "motor_r:IN2",
+      "mega:8",
+      "brown",
+      []
+    ],
+    [
+      "motor_r:SLP",
+      "mega:4",
+      "brown",
+      []
+    ],
+    [
+      "motor_r:GND",
+      "mega:GND.1",
+      "brown",
+      []
+    ],
+    [
+      "motor_r:VCC",
+      "mega:5V",
+      "brown",
+      []
+    ],
+    [
+      "motor_r:ENC_A",
+      "mega:18",
+      "brown",
+      []
+    ],
+    [
+      "motor_r:ENC_B",
+      "mega:19",
+      "brown",
+      []
+    ],
+    [
+      "brain:RX",
+      "mega:16",
+      "cyan",
+      []
+    ],
+    [
+      "brain:TX",
+      "mega:17",
+      "cyan",
+      []
+    ],
+    [
+      "brain:GND",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "logic:D0",
+      "mega:16",
+      "cyan",
+      []
+    ],
+    [
+      "logic:D1",
+      "mega:17",
+      "cyan",
+      []
+    ],
+    [
+      "logic:D2",
+      "mega:5",
+      "cyan",
+      []
+    ],
+    [
+      "logic:D3",
+      "mega:2",
+      "cyan",
+      []
+    ],
+    [
+      "logic:D4",
+      "mega:3",
+      "cyan",
+      []
+    ],
+    [
+      "logic:D5",
+      "mega:22",
+      "cyan",
+      []
+    ],
+    [
+      "logic:GND",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "servo_l:GND",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "servo_l:V+",
+      "mega:5V",
+      "red",
+      []
+    ],
+    [
+      "servo_l:PWM",
+      "mega:45",
+      "orange",
+      []
+    ],
+    [
+      "servo_r:GND",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "servo_r:V+",
+      "mega:5V",
+      "red",
+      []
+    ],
+    [
+      "servo_r:PWM",
+      "mega:46",
+      "orange",
+      []
+    ],
+    [
+      "key1:1.l",
+      "mega:47",
+      "green",
+      []
+    ],
+    [
+      "key1:2.l",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "key2:1.l",
+      "mega:48",
+      "green",
+      []
+    ],
+    [
+      "key2:2.l",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "key3:1.l",
+      "mega:49",
+      "green",
+      []
+    ],
+    [
+      "key3:2.l",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "key4:1.l",
+      "mega:53",
+      "green",
+      []
+    ],
+    [
+      "key4:2.l",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "led_blue:A",
+      "r_led_blue:2",
+      "green",
+      []
+    ],
+    [
+      "r_led_blue:1",
+      "mega:A1",
+      "green",
+      []
+    ],
+    [
+      "led_blue:C",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "led_green:A",
+      "r_led_green:2",
+      "green",
+      []
+    ],
+    [
+      "r_led_green:1",
+      "mega:A2",
+      "green",
+      []
+    ],
+    [
+      "led_green:C",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "buzzer:1",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "buzzer:2",
+      "mega:9",
+      "red",
+      []
+    ],
+    [
+      "battery:VCC",
+      "mega:5V",
+      "red",
+      []
+    ],
+    [
+      "battery:GND",
+      "mega:GND.1",
+      "black",
+      []
+    ],
+    [
+      "battery:SIG",
+      "mega:A0",
+      "green",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

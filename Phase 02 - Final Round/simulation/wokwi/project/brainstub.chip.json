@@ -1,0 +1,14 @@
+{
+  "name": "Brain stub (ESP32-CAM link)",
+  "author": "AProbotix (GuardianBot v4)",
+  "pins": ["RX", "TX", "GND", ""],
+  "controls": [
+    { "id": "enable", "label": "Send commands (0 = silent: tests the 250 ms watchdog)", "type": "range", "min": 0, "max": 1, "step": 1 },
+    { "id": "v_left", "label": "Left wheel set-point (mm/s)", "type": "range", "min": -600, "max": 600, "step": 10 },
+    { "id": "v_right", "label": "Right wheel set-point (mm/s)", "type": "range", "min": -600, "max": 600, "step": 10 },
+    { "id": "servo_left", "label": "Left gripper servo (deg)", "type": "range", "min": 0, "max": 180, "step": 1 },
+    { "id": "servo_right", "label": "Right gripper servo (deg)", "type": "range", "min": 0, "max": 180, "step": 1 },
+    { "id": "outputs", "label": "Outputs: 1 blue LED, 2 green LED, 4 floor TCS LEDs, 8 front TCS LEDs, 16 buzzer", "type": "range", "min": 0, "max": 31, "step": 1 },
+    { "id": "zero", "label": "Zero odometry + yaw (0 -> 1)", "type": "range", "min": 0, "max": 1, "step": 1 }
+  ]
+}

@@ -5,6 +5,7 @@
 | `mega_body/` | **Arduino Mega 2560** (real-time body): `mega_body.ino`, `pins.h` (pin map = the PCB deck), `protocol.h` (link frames) |
 | `esp32cam_brain/` | **ESP32-CAM (AI-Thinker, OV2640)** = brain + eye. Core 1 runs the mission (Sections 1–3); core 0 runs the camera task (160 × 120 frame → 48 × 32 grid). `config.h` holds geometry, speeds and servo angles; `protocol.h` is an identical copy |
 | `hostcheck/` | `check.sh`: compiles both sketches on a PC with stub Arduino headers (`g++ -Wall -Wextra`) |
+| (see also) | `simulation/wokwi/`: the Mega firmware in the Wokwi circuit simulator with every sensor, plus a simavr co-simulation test |
 | `sil/` | `build_sil.sh`: builds the brain as a PC program. `simulation/controllers/mega_sil` plays the Mega and the camera in Webots, so the exact brain firmware is tested against the simulated arena |
 
 The older firmware (v3.3: Mega + ESP32-S3 + a separate ESP32-CAM vision board) is kept in git tag `v3.3-pcb` and recorded in `versions/`.
@@ -57,7 +58,7 @@ The Mega puts the DRV8833 to sleep if no command arrives for 250 ms.
 1. **Mega only.** Flash `mega_body`.
    - With only USB connected, the OLED shows "ToF n/8 gyro ok". If n < 8, check that sensor's cable and XSHUT wire.
    - The Serial Monitor at 115200 prints one status line per second (sonar, ToF, line, encoders, yaw, keys, battery).
-2. **Encoders.** Turn each wheel forward by hand. `enc` must count **up** on both wheels; otherwise flip `ENC_L_SIGN` / `ENC_R_SIGN`.
+2. **Encoders.** Turn each wheel forward by hand. `enc` must count **up** on both wheels; otherwise flip `ENC_L_SIGN` / `ENC_R_SIGN`. Both are +1 for motors wired as on the PCB deck: the right encoder is read with A/B swapped to undo the mirrored motor.
 3. **Encoder counts.** Measure `ENC_CPR`: turn a wheel 10 times by hand, read `enc` and divide by 10. The gear ratio of the 300 rpm N20 is not printed. Set the value in **both** `mega_body.ino` and `esp32cam_brain/config.h`.
 4. **Brain.** Flash `esp32cam_brain`, plug in the link cable and power everything from the LiPo. The OLED shows "READY 1:GO 3:S3 4:CAL".
 5. **Motors.** Wheels off the ground: press K1. Both wheels must turn **forward** first; otherwise flip `MOT_*_SIGN`. Press reset to stop.

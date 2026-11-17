@@ -1,0 +1,30 @@
+* models.lib - approximate SPICE models for the GuardianBot v4 PCB deck checks.
+* Fitted to datasheet typicals (good enough for timing / level / droop checks, not for precision).
+
+* 2N7000 (ON Semi datasheet: Vth 2.1 V typ, Rds(on) ~ 4-6 ohm at Vgs 3.3 V, Ciss 20 pF, Crss 5 pF)
+.subckt Q2N7000 d g s
+M1 d g s s NM L=1u W=1u
+Cgs g s 20p
+Cgd g d 5p
+Dbody s d DBODY
+.model NM NMOS (LEVEL=1 VTO=2.1 KP=0.17 LAMBDA=0.01)
+.model DBODY D (IS=1e-12 RS=0.5 CJO=15p)
+.ends
+
+* BC547B (Philips typicals: hFE 290, VCE(sat) 0.09 V at 10 mA / 0.5 mA)
+.model BC547 NPN (IS=2.39e-14 NF=1.008 ISE=3.5e-15 NE=1.54 BF=294 IKF=0.136 VAF=63 NR=1.004 BR=7.9
++ RB=1 RE=0.47 RC=0.85 CJE=13.6p VJE=0.65 MJE=0.33 CJC=3.7p VJC=0.4 MJC=0.3 TF=0.44n)
+
+* Buck converter, cycle-averaged: regulates the output to vset (the loop makes up for the switch and
+* inductor resistance rsw, ~20 kHz loop), but in dropout the output can only reach vin - vdrop - rsw * I.
+* Draws Pout / (eff * Vin) from the input. Current limit is not modelled (check loads against the rating).
+.subckt BUCK vin vout gnd params: vset=5 vdrop=0.5 rsw=0.2 eff=0.85
+Vref ref gnd {vset}
+Rf1 ref f1 1k
+Cf1 f1 gnd 8n
+Bdrv drv gnd V = min(V(vin,gnd) - {vdrop}, V(f1,gnd) + {rsw} * I(Vsense))
+Rsw drv x {rsw}
+Lx x y 4.7u
+Vsense y vout 0
+Bin vin gnd I = max(0, V(vout,gnd) * I(Vsense)) / ({eff} * max(V(vin,gnd), 1))
+.ends
