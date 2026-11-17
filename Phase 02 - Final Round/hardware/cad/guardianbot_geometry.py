@@ -5,7 +5,8 @@ Built from the parts the team already has:
   Arduino Mega 2560 (real-time I/O) + ESP32-S3-DevKitC-1 (mission brain), L298N driver,
   2 x N20 12 V encoder gear-motors with 43 mm wheels, 3S 11.1 V LiPo (XT60),
   4 x HC-SR04, 5 x Sharp GP2Y0A21YK0F (10-80 cm), 2 x TCS3200 colour sensors,
-  5-channel TCRT5000 line array, MPU6050, 2 x Kpower M0170 metal-gear servos (gripper).
+  5-channel TCRT5000 line array, MPU6050, 2 x Kpower M0170 metal-gear servos (gripper),
+  ESP32-CAM (OV2640) vision board on a front mast: sees maze tiles and board pieces from a distance.
 
 Used by: simulation/make_guardianbot.py (Webots PROTO), make_acrylic_dxf.py, make_printed_parts.py
 Units: METRES, robot frame: origin on the floor under the axle centre, +x forward, +y left, +z up.
@@ -81,21 +82,29 @@ TCS_FRONT = (0.071, 0.0, 0.028)              # facing forward at game-piece heig
 CASTER_X = 0.060
 CASTER_BALL_R = 0.0063
 
+# ESP32-CAM vision board (OV2640) on a printed mast at the front of the top deck.
+# CAM = lens position (x, z) and the downward pitch (rad). CAM_FOV = horizontal field of view
+# after the ESP32-CAM crops its 160x120 frame to a 48x32 RGB565 grid (see firmware/esp32cam_vision).
+CAM_X, CAM_Z, CAM_PITCH = 0.062, 0.140, 0.50
+CAM_FOV = 0.90
+CAM_W, CAM_H = 48, 32
+ESP32CAM_BOARD = (0.027, 0.0405, 0.0045)     # width (y), height (z), PCB thickness
+
 # LiPo 3S 1300-1550 mAh, XT60
 BATTERY = ((0.038, 0.0), (0.035, 0.074, 0.026))
 
 # module footprints on the decks: name -> ((x, y), (size x, size y, height), deck)
 MODULES = {
     "mega": ((0.000, 0.000), (0.0533, 0.1016, 0.015), "top"),        # Arduino Mega 2560 (long axis along y)
-    "esp32s3": ((0.045, 0.0), (0.0254, 0.069, 0.012), "top"),        # ESP32-S3-DevKitC-1 (2 x USB-C)
+    "esp32s3": ((-0.045, 0.0), (0.0254, 0.069, 0.012), "top"),       # ESP32-S3-DevKitC-1 on a vero board, rear
     "l298n": ((-0.020, 0.0), (0.043, 0.043, 0.027), "mid"),          # L298N with heat sink
     "buck5": ((0.030, 0.025), (0.043, 0.021, 0.014), "mid"),         # LM2596 -> 5.1 V logic + sensors
     "buck6": ((0.030, -0.025), (0.043, 0.021, 0.014), "mid"),        # LM2596 -> 6.0 V servos
     "mpu6050": ((0.000, 0.048), (0.016, 0.021, 0.003), "mid"),
     "level": ((0.000, -0.048), (0.013, 0.016, 0.003), "mid"),        # 5 V <-> 3.3 V level shifter (UART)
 }
-TOP_BUTTONS = {"start": (-0.055, 0.020), "cal": (-0.055, -0.020)}
-TOP_LEDS = {"led_blue": (-0.045, 0.036), "led_green": (-0.045, -0.036)}
+TOP_BUTTONS = {"start": (0.052, 0.036), "cal": (0.052, -0.036)}
+TOP_LEDS = {"led_blue": (0.034, 0.058), "led_green": (0.034, -0.058)}
 
 
 def chassis_polys(r=R_BODY, px=POCKET_X, phw=POCKET_HW, n=40):

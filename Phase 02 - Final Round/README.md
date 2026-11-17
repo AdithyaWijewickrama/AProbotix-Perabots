@@ -4,7 +4,7 @@ PeraBots 2026, University category, final round (physical robot) – team AProbo
 
 Our robot is **GuardianBot v3**: a 150 mm round robot built from the parts the team owns.
 
-- **Controllers:** Arduino Mega 2560 (real-time I/O) and an ESP32-S3 (mission brain).
+- **Controllers:** Arduino Mega 2560 (real-time I/O), an ESP32-S3 (mission brain) and an ESP32-CAM (the eye: sees maze tiles 1–2 cells ahead).
 - **Drive:** L298N with two N20 encoder motors, on a 3S LiPo.
 - **Sensors:**
   - 4 × HC-SR04 ultrasonic
@@ -27,6 +27,7 @@ calibration and the competition procedure.
 |---|---|
 | Arduino Mega firmware (body: encoders, wheel PID, gyro, sonar/IR/line/colour, servos, link) | `firmware/mega_body/` |
 | ESP32-S3 firmware (brain: Sections 1–3, the same strategy as the simulation) | `firmware/esp32s3_brain/` |
+| ESP32-CAM firmware (48 × 32 RGB grid to the brain at ~15 fps) | `firmware/esp32cam_vision/` |
 | Software-in-the-loop: the real ESP32 C++ drives the Webots robot | `firmware/sil/` + `simulation/controllers/mega_sil/` |
 | Host compile check of both sketches | `firmware/hostcheck/check.sh` |
 | Earlier v3 draft: Mega-only sketch, based on assumed parts (2S LiPo, MG995, 65 mm wheels, front pocket). Keep it as a fallback only | `firmware/mega_guardian/`, `firmware/GuardianBot_v3_Mega_build_guide.md` |
@@ -35,9 +36,9 @@ Latest Webots results, 0 collisions in every run:
 
 | Run | END reached |
 |---|---|
-| Python controller, full mission | 183.7 s |
-| ESP32 firmware (software-in-the-loop), full mission | 183.2 s |
-| ESP32 firmware, Section 3 restart with no saved clues (inspects the board, reads pieces with the front colour sensor) | 119 s |
+| Python controller + camera, full mission | 153 s |
+| ESP32 firmware + emulated ESP32-CAM (software-in-the-loop, real-robot accelerations), full mission | 187.8 s |
+| ESP32 firmware, Section 3 restart with no saved clues (inspects the board, reads pieces with the front colour sensor) | 129 s |
 
 ## Folder map
 
@@ -53,7 +54,7 @@ Latest Webots results, 0 collisions in every run:
 | `firmware/` | Robot firmware (see above) |
 | `hardware/cad/` | Generator scripts: `guardianbot_geometry.py` (all dimensions), `make_acrylic_dxf.py`, `make_printed_parts.py`. The PCB scripts belong to v2 (obsolete) |
 | `hardware/acrylic/` | Laser-cut DXF + STL: base, mid and top decks (3 mm), and all three on one sheet |
-| `hardware/3d_prints/` | STL and STEP for the 13 printed parts (v3) |
+| `hardware/3d_prints/` | STL and STEP for the 14 printed parts (v3, including the camera mast) |
 | `hardware/pcb/` | v2 custom PCB (obsolete for v3, which is wired on a vero board) |
 | `analysis/` | Early investigation scripts (maze/obstacle extraction from the rulebook and the Phase 01 arena, frame checks) and the images extracted from the rulebook |
 | `archive/` | Earlier robot versions: `v1_TwoWheelRobot`, `v1_GuardianBot_ToF`, `v2_GuardianBot_HC-SR04_Sharp41` (v2 CAD, model generator, build guide) and the v2 project zip |
@@ -64,8 +65,8 @@ Latest Webots results, 0 collisions in every run:
 2. Press run (fast mode recommended). The controller prints its progress and also writes
    `simulation/controllers/main_controller/run_log.txt`.
 
-Last full run (v3): Section 1 at 18.5 s, maze explored at 87 s (3 blue + 2 green tiles),
-cylinder placed in position 7, END reached at 183.7 s, 0 collisions.
+Last full run (v3 + camera): Section 1 at 18.5 s, maze explored at 56 s (3 blue + 2 green tiles),
+cylinder placed in position 7, END reached at 153 s, 0 collisions.
 
 **Run the real firmware in Webots (software-in-the-loop).**
 

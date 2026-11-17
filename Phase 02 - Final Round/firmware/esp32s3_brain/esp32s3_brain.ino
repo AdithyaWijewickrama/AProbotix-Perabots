@@ -15,6 +15,10 @@
 //              line following on the 5-ch array with crossing fixes, rear-pocket
 //              pick and place, Sharp board inspection, front TCS3200 colour check
 //
+// Vision: an ESP32-CAM (firmware/esp32cam_vision) streams a 48x32 RGB565 grid at ~15 fps on
+// Serial2; the brain projects it onto the maze floor and votes tile colours for every cell the
+// camera can see through open walls, so the robot rarely has to drive into a dead end.
+//
 // Buttons: START          -> full mission (detects START area or maze entrance)
 //          hold CAL + START -> Section 3 restart with the clues saved in flash
 //          CAL alone       -> white-balance both TCS3200 (hold over white paper)
@@ -31,6 +35,7 @@
 #define HP_F  1.57079633f
 
 HardwareSerial Link(1);
+HardwareSerial Cam(2);
 Preferences prefs;
 
 // ============================================================ state
@@ -47,6 +52,31 @@ Command out = {0, 0, SERVO_L_CLOSED, SERVO_R_CLOSED, 0, 0};
 float whiteF[3] = {TCS_WHITE_DEFAULT, TCS_WHITE_DEFAULT, TCS_WHITE_DEFAULT};
 float whiteX[3] = {TCS_WHITE_DEFAULT, TCS_WHITE_DEFAULT, TCS_WHITE_DEFAULT};   // TCS white balance (counts on white)
 void (*senseHook)() = nullptr;
+
+// ---- camera frames
+uint16_t camImg[CAM_W * CAM_H];
+bool camNew = false;
+uint32_t camFrames = 0;
+void camPoll() {
+  static uint8_t buf[CAM_W * CAM_H * 2];
+  static uint8_t st = 0, sum = 0;
+  static uint16_t len = 0, pos = 0;
+  while (Cam.available()) {
+    uint8_t b = Cam.read();
+    switch (st) {
+      case 0: if (b == 0xA5) st = 1; break;
+      case 1: st = (b == 0x5A) ? 2 : 0; break;
+      case 2: if (b == 'V') { sum = b; st = 3; } else st = 0; break;
+      case 3: sum += b; st = 4; break;                               // seq
+      case 4: len = b; sum += b; st = 5; break;
+      case 5: len |= b << 8; sum += b; pos = 0; st = (len == sizeof(buf)) ? 6 : 0; break;
+      case 6: buf[pos++] = b; sum += b; if (pos >= len) st = 7; break;
+      case 7:
+        if (b == sum) { memcpy(camImg, buf, sizeof(buf)); camNew = true; camFrames++; }
+        st = 0; break;
+    }
+  }
+}
 
 static inline float wrapA(float a) {
   while (a > PI_F) a -= 2 * PI_F;
@@ -125,6 +155,7 @@ void step() {
   for (int i = 0; i < 4; i++) D[i] = tele.us[i] / 1000.0f;
   for (int i = 0; i < 5; i++) D[4 + i] = tele.ir[i] / 1000.0f;
   for (int i = 0; i < N_GS; i++) GSV[i] = GS_INVERT ? 1023 - tele.gs[i] : tele.gs[i];
+  camPoll();
 }
 
 float gyroZ() { return tele.gz; }
@@ -279,18 +310,81 @@ void decideColour(int c, int r) {
   if (seen[c][r] != FLOOR) logf_("tile %s at c%d r%d", seen[c][r] == BLUE ? "BLUE" : "GREEN", c + 1, r + 1);
 }
 
+// pixel -> floor point table (every 2nd pixel), same as the Webots controller
+#define MAX_PIX (CAM_W * CAM_H / 4)
+int16_t pixIdx[MAX_PIX]; float pixGx[MAX_PIX], pixGy[MAX_PIX]; int nPix = 0;
+void buildPix() {
+  float f = (CAM_W / 2.0f) / tanf(CAM_FOV / 2);
+  nPix = 0;
+  for (int v = 1; v < CAM_H; v += 2)
+    for (int u = 1; u < CAM_W; u += 2) {
+      float x = f, y = -(u + 0.5f - CAM_W / 2.0f), z = -(v + 0.5f - CAM_H / 2.0f);
+      float x2 = x * cosf(CAM_PITCH) + z * sinf(CAM_PITCH), z2 = -x * sinf(CAM_PITCH) + z * cosf(CAM_PITCH);
+      if (z2 >= -0.05f * sqrtf(x * x + y * y + z * z)) continue;
+      float t = -CAM_Z / z2, gx = CAM_X + t * x2, gy = t * y;
+      if (gx < 0.75f && nPix < MAX_PIX) { pixIdx[nPix] = v * CAM_W + u; pixGx[nPix] = gx; pixGy[nPix] = gy; nPix++; }
+    }
+}
+
+// is the centre of cell (c,r) visible from (cx,cy) through open walls only?
+bool canSee(float cx, float cy, int tc, int tr) {
+  float tx, ty; centre(tc, tr, tx, ty);
+  int n = (int)(hypotf(tx - cx, ty - cy) / 0.04f) + 1;
+  int pc = -1, pr = -1;
+  for (int k = 0; k <= n; k++) {
+    float f = (float)k / n;
+    int c, r; cellOf(cx + (tx - cx) * f, cy + (ty - cy) * f, c, r);
+    if (!inGrid(c, r)) { if (pc >= 0) return false; continue; }
+    if (pc < 0) { if ((c != 0 || r != 0) && k > 0) return false; pc = c; pr = r; continue; }
+    if (c != pc || r != pr) {
+      int dc = c - pc, dr = r - pr;
+      if (abs(dc) + abs(dr) != 1) return false;
+      int h = 0; while (h < 4 && !(DC[h] == dc && DR[h] == dr)) h++;
+      if (edge(pc, pr, h) != OPEN) return false;
+      pc = c; pr = r;
+    }
+  }
+  return true;
+}
+
 void look() {
-  if (fabsf(gyroZ()) > 1.5f || !(tele.flags & FLAG_TCS_NEW)) return;
-  int k = floorColour();
-  if (k == JUNK) return;
+  if (fabsf(gyroZ()) > 1.0f) return;
+  static int hits[COLS][ROWS][3];
+  memset(hits, 0, sizeof(hits));
+  bool any = false;
   float c_ = cosf(yaw), s_ = sinf(yaw);
-  float wx = px + c_ * TCS_FLOOR_X - s_ * TCS_FLOOR_Y, wy = py + s_ * TCS_FLOOR_X + c_ * TCS_FLOOR_Y;
-  float fx = (wx - MX0) / CELL, fy = (wy - MY0) / CELL;
-  int c = (int)floorf(fx), r = (int)floorf(fy);
-  if (!inGrid(c, r) || fabsf(fx - c - 0.5f) > 0.35f || fabsf(fy - r - 0.5f) > 0.35f) return;
-  votes[c][r][k]++;
-  // real TCS3200 gives one full RGB set every ~28 ms -> 6 votes decide (12 in the 60 Hz simulation)
-  if (seen[c][r] < 0 && votes[c][r][0] + votes[c][r][1] + votes[c][r][2] >= 6) { decideColour(c, r); mapDirty = true; }
+  if (camNew) {
+    camNew = false;
+    float camx = px + c_ * CAM_X, camy = py + s_ * CAM_X;
+    int8_t ok[COLS][ROWS]; memset(ok, -1, sizeof(ok));
+    for (int i = 0; i < nPix; i++) {
+      uint16_t v = camImg[pixIdx[i]];
+      float r = ((v >> 11) & 0x1F) * (255.0f / 31), g = ((v >> 5) & 0x3F) * (255.0f / 63), b = (v & 0x1F) * (255.0f / 31);
+      int k = classify(r, g, b);
+      if (k == JUNK) continue;
+      float wx = px + c_ * pixGx[i] - s_ * pixGy[i], wy = py + s_ * pixGx[i] + c_ * pixGy[i];
+      float fx = (wx - MX0) / CELL, fy = (wy - MY0) / CELL;
+      int c = (int)floorf(fx), rr = (int)floorf(fy);
+      if (!inGrid(c, rr) || fabsf(fx - c - 0.5f) > 0.36f || fabsf(fy - rr - 0.5f) > 0.36f) continue;
+      if (ok[c][rr] < 0) ok[c][rr] = canSee(camx, camy, c, rr);
+      if (ok[c][rr]) { hits[c][rr][k]++; any = true; }
+    }
+  }
+  if (tele.flags & FLAG_TCS_NEW) {
+    int k = floorColour();
+    if (k != JUNK) {
+      float fx = (px + c_ * TCS_FLOOR_X - s_ * TCS_FLOOR_Y - MX0) / CELL, fy = (py + s_ * TCS_FLOOR_X + c_ * TCS_FLOOR_Y - MY0) / CELL;
+      int c = (int)floorf(fx), r = (int)floorf(fy);
+      if (inGrid(c, r) && fabsf(fx - c - 0.5f) <= 0.35f && fabsf(fy - r - 0.5f) <= 0.35f) { hits[c][r][k] += 3; any = true; }
+    }
+  }
+  if (!any) return;
+  for (int c = 0; c < COLS; c++) for (int r = 0; r < ROWS; r++) {
+    int s = hits[c][r][0] + hits[c][r][1] + hits[c][r][2];
+    if (!s) continue;
+    for (int j = 0; j < 3; j++) votes[c][r][j] += hits[c][r][j];
+    if (seen[c][r] < 0 && votes[c][r][0] + votes[c][r][1] + votes[c][r][2] >= 12) { decideColour(c, r); mapDirty = true; }
+  }
 }
 
 void mazeSense() {
@@ -336,7 +430,7 @@ void endBonus() {
 }
 
 int sid(int c, int r, int h) { return (c * ROWS + r) * 4 + h; }
-bool plan(int c0, int r0, int h0, bool (*goal)(int, int), bool allowUnk, bool bonus) {
+bool plan(int c0, int r0, int h0, bool (*goal)(int, int, int), bool allowUnk, bool bonus) {
   static float best[NST]; static int prev[NST]; static bool done[NST];
   for (int i = 0; i < NST; i++) { best[i] = 1e9f; prev[i] = -1; done[i] = false; }
   int s0 = sid(c0, r0, h0);
@@ -348,7 +442,7 @@ bool plan(int c0, int r0, int h0, bool (*goal)(int, int), bool allowUnk, bool bo
     if (s < 0) break;
     done[s] = true;
     int h = s % 4, r = (s / 4) % ROWS, c = s / 4 / ROWS;
-    if (goal(c, r)) {
+    if (goal(c, r, h)) {
       float sc = bd - (bonus ? bonusArr[c][r] : 0);
       if (sc < pickSc) { pick = s; pickSc = sc; }
       if (!bonus) break;
@@ -376,8 +470,15 @@ bool plan(int c0, int r0, int h0, bool (*goal)(int, int), bool allowUnk, bool bo
   }
   return true;
 }
-bool exploreGoal(int c, int r) { return needed(c, r); }
-bool endGoal(int c, int r) { return c == END_C && r == END_R; }
+// stand where the camera looks at an undecided possible dead end 1 or 2 cells ahead
+bool exploreGoal(int c, int r, int h) {
+  int nc = c + DC[h], nr = r + DR[h];
+  if (!inGrid(nc, nr) || edge(c, r, h) == WALL) return false;
+  if (needed(nc, nr)) return true;
+  int fc = nc + DC[h], fr = nr + DR[h];
+  return edge(c, r, h) == OPEN && inGrid(fc, fr) && edge(nc, nr, h) == OPEN && needed(fc, fr);
+}
+bool endGoal(int c, int r, int h) { return c == END_C && r == END_R; }
 
 void showMajority() {
   int nb = 0, ng = 0;
@@ -443,8 +544,18 @@ void runMaze() {
       if (pathN == 1) {
         if (c == END_C && r == END_R && !exploring) return;
         wait++;
-        if (wait > 3 && seen[c][r] < 0) decideColour(c, r);
-        if (wait > 8 && seen[c][r] < 0) seen[c][r] = FLOOR;
+        if (wait > 6) {                      // looking at the cells ahead: decide on the votes so far
+          int cc = c, cr = r;
+          for (int k = 0; k < 2; k++) {
+            if (edge(cc, cr, h) != OPEN) break;
+            cc += DC[h]; cr += DR[h];
+            if (inGrid(cc, cr) && seen[cc][cr] < 0) decideColour(cc, cr);
+          }
+        }
+        if (wait > 12) {
+          int cc = c + DC[h], cr = r + DR[h];
+          for (int k = 0; k < 2; k++) { if (inGrid(cc, cr) && seen[cc][cr] < 0) seen[cc][cr] = FLOOR; cc += DC[h]; cr += DR[h]; }
+        }
         continue;
       }
       h = pathH[1];
@@ -465,7 +576,9 @@ void runMaze() {
 #define NX 122
 #define NY 68
 static const float R_HARD = 0.086f, R_INF = 0.096f, R_SOFT = 0.14f;   // 75 mm body + grid margin
-uint8_t occ[NX * NY];
+uint8_t occ[NX * NY], wallCell[NX * NY];
+float cellX(int k);
+float cellY(int k);
 float clearD[NX * NY];
 bool newObs = false;
 struct Off { int8_t di, dj; float dd; };
@@ -493,6 +606,19 @@ void gridInit() {
   }
   markRect(0, 0, 2.44f, 0.006f); markRect(0, 0, 0.006f, 1.22f); markRect(2.434f, 0, 2.44f, 1.22f);
   markRect(0, 1.214f, 0.101f, 1.36f); markRect(0.339f, 1.214f, 2.44f, 1.36f);
+  memcpy(wallCell, occ, sizeof(occ));
+}
+
+// drop sensed obstacles within rad (arena walls stay) and rebuild the clearance map
+void forgetNear(float rad) {
+  for (int k = 0; k < NX * NY; k++)
+    if (occ[k] && !wallCell[k] && hypotf(cellX(k) - px, cellY(k) - py) < rad) occ[k] = 0;
+  static uint8_t keep[NX * NY];
+  memcpy(keep, occ, sizeof(occ));
+  memset(occ, 0, sizeof(occ));
+  for (int k = 0; k < NX * NY; k++) clearD[k] = 9.0f;
+  for (int k = 0; k < NX * NY; k++) if (keep[k]) mark(k % NX, k / NX);
+  newObs = true;
 }
 
 void s1Sense() {
@@ -500,10 +626,10 @@ void s1Sense() {
   for (int n = 0; n < N_SENS; n++) {
     float d = D[n];
     if (d >= rngMax(n) || (SENS[n].sonar && d > US_MAP_MAX)) continue;
-    if (!SENS[n].sonar && (d > IR_MAP_MAX || d <= IR_MIN)) continue;
+    if (!SENS[n].sonar && d > IR_MAP_MAX) continue;      // inside 10 cm a Sharp reads ~10 cm: still an obstacle
     float ox, oy, a; ray(n, ox, oy, a);
     float hx = ox + d * cosf(a), hy = oy + d * sinf(a);
-    if (fix && (n == US_FRONT || n == IR_LEFT || n == IR_RIGHT || n == US_BACK)) {
+    if (fix && d > IR_MIN && (n == US_FRONT || n == IR_LEFT || n == IR_RIGHT || n == US_BACK)) {
       const float faces[4] = {0.006f, 2.434f, 0.006f, 1.214f};
       for (int f = 0; f < 4; f++) {
         bool isx = f < 2;
@@ -536,7 +662,7 @@ PQ hpop() {
   return top;
 }
 static float bestA[NX * NY]; static int prevA[NX * NY];
-bool astar(float sx, float sy, float gx, float gy) {
+bool astar(float sx, float sy, float gx, float gy, float hard = R_HARD) {
   int si = sx / G, sj = sy / G, gi = gx / G, gj = gy / G;
   int s = sj * NX + si, g = gj * NX + gi;
   for (int k = 0; k < NX * NY; k++) { bestA[k] = 1e9f; prevA[k] = -1; }
@@ -558,7 +684,7 @@ bool astar(float sx, float sy, float gx, float gy) {
       if (a < 0 || a >= NX || b < 0 || b >= NY) continue;
       int k2 = b * NX + a;
       float cl = clearD[k2];
-      if (cl < R_HARD) continue;
+      if (cl < hard) continue;
       float m = cl < R_INF ? 25.0f : cl < R_SOFT ? 1.0f + 2.5f * (R_SOFT - cl) / (R_SOFT - R_INF) : 1.0f;
       float d2 = e.d + (q < 4 ? 1.0f : 1.41421356f) * m;
       if (d2 < bestA[k2]) {
@@ -605,11 +731,19 @@ bool s1Done() { return py > 1.12f && fabsf(px - 0.22f) < 0.03f; }
 
 void runS1() {
   senseHook = s1Sense;
-  int stuck = 0;
+  int stuck = 0, fails = 0;
   while (!s1Done()) {
     bool ok = astar(px, py, S1_GX, S1_GY);
+    if (!ok || apathN == 0) ok = astar(px, py, S1_GX, S1_GY, 0.078f);   // squeeze: body radius + 3 mm
+    if (!ok || apathN == 0) {
+      if (++fails >= 2) {
+        logf_("S1: no way out on the map at %.3f %.3f - forgetting obstacles within 35 cm", px, py);
+        forgetNear(0.35f); fails = 0;
+      }
+      turnTo(wrapA(yaw + 1.6f)); newObs = false; continue;
+    }
+    fails = 0;
     newObs = false;
-    if (!ok || apathN == 0) { turnTo(wrapA(yaw + 1.0f)); continue; }
     float hd, dist; pickSeg(hd, dist);
     if (fabsf(wrapA(hd - yaw)) > 0.01f) { turnTo(hd, 0.008f); if (newObs) continue; }
     float x0 = px, y0 = py, moved = 0;
@@ -1057,6 +1191,9 @@ void setup() {
   Serial.begin(115200);
   Link.setRxBufferSize(1024);
   Link.begin(LINK_BAUD, SERIAL_8N1, LINK_RX_PIN, LINK_TX_PIN);
+  Cam.setRxBufferSize(8192);
+  Cam.begin(CAM_BAUD, SERIAL_8N1, CAM_RX_PIN, CAM_TX_PIN);
+  buildPix();
   prefs.begin("gb", true);
   prefs.getBytes("wF", whiteF, sizeof(whiteF));
   prefs.getBytes("wX", whiteX, sizeof(whiteX));
@@ -1075,6 +1212,8 @@ void loop() {
   if (rise & BTN_START) {
     bool s3 = b & BTN_CAL;
     out.out = OUT_TCS_FLOOR; out.ctl = CTL_ZERO_ODOM | CTL_GYRO_CAL;
+    { uint8_t led[2] = {'L', CAM_LED}; Cam.write(led, 2); }
+    logf_("camera frames so far: %lu", (unsigned long)camFrames);
     for (int i = 0; i < 70; i++) step();                // gyro bias re-measure (robot still, 1.4 s)
     firstStep = true; yawOff = HP_F; tSim = 0;
     step();

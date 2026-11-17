@@ -2,7 +2,7 @@
 # The Nine Seals of Pera - Autonomous Controller for GuardianBot v2
 #   v3 (final build): 4 x HC-SR04 (us_*), 5 x Sharp GP2Y0A21 (ir_*, 10-80 cm),
 #            5-ch TCRT5000 line array (gs*), 2 x TCS3200 (tcs_floor, tcs_front),
-#            MPU6050, N20 hall encoders, two servo gripper arms (grip_left / grip_right).
+#            ESP32-CAM (cam, 48x32), MPU6050, N20 hall encoders, two servo gripper arms.
 #   The real robot runs the same strategy in firmware/esp32s3_brain (C++).
 #
 # Section 1 & 2: User's optimized A* path planner, sensor ray-casting,
@@ -94,6 +94,9 @@ tcs_floor.enable(TS)
 tcs_front = robot.getDevice('tcs_front')
 tcs_front.enable(TS)
 TCS_FLOOR_XY = (0.012, 0.030)          # floor colour sensor position (robot frame)
+cam = robot.getDevice('cam')            # ESP32-CAM: the real robot receives the same 48x32 grid over UART
+cam.enable(TS)
+CW, CH = cam.getWidth(), cam.getHeight()
 
 
 def rng_max(n):
@@ -202,6 +205,21 @@ def stop_now(n=4):
         set_vw(0, 0)
         step()
 
+
+CAM_X, CAM_Z, CAM_P, CAM_FOV = 0.062 - PIV_X, 0.140, 0.50, 0.90
+_f = (CW / 2) / math.tan(CAM_FOV / 2)
+PIX = []                                # (byte index, ground x, ground y) for every 2nd pixel that sees the floor
+for v in range(1, CH, 2):
+    for u in range(1, CW, 2):
+        x, y, z = _f, -(u + 0.5 - CW / 2), -(v + 0.5 - CH / 2)
+        x2 = x * math.cos(CAM_P) + z * math.sin(CAM_P)
+        z2 = -x * math.sin(CAM_P) + z * math.cos(CAM_P)
+        if z2 >= -0.05 * math.sqrt(x * x + y * y + z * z):
+            continue
+        t = -CAM_Z / z2
+        gx, gy = CAM_X + t * x2, t * y
+        if gx < 0.75:
+            PIX.append((4 * (v * CW + u), gx, gy))
 
 BLUE, GREEN, FLOOR, JUNK = 1, 2, 0, -1
 
@@ -376,26 +394,44 @@ def can_see(cx, cy, key):
 
 
 def look():
-    """Floor TCS3200: vote for the colour of the maze cell the sensor is over."""
+    """Tile colours: camera votes for every cell it can see (through open walls), floor TCS3200 for the cell below."""
     global map_dirty
-    if abs(gyro.getValues()[2]) > 1.5:
-        return
-    k = classify(*tcs_rgb(tcs_floor))
-    if k == JUNK:
+    if abs(gyro.getValues()[2]) > 1.0:
         return
     c_, s_ = math.cos(yaw), math.sin(yaw)
-    tx, ty = TCS_FLOOR_XY
-    wx = px + c_ * tx - s_ * ty
-    wy = py + s_ * tx + c_ * ty
-    fx, fy = (wx - MX0) / CELL, (wy - MY0) / CELL
-    c, r = int(math.floor(fx)), int(math.floor(fy))
-    if not in_grid(c, r) or abs(fx - c - 0.5) > 0.35 or abs(fy - r - 0.5) > 0.35:
-        return
-    v = votes.setdefault((c, r), [0, 0, 0])
-    v[k] += 1
-    if (c, r) not in seen and sum(v) >= 12:
-        decide_colour((c, r))
-        map_dirty = True
+    hits = {}
+    img = cam.getImage()
+    if img:
+        camx, camy = px + c_ * CAM_X, py + s_ * CAM_X
+        ok = {}
+        for i, gx, gy in PIX:
+            k = classify(img[i + 2], img[i + 1], img[i])
+            if k == JUNK:
+                continue
+            wx = px + c_ * gx - s_ * gy
+            wy = py + s_ * gx + c_ * gy
+            fx, fy = (wx - MX0) / CELL, (wy - MY0) / CELL
+            c, r = int(math.floor(fx)), int(math.floor(fy))
+            if not in_grid(c, r) or abs(fx - c - 0.5) > 0.36 or abs(fy - r - 0.5) > 0.36:
+                continue
+            if (c, r) not in ok:
+                ok[(c, r)] = can_see(camx, camy, (c, r))
+            if ok[(c, r)]:
+                hits.setdefault((c, r), [0, 0, 0])[k] += 1
+    k = classify(*tcs_rgb(tcs_floor))
+    if k != JUNK:
+        tx, ty = TCS_FLOOR_XY
+        fx, fy = (px + c_ * tx - s_ * ty - MX0) / CELL, (py + s_ * tx + c_ * ty - MY0) / CELL
+        c, r = int(math.floor(fx)), int(math.floor(fy))
+        if in_grid(c, r) and abs(fx - c - 0.5) <= 0.35 and abs(fy - r - 0.5) <= 0.35:
+            hits.setdefault((c, r), [0, 0, 0])[k] += 3          # the floor sensor is the most trusted vote
+    for key, h in hits.items():
+        v = votes.setdefault(key, [0, 0, 0])
+        for j in range(3):
+            v[j] += h[j]
+        if key not in seen and sum(v) >= 12:
+            decide_colour(key)
+            map_dirty = True
 
 
 def decide_colour(key):
@@ -482,8 +518,14 @@ def end_bonus():
 
 
 def explore_goal(c, r, h):
-    """Next cell to visit: an unvisited cell that may be a dead end (only dead ends hold tiles)."""
-    return needed(c, r)
+    """Stand where the camera sees an undecided possible dead end 1 or 2 cells ahead."""
+    nc, nr = c + DIRS[h][0], r + DIRS[h][1]
+    if not in_grid(nc, nr) or edge(c, r, h) == WALL:
+        return False
+    if needed(nc, nr):
+        return True
+    fc, fr = nc + DIRS[h][0], nr + DIRS[h][1]
+    return edge(c, r, h) == OPEN and in_grid(fc, fr) and edge(nc, nr, h) == OPEN and needed(fc, fr)
 
 
 def end_goal(c, r, h):
@@ -591,10 +633,20 @@ def run_maze():
                 if (c, r) == END and not exploring:
                     return
                 wait += 1
-                if wait > 3 and (c, r) not in seen:
-                    decide_colour((c, r))           # we are standing in it: the floor sensor has voted
+                if wait > 4:                         # looking at the cells ahead: decide on the votes so far
+                    cc, cr = c, r
+                    for _ in range(2):
+                        if edge(cc, cr, h) != OPEN:
+                            break
+                        cc, cr = cc + DIRS[h][0], cr + DIRS[h][1]
+                        if in_grid(cc, cr) and (cc, cr) not in seen:
+                            decide_colour((cc, cr))
                 if wait > 8:
-                    seen.setdefault((c, r), FLOOR)
+                    cc, cr = c + DIRS[h][0], r + DIRS[h][1]
+                    for _ in range(2):
+                        if in_grid(cc, cr):
+                            seen.setdefault((cc, cr), FLOOR)
+                        cc, cr = cc + DIRS[h][0], cr + DIRS[h][1]
                 continue
             h = p[1][2]
             aim(h)
@@ -648,6 +700,7 @@ mark_rect(0, 0, 0.006, 1.22)
 mark_rect(2.434, 0, 2.44, 1.22)
 mark_rect(0, 1.214, 0.101, 1.36)
 mark_rect(0.339, 1.214, 2.44, 1.36)
+WALL_CELL = bytes(occ)                  # arena walls: never forgotten
 
 
 def s1_sense():
@@ -657,11 +710,11 @@ def s1_sense():
         d = D[n]
         if d >= rng_max(n) or (n.startswith('us_') and d > US_MAP_MAX):
             continue                    # wide sonar cone: only trust close echoes for the map
-        if n.startswith('ir_') and (d > IR_MAP_MAX or d <= IR_MIN):
-            continue                    # Sharp: noisy past 50 cm, ambiguous inside 10 cm
+        if n.startswith('ir_') and d > IR_MAP_MAX:
+            continue                    # Sharp: noisy past 50 cm (inside 10 cm it reads ~10 cm: still an obstacle)
         ox, oy, a = ray(n)
         hx, hy = ox + d * math.cos(a), oy + d * math.sin(a)
-        if fix and n in AXIS_SENS:
+        if fix and n in AXIS_SENS and d > IR_MIN:
             for face, isx in ((0.006, 1), (2.434, 1), (0.006, 0), (1.214, 0)):
                 if isx and abs(math.sin(a)) < 0.06 and abs(hx - face) < 0.03:
                     px += 0.25 * (face - hx)
@@ -674,7 +727,8 @@ def s1_sense():
                 mark(int(ex / G), int(ey / G))
 
 
-def astar(sx, sy, gx, gy):
+def astar(sx, sy, gx, gy, hard=None):
+    hard = R_HARD if hard is None else hard
     si, sj = int(sx / G), int(sy / G)
     gi, gj = int(gx / G), int(gy / G)
     s, g = sj * NX + si, gj * NX + gi
@@ -700,7 +754,7 @@ def astar(sx, sy, gx, gy):
                 continue
             k2 = b * NX + a
             cl = clear[k2]
-            if cl < R_HARD:
+            if cl < hard:
                 continue
             if cl < R_INF:
                 m = 25.0
@@ -757,6 +811,25 @@ def s1_done():
     return py > 1.12 and abs(px - 0.22) < 0.03
 
 
+def forget_near(rad):
+    """Drop sensed obstacle cells within rad of the robot (arena walls stay) and rebuild the clearance map.
+    Used when the map has closed every way out: noisy marks get re-sensed on the next look around."""
+    global new_obs
+    for j in range(NY):
+        for i in range(NX):
+            k = j * NX + i
+            if occ[k] and math.hypot((i + 0.5) * G - px, (j + 0.5) * G - py) < rad and not WALL_CELL[k]:
+                occ[k] = 0
+    for k in range(NX * NY):
+        clear[k] = 9.0
+    cells = [k for k in range(NX * NY) if occ[k]]
+    for k in cells:
+        occ[k] = 0
+    for k in cells:
+        mark(k % NX, k // NX)
+    new_obs = True
+
+
 def back_off():
     for _ in range(15):
         set_vw(-0.08, 0)
@@ -769,12 +842,22 @@ def run_s1():
     global new_obs, sense_hook
     sense_hook = s1_sense
     stuck = 0
+    fails = 0
     while not s1_done():
         path = astar(px, py, *S1_GOAL)
-        new_obs = False
         if not path:
-            turn_to(wrap(yaw + 1.0))
+            path = astar(px, py, *S1_GOAL, hard=0.078)      # squeeze: body radius + 3 mm
+        if not path:
+            fails += 1
+            if fails >= 2:
+                print('S1: no way out on the map - forgetting obstacles within 35 cm and looking again')
+                forget_near(0.35)
+                fails = 0
+            turn_to(wrap(yaw + 1.6))
+            new_obs = False
             continue
+        fails = 0
+        new_obs = False
         hd, dist = pick_seg(path)
         if abs(wrap(hd - yaw)) > 0.01:
             turn_to(hd, 0.008)

@@ -4,8 +4,9 @@
 |---|---|
 | `mega_body/` | **Arduino Mega 2560**: `mega_body.ino`, `pins.h` (pin map), `protocol.h` (link frames) |
 | `esp32s3_brain/` | **ESP32-S3**: `esp32s3_brain.ino` (Sections 1–3), `config.h` (geometry, speeds, servo angles), `protocol.h` (identical copy) |
+| `esp32cam_vision/` | **ESP32-CAM (AI-Thinker, OV2640)**: crops each frame to the brain's field of view and sends a 48 × 32 RGB565 grid (`A5 5A 'V' seq len16 data sum8`, 921600 baud, about 15 fps) to ESP32-S3 GPIO15. The `'L' n` command sets the flash LED |
 | `hostcheck/` | `check.sh`: compiles both sketches on a PC with stub Arduino headers (`g++ -Wall -Wextra`) |
-| `sil/` | `build_sil.sh`: builds the brain as a PC program. `simulation/controllers/mega_sil` plays the Mega in Webots, so the exact firmware is tested against the simulated arena |
+| `sil/` | `build_sil.sh`: builds the brain as a PC program. `simulation/controllers/mega_sil` plays both the Mega and the ESP32-CAM in Webots, so the exact firmware is tested against the simulated arena |
 | `mega_guardian/`, `test/`, `GuardianBot_v3_Mega_build_guide.md` | earlier Mega-only draft (assumed 2S LiPo, MG995 servos, 65 mm wheels). Not used by the current build |
 
 ## Link protocol (`protocol.h`)

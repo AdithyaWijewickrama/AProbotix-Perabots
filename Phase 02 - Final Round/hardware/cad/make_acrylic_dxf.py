@@ -6,7 +6,7 @@ Writes into ../acrylic/:
   deck_base_3mm.dxf    base: wheel notches, N20 clamps, caster, line array, floor TCS3200,
                        Sharp side tower, front TCS bracket, pocket, battery strap slots
   deck_mid_3mm.dxf     mid: L298N, 2 x LM2596, MPU6050, front Sharp hanger, servo cradles + hub notches
-  deck_top_3mm.dxf     top: Arduino Mega 2560, ESP32-S3 holder, 4 x HC-SR04 hangers, START/CAL, 2 LEDs
+  deck_top_3mm.dxf     top: Arduino Mega 2560, ESP32-S3 vero board, ESP32-CAM mast, 4 x HC-SR04 hangers, START/CAL, 2 LEDs
   sheet_layout.dxf     all three decks on one 480 x 160 mm sheet
   deck_*.stl           3 mm plates (for the assembly preview)
 Every hole position comes from guardianbot_geometry.py (same numbers as the Webots model).
@@ -18,7 +18,7 @@ import os
 import cadquery as cq
 import ezdxf
 
-from guardianbot_geometry import (BASE_STANDOFFS, BATTERY, CASTER_X, HINGE_X, HINGE_Y, LINE_X, MID_R,
+from guardianbot_geometry import (CAM_X, BASE_STANDOFFS, BATTERY, CASTER_X, HINGE_X, HINGE_Y, LINE_X, MID_R,
                                   MODULES, POCKET_HW, POCKET_X, R_BODY, SERVO_BODY, SHARP, TCS_FLOOR,
                                   TCS_FRONT, TOP_BUTTONS, TOP_LEDS, TOP_R, TOP_STANDOFFS, TRACK_HALF, US,
                                   WHEEL_R, WHEEL_W)
@@ -144,7 +144,10 @@ def top():
         p.hole(m(mx) + (by - MEGA_W / 2), m(my) - (bx - MEGA_L / 2), M3)
     (ex, ey), (el, ew, eh), _ = MODULES["esp32s3"]
     for s in (1, -1):
-        p.slot(m(ex) + 16.0, s * 30.0, 8.0, 3.2, 0)                     # ESP32-S3 strap
+        p.hole(m(ex) - 8.0, s * (m(ew) / 2 + 4.0), M3)                  # ESP32-S3 vero board (rear)
+        p.hole(m(ex) + 8.0, s * (m(ew) / 2 + 4.0), M3)
+    for s in (1, -1):
+        p.hole(m(CAM_X) - 18.0, s * 10.0, M3)                           # camera mast foot
     for name, (x, y, z, a) in US.items():
         r = math.hypot(x, y) * MM - 14.0
         for k in (-12.0, 12.0):

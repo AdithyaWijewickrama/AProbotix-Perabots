@@ -11,6 +11,15 @@
 #define STEP_S      0.020f      // one telemetry frame = one control step (50 Hz)
 #endif
 
+// ---------------------------------------------------------------- ESP32-CAM link and optics
+#define CAM_RX_PIN 15           // <- ESP32-CAM U0TXD (GPIO1)
+#define CAM_TX_PIN 16           // -> ESP32-CAM U0RXD (GPIO3)
+#define CAM_BAUD   921600UL
+#define CAM_W 48
+#define CAM_H 32
+static const float CAM_X = 0.062f, CAM_Z = 0.140f, CAM_PITCH = 0.50f, CAM_FOV = 0.90f;
+static const uint8_t CAM_LED = 0;          // ESP32-CAM flash LED PWM during the run (0 = off)
+
 // ---------------------------------------------------------------- drive
 static const float R_WHEEL    = 0.0215f;   // 43 mm wheels
 static const float HALF_TRACK = 0.062f;    // 124 mm track

@@ -5,6 +5,8 @@ This Webots controller plays the part of the Arduino Mega (firmware/mega_body):
 every 16 ms it sends a binary Telemetry frame (firmware/mega_body/protocol.h) to
 the ESP32-S3 brain - compiled for the PC by firmware/sil/build_sil.sh - and
 applies the Command frame the brain sends back (wheel speeds, servos, LEDs).
+It also plays the ESP32-CAM (firmware/esp32cam_vision): every 4th step it sends
+the 48x32 camera grid as an RGB565 'V' frame, one frame late (real latency).
 So the exact C++ that will be flashed to the ESP32-S3 drives the simulated robot.
 
 Use: build the brain (firmware/sil/build_sil.sh), set the robot's controller to
@@ -39,6 +41,8 @@ US = [dev(n) for n in ('us_front', 'us_left', 'us_right', 'us_back')]
 IR = [dev(n) for n in ('ir_front', 'ir_fl', 'ir_fr', 'ir_left', 'ir_right')]
 GS = [dev('gs%d' % i) for i in range(5)]
 tf, tx = dev('tcs_floor'), dev('tcs_front')
+cam = dev('cam')
+cam.enable(TS)
 for d in [le, re_, imu, gyro, tf, tx] + US + IR + GS:
     d.enable(TS)
 gl, gr = dev('grip_left'), dev('grip_right')
@@ -46,8 +50,27 @@ led_b, led_g = dev('led_blue'), dev('led_green')
 
 section3 = 'section3' in sys.argv[1:]
 log = open(os.path.join(HERE, 'sil_log.txt'), 'w')
+cam_r, cam_w = os.pipe()                     # ESP32-CAM stream: the brain reads fd SIL_CAM_FD
 brain = subprocess.Popen([BRAIN], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log,
-                         cwd=HERE, bufsize=0)
+                         cwd=HERE, bufsize=0, pass_fds=(cam_r,), env=dict(os.environ, SIL_CAM_FD=str(cam_r)))
+os.close(cam_r)
+cam_seq = 0
+cam_pending = None
+
+
+def cam_frame():
+    """Webots BGRA image -> 'V' frame with little-endian RGB565 pixels."""
+    global cam_seq
+    img = cam.getImage()
+    out = bytearray()
+    for i in range(0, len(img), 4):
+        b, g, r = img[i], img[i + 1], img[i + 2]
+        v = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
+        out += bytes((v & 0xFF, v >> 8))
+    hdr = bytes([0xA5, 0x5A, ord('V'), cam_seq & 0xFF, len(out) & 0xFF, len(out) >> 8])
+    cam_seq += 1
+    s = (sum(hdr[2:]) + sum(out)) & 0xFF
+    return hdr + bytes(out) + bytes([s])
 
 
 def rgb(cam):
@@ -123,6 +146,13 @@ while robot.step(TS) != -1:
     flags = 0x02 | (0x04 if k % 2 == 0 else 0)
     p = TELE.pack(k * TS, ticks[0], ticks[1], yaw_unwrapped - yaw0, gyro.getValues()[2],
                   *us, *ir, *gs, *rgb(tf), *rgb(tx), 12000, btn, flags, k & 0xFF)
+    if k % 4 == 0:
+        if cam_pending:
+            try:
+                os.write(cam_w, cam_pending)
+            except OSError:
+                pass
+        cam_pending = cam_frame()
     try:
         brain.stdin.write(frame(0x54, p))
     except BrokenPipeError:
