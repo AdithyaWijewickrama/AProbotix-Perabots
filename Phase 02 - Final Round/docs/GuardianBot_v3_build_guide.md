@@ -60,7 +60,7 @@ Latest results, with 0 collisions in every run:
 | MPU6050 | 1 | gyro Z, for the heading |
 | Kpower M0170 metal servo | 2 | one per gripper arm |
 | LM2596 bucks | 2 | 5.1 V logic and sensors, 6.0 V servos (use the green one with the display to set the voltages) |
-| 4-ch logic level shifter | 1 | Mega 5 V UART ↔ ESP32 3.3 V |
+| 4-ch logic level shifter | 1 | only for the vero-board fallback; the shield has its own link circuit |
 | Ball caster | 1 | front support |
 | LiPo checker / buzzer | 1 | stays on the balance lead |
 | 3D printer + laser cutter | – | the decks and the 14 printed part types |
@@ -85,34 +85,61 @@ Shops you can visit in person: Lasertronics and the other Pettah shops (Colombo)
 | 9 | Capacitors: 10 µF ×6 (one per Sharp + the MPU), 470 µF 16 V ×2 (servo rail, L298N), 100 nF ×6 (motor terminals) | 1 set | ≈350 | |
 | 10 | 6 mm panel push buttons (START, CAL), 5 mm blue + green LEDs, 330 Ω ×2, 5 V active buzzer + BC547 + 1 kΩ | 1 set | ≈300 | |
 | 11 | Resistors 20 kΩ + 10 kΩ (battery divider to A5) | 1 set | ≈20 | |
-| 12 | Vero board 9 × 7 cm (ESP32-S3 + level shifter + 5 V/6 V distribution) | 1 | ≈150 | |
-| 13 | Female header strips 40-pin ×4 | 4 | ≈200 | |
-| 14 | Dupont jumpers 20 cm M-F + F-F (40 each) | 2 | ≈600 | |
+| 12 | **Mega shield PCB, made by a local PCB shop** from `hardware/pcb_v3/guardianbot_v3_mega_shield_gerbers.zip` (2 layers, 107 × 83 mm, through-hole). Get a quote first; Rs 3,000 is an estimate | 1 | ≈3,000 | |
+| 13 | JST-XH pre-wired plug + PCB socket sets (tronic.lk Rs 20–60 each): 2-pin ×1, 3-pin ×7, 4-pin ×9, 7-pin ×1, 8-pin ×3 | 21 | ≈900 | |
+| 14 | Shield parts: 5.08 mm 2-pin screw terminal ×3, Arduino stackable/long male headers (8-pin ×6, 10-pin ×1, 2×18 ×1), 1 female 40-pin strip (ESP32 socket pieces), 2N7000, 470 µF ×2, 100 µF, 100 nF ×2, resistors 1.8k/3.3k/10k ×2/330 ×2 | 1 set | ≈700 | |
 | 15 | Silicone wire 20 AWG red + black, 2 m each | 1 | ≈300 | |
 | 16 | 3 mm acrylic, 500 × 200 mm offcut (all 3 decks fit on it; 3 mm plywood/MDF also works) | 1 | ≈1,500 | |
 | 17 | Hook-and-loop strap 20 mm (battery) | 1 | ≈150 | |
 | 18 | **ESP32-CAM OV2640** (MD0424; listed as discontinued, last units in stock – the OV3660 version works the same) | 1 | 3,930 | |
 | 19 | **ESP32-CAM adapter board** (USB programmer + 5 V, MD0699) | 1 | 450 | |
-| | **Essentials total (with camera)** | | **≈10,050** | |
-| 20 | Spare LiPower 3S 1550 mAh 100C XT60 (in stock) – recommended, so you never run on a tired pack | 1 | 4,430 | |
-| | **Total with camera + spare LiPo** | | **≈14,480** | |
+| | **Essentials total (camera + Mega shield PCB)** | | **≈13,750** | |
+| 20 | Spare LiPower 3S 1550 mAh 100C XT60 (in stock) – only if the budget allows: with the PCB it brings the total to about Rs 18,200 | 1 | 4,430 | |
+| | **If the PCB cannot be made in time:** use a 9 × 7 cm vero board (Rs 150), 4 female header strips (Rs 200) and Dupont jumpers (Rs 600) instead of rows 12–14. Total ≈ Rs 10,050, or ≈ Rs 14,480 with the spare LiPo | | | |
 | 21 | PETG or PLA+ 1 kg (only if you have no filament; eSUN PETG Rs 4,800 / PLA+ Rs 4,700, both out of stock online – check Pettah). If you need it, skip the spare LiPo to stay under budget | 1 | ≈4,700 | |
 | 22 | LiPo balance charger (only if you have none: iMAX B6 DC Rs 6,250, out of stock) | – | – | |
 
 Not needed: the HC-05, DHT11, NodeMCU, potentiometer and SG90 from the photo.
 Optional spares if money is left over: one more HC-SR04 (≈Rs 350) and a spare N20 encoder motor.
 
-## 4. Power and wiring
+## 4. Power, wiring and the Mega shield PCB
+
+All the small wiring is on one board, the **Mega shield** (`hardware/pcb_v3/`). It plugs onto the Arduino Mega, and the
+ESP32-S3 plugs into it. Every sensor, servo and module connects with a keyed JST-XH plug, so nothing can come loose
+or go in backwards. The ESP32 ↔ Mega link circuit is built into the board (a 2N7000 transistor one way and a resistor
+divider the other), so the separate level-shifter module is no longer needed.
+
+![Mega shield PCB](images/v3_shield_pcb.png)
+
+| On the shield | Connector (silkscreen name) |
+|---|---|
+| Rear row A | `US_FRONT`, `US_LEFT`, `US_RIGHT`, `US_BACK` (VCC TRIG ECHO GND), 5 × 10 µF, `BUZZER` |
+| Rear row B | `IR_FRONT` `IR_FL` `IR_FR` `IR_LEFT` `IR_RIGHT` (Vo GND VCC), `LINE` (VCC GND OUT1–5), `ESP32CAM` (5V GND TX RX) |
+| Middle | `TCS_FLOOR`, `TCS_FRONT` (VCC GND S0 S1 S2 S3 OUT LED) |
+| Front row (next to the digital header) | `MPU6050`, `BUTTONS`, `LEDS`, `ENC_L`, `L298N` (ENA IN1 IN2 IN3 IN4 ENB 5V GND), `ENC_R` |
+| Left end | screw terminals `5V_IN` (buck 1), `6V_IN` (buck 2), `VBAT` (battery sense); `SERVO_L`, `SERVO_R` (S + −); 470 µF on both rails |
+| Under the ESP32 | battery divider, link circuit, LED resistors, decoupling |
+
+**Before the first power-up:** check the board against the Mega before soldering: the digital header row is on the FRONT edge (marked `FRONT ->`) and the USB end of the Mega is on the left. Screw the Mega to the deck first (the shield has no mounting holes; it is held by the headers).
+
+**Ordering it in Sri Lanka:** send `guardianbot_v3_mega_shield_gerbers.zip` to a local PCB shop and ask for
+"2 layers, 1.6 mm FR4, plated through holes, HASL; solder mask optional".
+- **Design rules:** 0.3 mm tracks (0.25 mm on a few), 0.25 mm clearance, 0.6 mm via drill and 1.0 mm pin holes.
+- **If the shop cannot plate holes:** solder each via with a short piece of wire. Solder the headers and sockets on both sides where a track meets them on top.
+- **Making it yourself:** `guardianbot_v3_mega_shield-toner_TOP_copper_mirrored.pdf` and `...-toner_BOTTOM_copper.pdf` are 1:1 masks for toner transfer or a UV film.
+- **Assembly:** `...-assembly_top_silkscreen.pdf` shows where every part goes, and `guardianbot_v3_mega_shield_BOM.csv` lists them.
+
+The power path stays off the board:
 
 ```
 3S LiPo ─ XT60 ─ 5 A fuse ─ toggle switch ─┬─ L298N +12V (VS)       ── N20 left / right (100 nF across each motor)
                                            ├─ LM2596 #1 → 5.10 V ──┬─ Mega 5V pin (NOT Vin, NOT the barrel jack)
-                                           │                        ├─ ESP32-S3 5V pin, ESP32-CAM 5V pin, level shifter HV, MPU6050 VCC
+                                           │                        ├─ (through the shield) Mega 5V, ESP32-S3, ESP32-CAM, MPU6050, every sensor
                                            │                        ├─ 5 × Sharp (10 µF at each), 4 × HC-SR04, 2 × TCS3200, line array
                                            │                        └─ L298N +5V logic (regulator jumper REMOVED)
                                            ├─ LM2596 #2 → 6.00 V ─── 2 × M0170 servo (+470 µF)
                                            └─ 20 k / 10 k divider ── Mega A5 (battery voltage)
-All grounds are joined at one point on the vero board. ESP32 3V3 → level shifter LV.
+All grounds meet on the shield (GND pours on both layers). The ESP32's 3.3 V output feeds the link circuit on the shield.
 ```
 
 Set both bucks **before** you connect anything (check them with a multimeter).
@@ -127,7 +154,7 @@ Never power the Mega from USB and the 5 V buck at the same time with the motors 
 | Left encoder A, B | D2, D3 (interrupts) |
 | Right encoder A, B | D18, D19 (interrupts) |
 | MPU6050 SDA, SCL | D20, D21 |
-| Link to ESP32-S3 (through the level shifter) | TX2 D16 → ESP GPIO18, RX2 D17 ← ESP GPIO17 |
+| Link to ESP32-S3 (link circuit on the shield) | TX2 D16 → ESP GPIO18, RX2 D17 ← ESP GPIO17 |
 | Sharp front, front-left, front-right, left, right | A0, A1, A2, A3, A4 |
 | Battery divider | A5 |
 | Line array gs0 (right-most) … gs4 | A8 … A12 |
@@ -141,7 +168,7 @@ Never power the Mega from USB and the 5 V buck at the same time with the motors 
 | LED blue / green (330 Ω) | D48 / D49 |
 | Buzzer (BC547 low-side) | D9 |
 
-**ESP32-S3:** GPIO17 (TX) / GPIO18 (RX) go to the Mega through the level shifter. **GPIO15 (RX) ← ESP32-CAM U0TXD (GPIO1)** and **GPIO16 (TX) → ESP32-CAM U0RXD (GPIO3)** are wired directly, because both boards are 3.3 V. USB-C shows the mission log at 115200 baud.
+**ESP32-S3:** GPIO17 (TX) / GPIO18 (RX) go to the Mega through the link circuit on the shield. **GPIO15 (RX) ← ESP32-CAM U0TXD (GPIO1)** and **GPIO16 (TX) → ESP32-CAM U0RXD (GPIO3)** are wired directly, because both boards are 3.3 V. USB-C shows the mission log at 115200 baud.
 
 **ESP32-CAM:** program it in the adapter board first, then take it out and fit it in the camera mast. Disconnect the camera wires before you reprogram it, because U0 is also its programming port. Its 5 V and GND come from the 5.1 V buck; add a 100 µF capacitor at its 5 V pin (it draws current in short bursts).
 
@@ -172,8 +199,8 @@ The files are generated from `hardware/cad/guardianbot_geometry.py`, the same nu
 Build order:
 
 1. **Base.** Fit the N20 motors with their clamps, the wheels, the caster, the line array (sensor face 7 mm above the floor), the floor TCS3200 (on 2 spacers), the Sharp side tower, the front TCS bracket, the pocket, and the LiPo with its strap.
-2. **Mid deck.** Fit the L298N, both bucks, the MPU6050 (flat, chip up), the level shifter, the front Sharp hanger, and the servo cradles with the servos. Push the arm hubs onto the servo splines. Before you tighten the horn screws, centre the servos at 90° (closed) with the bench test.
-3. **Top deck.** Fit the Mega (centre), the vero board with the ESP32-S3 (rear), the camera mast (front), the 4 HC-SR04 hangers, the buttons and the LEDs (front corners).
+2. **Mid deck.** Fit the L298N, both bucks, the MPU6050 (flat, chip up), the front Sharp hanger, and the servo cradles with the servos. Push the arm hubs onto the servo splines. Before you tighten the horn screws, centre the servos at 90° (closed) with the bench test.
+3. **Top deck.** Fit the Mega (centre) with the shield plugged on top and the ESP32-S3 plugged into the shield, the camera mast (front), the 4 HC-SR04 hangers, the buttons and the LEDs (front corners).
 4. **Wiring.** Wire it as in section 4. Twist each pair of motor wires, keep the Sharp wires away from the motor wires, and use cable ties on every connector.
 
 Final checks:

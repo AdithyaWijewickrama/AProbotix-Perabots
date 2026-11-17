@@ -96,13 +96,16 @@ BATTERY = ((0.038, 0.0), (0.035, 0.074, 0.026))
 # module footprints on the decks: name -> ((x, y), (size x, size y, height), deck)
 MODULES = {
     "mega": ((0.000, 0.000), (0.0533, 0.1016, 0.015), "top"),        # Arduino Mega 2560 (long axis along y)
-    "esp32s3": ((-0.045, 0.0), (0.0254, 0.069, 0.012), "top"),       # ESP32-S3-DevKitC-1 on a vero board, rear
+    "esp32s3": ((0.0018, -0.0089), (0.0254, 0.069, 0.012), "shield"),  # ESP32-S3-DevKitC-1 on the Mega shield
     "l298n": ((-0.020, 0.0), (0.043, 0.043, 0.027), "mid"),          # L298N with heat sink
     "buck5": ((0.030, 0.025), (0.043, 0.021, 0.014), "mid"),         # LM2596 -> 5.1 V logic + sensors
     "buck6": ((0.030, -0.025), (0.043, 0.021, 0.014), "mid"),        # LM2596 -> 6.0 V servos
     "mpu6050": ((0.000, 0.048), (0.016, 0.021, 0.003), "mid"),
     "level": ((0.000, -0.048), (0.013, 0.016, 0.003), "mid"),        # 5 V <-> 3.3 V level shifter (UART)
 }
+# Mega shield PCB (hardware/cad/shield_v3): plugs onto the Mega, 1.6 mm, robot-frame extent and height
+SHIELD = {"x0": -0.0527, "x1": 0.0303, "y0": -0.0562, "y1": 0.0508, "z": 0.0080 + 0.0130, "t": 0.0016,
+          "chamfer": 0.012}           # z is above TOP_Z1; the rear-right corner is chamfered
 TOP_BUTTONS = {"start": (0.052, 0.036), "cal": (0.052, -0.036)}
 TOP_LEDS = {"led_blue": (0.034, 0.058), "led_green": (0.034, -0.058)}
 

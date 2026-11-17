@@ -30,7 +30,8 @@ calibration and the competition procedure.
 | ESP32-CAM firmware (48 × 32 RGB grid to the brain at ~15 fps) | `firmware/esp32cam_vision/` |
 | Software-in-the-loop: the real ESP32 C++ drives the Webots robot | `firmware/sil/` + `simulation/controllers/mega_sil/` |
 | Host compile check of both sketches | `firmware/hostcheck/check.sh` |
-| Earlier v3 draft: Mega-only sketch, based on assumed parts (2S LiPo, MG995, 65 mm wheels, front pocket). Keep it as a fallback only | `firmware/mega_guardian/`, `firmware/GuardianBot_v3_Mega_build_guide.md` |
+| **Mega shield PCB** (all wiring, keyed connectors, ESP32-S3 plugs in; through-hole, for a local PCB shop) | `hardware/pcb_v3/`, made by `hardware/cad/shield_v3/` |
+| **Every earlier version + comparison website** (bodies, PCBs, budget, speed, weight, parts) | `versions/` (website: `versions/_site/index.html`, also on GitHub Pages) |
 
 Latest Webots results, 0 collisions in every run:
 
@@ -52,12 +53,12 @@ Latest Webots results, 0 collisions in every run:
 | `simulation/make_guardianbot.py`, `make_world.py` | Regenerate the robot PROTO / the worlds |
 | `simulation/tools/` | `rebuild_section3.py`: rewrites the Section 3 part of `Arena.proto` |
 | `firmware/` | Robot firmware (see above) |
-| `hardware/cad/` | Generator scripts: `guardianbot_geometry.py` (all dimensions), `make_acrylic_dxf.py`, `make_printed_parts.py`. The PCB scripts belong to v2 (obsolete) |
+| `hardware/cad/` | Generator scripts: `guardianbot_geometry.py` (all dimensions), `make_acrylic_dxf.py`, `make_printed_parts.py`, `autoroute.py` (PCB router), `shield_v3/` (Mega shield: parts + nets, placement, routing, Gerbers, schematic, render) |
 | `hardware/acrylic/` | Laser-cut DXF + STL: base, mid and top decks (3 mm), and all three on one sheet |
 | `hardware/3d_prints/` | STL and STEP for the 14 printed parts (v3, including the camera mast) |
-| `hardware/pcb/` | v2 custom PCB (obsolete for v3, which is wired on a vero board) |
+| `hardware/pcb_v3/` | Mega shield: KiCad project, schematic PDF, Gerbers zip, toner-transfer PDFs, BOM, positions, DRC report, render |
 | `analysis/` | Early investigation scripts (maze/obstacle extraction from the rulebook and the Phase 01 arena, frame checks) and the images extracted from the rulebook |
-| `archive/` | Earlier robot versions: `v1_TwoWheelRobot`, `v1_GuardianBot_ToF`, `v2_GuardianBot_HC-SR04_Sharp41` (v2 CAD, model generator, build guide) and the v2 project zip |
+| `versions/` | Every earlier version (v1.0, v1.1, v2.0 incl. its PCB, v3.0 Mega-only draft) + a `spec.yaml` for every version, the neutral judge used to time them, and the comparison website |
 
 ## Run the simulation
 
@@ -85,6 +86,8 @@ python make_guardianbot.py      # protos/GuardianBot.proto
 python make_world.py            # worlds/*.wbt
 
 cd ../hardware/cad
+python shield_v3/make_shield.py route && python shield_v3/make_shield.py fab   # Mega shield PCB (KiCad 7 python)
+python shield_v3/make_shield_schematic.py                                      # its schematic
 python make_acrylic_dxf.py      # ../acrylic/*.dxf + .stl     (needs: pip install cadquery ezdxf)
 python make_printed_parts.py    # ../3d_prints/*.stl/.step    (needs: pip install cadquery)
 ```

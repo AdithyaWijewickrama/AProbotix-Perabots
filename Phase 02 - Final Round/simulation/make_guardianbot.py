@@ -370,8 +370,17 @@ def build():
         vis.append(box((cx, cy, (BASE_Z1 + z) / 2), (0.006, 0.020, z - BASE_Z1), accent(), "0 0 1 %.4f" % a))
 
     # modules on the decks
+    # Mega shield PCB (green) above the Mega
+    shz = TOP_Z1 + SHIELD["z"]
+    vis.append(box(((SHIELD["x0"] + SHIELD["x1"]) / 2, (SHIELD["y0"] + SHIELD["y1"]) / 2, shz + SHIELD["t"] / 2),
+                   (SHIELD["x1"] - SHIELD["x0"], SHIELD["y1"] - SHIELD["y0"], SHIELD["t"]), PCB_GREEN))
+    for k in range(9):                                           # rear rows of white JST-XH connectors
+        for row, xr in ((0, SHIELD["x0"] + 0.005), (1, SHIELD["x0"] + 0.016)):
+            vis.append(box((xr, SHIELD["y1"] - 0.008 - k * 0.0108, shz + SHIELD["t"] + 0.003), (0.0058, 0.0085, 0.006), WHITE_PLASTIC))
+    for k in range(6):                                           # front row
+        vis.append(box((SHIELD["x1"] - 0.012, SHIELD["y1"] - 0.010 - k * 0.0165, shz + SHIELD["t"] + 0.003), (0.0058, 0.013, 0.006), WHITE_PLASTIC))
     for name, ((cx, cy), (sx, sy, h), deck) in MODULES.items():
-        z0 = MID_Z1 if deck == "mid" else TOP_Z1
+        z0 = MID_Z1 if deck == "mid" else (shz + SHIELD["t"]) if deck == "shield" else TOP_Z1
         vis += module_visual(name, cx, cy, sx, sy, h, z0)
 
     # gripper servos on the mid deck (shaft down through the deck to the arm hubs)
