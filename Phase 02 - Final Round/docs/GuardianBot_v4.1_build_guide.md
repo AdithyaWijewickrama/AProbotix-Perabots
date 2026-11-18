@@ -246,13 +246,19 @@ The robot weighs about 580 g, stands 152 mm tall at the mast, and nothing sticks
 ### The test-bench web page (`firmware/esp32s3_testbench`) – for testing only
 
 Flash it to the S3 instead of the brain. Join the Wi-Fi network **GuardianBot-test** (password `aprobotix26`) and
-open **http://192.168.4.1** on a phone or laptop. The OLED shows `TEST FIRMWARE WIFI ON`. The tabs are:
+open **http://192.168.4.1** on a phone or laptop. The OLED shows `TEST FIRMWARE WIFI ON`.
+
+The **Drive panel** is on every tab: bottom right on a laptop, along the bottom edge on a phone. It holds:
+- a joystick (or W A S D / arrows), the speed limit and a **STOP** button (Space also stops);
+- the live wheel speeds and yaw.
+
+So you can drive and watch any sensor, the camera or a calibration at the same time. The **–** button folds the panel away. The robot stops if the page goes quiet for 0.3 s. Moving the joystick during a calibration routine stops that routine.
+
+The tabs are:
 
 - **Sensors:** a radar view of the 8 ToF and 2 sonar beams, the QTR-8RC bars, both colour sensors with their class, gyro, encoders, battery, keys and link health.
 - **Drive:**
-  - a joystick (or W A S D), a speed limit and a big **STOP** button;
   - gripper servos, LEDs, buzzer, and odometry / gyro reset.
-  - The robot stops if the page goes quiet for 0.3 s.
 - **Camera:** the live picture, the brain's 48 × 32 grid with colour classes, white balance and the lens FOV helper.
 - **Calibrate:**
   - **Drive 1 m:** gives `ENC_CPR`.
