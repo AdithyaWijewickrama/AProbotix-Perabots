@@ -14,7 +14,7 @@ doesn't have are **custom chips** in `chips/`:
 | `tcs3200` ×2 | colour sensor: 50 % square wave, S0–S3 scaling and filters, LED pin | red, green, blue |
 | `qtr8rc` | Pololu QTR-8RC: the RC decay timing the firmware measures (white ~150 µs, black ~2400 µs) | line position (mm), line on/off, line width |
 | `n20motor` ×2 | one DRV8833 channel + N20 6 V 300 rpm motor + hall encoder: reads the 31 kHz PWM and outputs quadrature | battery, load, counts per turn, encoder reversed |
-| `brainstub` | stands in for the ESP32-CAM on Serial2 (250 kbaud): sends Command frames every 20 ms, OLED text, decodes and prints the telemetry | send on/off (watchdog test), wheel speeds, servos, LEDs/buzzer, zero odometry |
+| `brainstub` | stands in for the ESP32-S3 brain on Serial2 (250 kbaud): sends Command frames every 20 ms, OLED text, decodes and prints the telemetry | send on/off (watchdog test), wheel speeds, servos, LEDs/buzzer, zero odometry |
 
 Keys K1–K4 also answer to the keyboard keys **1–4**. The slide potentiometer is the battery: A0 = VBAT / 3, so
 mid-travel ≈ 7.5 V.

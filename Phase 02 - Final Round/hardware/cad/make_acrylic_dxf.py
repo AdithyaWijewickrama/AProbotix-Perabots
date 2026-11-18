@@ -8,7 +8,7 @@ The MIDDLE floor is the PCB deck (hardware/pcb_v4). Writes into ../acrylic/:
   deck_mid_3mm_vero_fallback.dxf
                        ONLY if the PCB is not made: the same outline and holes as the PCB deck, plus
                        slots for the wires; a vero board with the same circuit is screwed on top
-  deck_top_3mm.dxf     top: ESP32-CAM mast, 2 x HC-SR04 hangers, back ToF hanger, OLED, keypad, 2 LEDs,
+  deck_top_3mm.dxf     top: camera mast, ESP32-S3 carrier, 2 x HC-SR04 hangers, back ToF hanger, OLED, keypad, 2 LEDs,
                        servo cradle caps, cable slots
   sheet_layout.dxf     all three decks on one 480 x 160 mm sheet
   deck_*.stl           3 mm plates (for the assembly preview)
@@ -23,7 +23,7 @@ import ezdxf
 
 import sys
 
-from guardianbot_geometry import (CAM_X, BASE_STANDOFFS, BATTERY, CASTER_X, LINE_X,
+from guardianbot_geometry import (CAM_X, S3_CARRIER_HOLES, BASE_STANDOFFS, BATTERY, CASTER_X, LINE_X,
                                   MODULES, POCKET_HW, POCKET_X, R_BODY, SERVO_TOP_HOLES, TCS_FLOOR,
                                   TCS_FRONT, TOF, TOP_BUTTONS, TOP_LEDS, TOP_R, TOP_STANDOFFS, TRACK_HALF, US,
                                   WHEEL_R, WHEEL_W)
@@ -151,7 +151,9 @@ def top():
         p.hole(m(x), m(y), 7.0)
     for x, y in TOP_LEDS.values():
         p.hole(m(x), m(y), 5.1)
-    p.slot(28.0, 0, 16.0, 6.0)                                          # ESP32-CAM / sonar cables
+    for x, y in S3_CARRIER_HOLES:
+        p.hole(m(x), m(y), M3)                                          # ESP32-S3 carrier (flat, behind the mast)
+    p.slot(30.0, 0, 16.0, 6.0)                                          # S3 link cable / sonar cables
     return p
 
 

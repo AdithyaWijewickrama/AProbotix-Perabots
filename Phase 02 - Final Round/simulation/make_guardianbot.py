@@ -1,8 +1,8 @@
 """
-make_guardianbot.py - generates protos/GuardianBot.proto  (v4: final-round build)
+make_guardianbot.py - generates protos/GuardianBot.proto  (v4.1: final-round build)
 
-GuardianBot v4: 150 mm round differential-drive robot for PeraBots 2026, built from the
-team's own parts (Arduino Mega + ESP32-CAM, DRV8833, N20 6 V 300 rpm encoder motors,
+GuardianBot v4.1: 150 mm round differential-drive robot for PeraBots 2026, built from the
+team's own parts (Arduino Mega + ESP32-S3 N16R8 with OV7670, DRV8833, N20 6 V 300 rpm encoder motors,
 8 x VL53L0X, 2 x HC-SR04, 2 x TCS3200, Pololu QTR-8RC, L3G4200D gyro, Kpower M0170 servos,
 2S LiPo) on a PCB mid deck.
 Every part in the model is a real component from GuardianBot_BOM.md with its
@@ -34,6 +34,9 @@ PCB_GREEN = pbr((0.05, 0.30, 0.12), 0.45, 0.1)
 CARBON = pbr((0.07, 0.07, 0.075), 0.30, 0.25)
 PETG = "IS accentColor"                               # 3-D printed parts
 SILVER = pbr((0.78, 0.78, 0.80), 0.25, 0.9)
+WHITE_NYLON = pbr((0.92, 0.92, 0.88), 0.6, 0.0)
+VERO = pbr((0.72, 0.52, 0.30), 0.6, 0.0)            # vero strip board (brown FR paper)
+RIBBON = pbr((0.55, 0.55, 0.58), 0.7, 0.0)          # grey ribbon cable
 BRASS = pbr((0.80, 0.64, 0.25), 0.25, 0.9)
 STEEL = pbr((0.85, 0.85, 0.88), 0.08, 0.95)
 BLACK_PLASTIC = pbr((0.03, 0.03, 0.03), 0.6, 0.0)
@@ -408,22 +411,37 @@ def build():
                        "TCS3200 #1 facing the floor: maze tiles, red zones, collection pads"))
     dev.append(tcs3200("tcs_front", TCS_FRONT, "0 0 1 0",
                        "TCS3200 #2 facing forward at piece height: piece colour"))
-    # ESP32-CAM on its mast (front of the top deck), lens pitched down
-    bw, bh, bt = ESP32CAM_BOARD
-    vis.append(box((CAM_X - 0.010, 0, TOP_Z1 + 0.0015), (0.022, 0.034, 0.003), accent()))            # mast foot
-    vis.append(box((CAM_X - 0.012, 0, (TOP_Z1 + CAM_Z) / 2 + 0.004), (0.004, 0.030, CAM_Z - TOP_Z1 + 0.012), accent()))
-    vis.append(box((CAM_X - 0.008, 0, CAM_Z - 0.008), (bt, bw, bh), PCB_BLACK, "0 1 0 %.4f" % CAM_PITCH))
+    # v4.1: OV7670 on its mast (front of the top deck), lens pitched down; the ESP32-S3 lies flat behind it
+    bw, bh, bt = OV7670_BOARD
+    vis.append(box((CAM_X - 0.019, 0, TOP_Z1 + 0.0015), (0.024, 0.036, 0.003), accent()))            # mast foot
+    vis.append(box((CAM_X - 0.0125, 0, (TOP_Z1 + CAM_Z) / 2 + 0.004), (0.005, 0.030, CAM_Z - TOP_Z1 + 0.010), accent()))
+    vis.append(box((CAM_X - 0.010, 0, CAM_Z - 0.004), (bt, bw, bh), PCB_BLACK, "0 1 0 %.4f" % CAM_PITCH))   # OV7670 board
+    cx, cy, csx, csy = S3_CARRIER
+    zc = TOP_Z1 + S3_STANDOFF
+    for hx, hy in S3_CARRIER_HOLES:                                                                   # nylon spacers
+        vis.append(box((hx, hy, TOP_Z1 + S3_STANDOFF / 2), (0.005, 0.005, S3_STANDOFF), WHITE_NYLON))
+    vis.append(box((cx, cy, zc + 0.0008), (csx, csy, 0.0016), VERO))                                  # vero carrier
+    sw, sl, st = S3_BOARD
+    for k in (-1, 1):                                                                                 # female headers
+        vis.append(box((cx + k * 0.01143, cy, zc + 0.0016 + S3_HEADER_H / 2), (0.0025, 0.056, S3_HEADER_H), PCB_BLACK))
+    zs = zc + 0.0016 + S3_HEADER_H
+    vis.append(box((cx, cy, zs + st / 2), (sw, sl, st), PCB_BLACK))                                   # ESP32-S3 DevKitC-1
+    vis.append(box((cx, cy - 0.016, zs + st + 0.0016), (0.018, 0.0255, 0.0032), SILVER))             # S3-WROOM-1 can
+    vis.append(box((cx, cy + sl / 2 - 0.004, zs + st + 0.0016), (0.009, 0.0075, 0.0032), SILVER))    # USB-C (+y edge)
+    rib_x0, rib_x1 = cx + csx / 2, CAM_X - 0.012                                                      # 18-wire ribbon
+    vis.append(box(((rib_x0 + rib_x1) / 2, 0, zc + 0.004), (rib_x1 - rib_x0, 0.022, 0.001), RIBBON))
     dev.append("""Camera {
       translation %s
       rotation 0 1 0 %.4f
       name "cam"
-      # ESP32-CAM OV2640, cropped and averaged to a %dx%d grid by firmware/esp32cam_brain (camera task)
+      # OV7670 on the ESP32-S3, cropped and averaged to a %dx%d grid by firmware/esp32s3_brain (camera task)
       fieldOfView %.3f
+      noise %.3f
       width %d
       height %d
       near 0.01
       children [ %s %s ]
-    }""" % (v3((CAM_X, 0, CAM_Z)), CAM_PITCH, CAM_W, CAM_H, CAM_FOV, CAM_W, CAM_H,
+    }""" % (v3((CAM_X, 0, CAM_Z)), CAM_PITCH, CAM_W, CAM_H, CAM_FOV, CAM_NOISE, CAM_W, CAM_H,
             cyl((-0.002, 0, 0), 0.0042, 0.005, BLACK_PLASTIC, ROT_X_AXIS),
             cyl((0.0006, 0, 0), 0.0025, 0.0005, GLASS, ROT_X_AXIS)))
     (ix, iy), _, _ = MODULES["gyro"]
@@ -482,9 +500,9 @@ def build():
 # license: Apache License 2.0
 # GuardianBot v4.0 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
 # 150 mm round: acrylic base + PCB mid deck + acrylic top, rear capture pocket with 2 servo arms.
-# Controllers: Arduino Mega 2560 (real-time I/O, on the PCB mid deck) + ESP32-CAM (brain + camera); DRV8833; 2S LiPo.
+# Controllers: Arduino Mega 2560 (real-time I/O, on the PCB mid deck) + ESP32-S3 N16R8 + OV7670 (brain + camera); DRV8833; 2S LiPo.
 # Sensors: 8 x VL53L0X ToF, 2 x HC-SR04, Pololu QTR-8RC line array,
-#          2 x TCS3200 (floor + front), ESP32-CAM (cam), L3G4200D gyro, N20 hall encoders.
+#          2 x TCS3200 (floor + front), OV7670 (cam), L3G4200D gyro, N20 hall encoders.
 # Generated by simulation/make_guardianbot.py from hardware/cad/guardianbot_geometry.py.
 #
 # Devices

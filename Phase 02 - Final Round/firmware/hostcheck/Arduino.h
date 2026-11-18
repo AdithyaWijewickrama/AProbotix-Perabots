@@ -79,3 +79,56 @@ extern volatile uint8_t PINA, PORTA, DDRA, TCCR3B, TCCR4B;
 inline void ledcAttach(int, int, int) {}
 inline void ledcWrite(int, int) {}
 inline size_t strnlen_s(const char *s, size_t n) { return strnlen(s, n); }
+inline bool psramFound() { return true; }
+// ---- v4.1 additions (test bench: String, WiFi, WebServer, ESP)
+#include <string>
+#define PROGMEM
+#define PGM_P const char *
+struct String {
+  std::string s;
+  String() {}
+  String(const char *c) : s(c ? c : "") {}
+  String(const std::string &x) : s(x) {}
+  String(int v) : s(std::to_string(v)) {}
+  String(unsigned v) : s(std::to_string(v)) {}
+  String(long v) : s(std::to_string(v)) {}
+  String(unsigned long v) : s(std::to_string(v)) {}
+  void reserve(size_t n) { s.reserve(n); }
+  const char *c_str() const { return s.c_str(); }
+  long toInt() const { return atol(s.c_str()); }
+  float toFloat() const { return (float)atof(s.c_str()); }
+  String &operator+=(const String &o) { s += o.s; return *this; }
+  String &operator+=(const char *o) { s += o; return *this; }
+  String &operator+=(char c) { s += c; return *this; }
+  String &operator+=(int v) { s += std::to_string(v); return *this; }
+  String &operator+=(unsigned v) { s += std::to_string(v); return *this; }
+  String &operator+=(uint16_t v) { s += std::to_string(v); return *this; }
+  bool operator==(const char *o) const { return s == o; }
+  friend String operator+(const String &a, const String &b) { return String(a.s + b.s); }
+  friend String operator+(const String &a, const char *b) { return String(a.s + b); }
+  friend String operator+(const char *a, const String &b) { return String(std::string(a) + b.s); }
+};
+struct IPAddress { String toString() const { return String("192.168.4.1"); } };
+#define WIFI_AP 2
+struct WiFiClass { void mode(int) {} bool softAP(const char *, const char *) { return true; } IPAddress softAPIP() { return {}; }
+  int softAPgetStationNum() { return 0; } };
+extern WiFiClass WiFi;
+struct EspClass { uint32_t getPsramSize() { return 8u << 20; } };
+extern EspClass ESP;
+#define CONTENT_LENGTH_UNKNOWN ((size_t)-1)
+struct WebServer {
+  WebServer(int) {}
+  void on(const char *, void (*)()) {}
+  template <class F> void on(const char *, F) {}
+  void begin() {}
+  void handleClient() {}
+  bool hasArg(const char *) { return false; }
+  String arg(const char *) { return String(); }
+  void send(int, const char *, const String &) {}
+  void send(int, const char *, const char *) {}
+  void send_P(int, const char *, const char *) {}
+  void send_P(int, const char *, const char *, size_t) {}
+  void setContentLength(size_t) {}
+  void sendContent(const char *) {}
+  void sendContent(const String &) {}
+};

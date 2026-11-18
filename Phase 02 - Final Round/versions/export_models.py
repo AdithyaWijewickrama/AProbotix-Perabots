@@ -59,6 +59,15 @@ VERSIONS = {
                         "versions/v3.3_shield_pcb/GuardianBot_v3_build_guide.md"]),
     "v4.0": dict(folder="v4.0_esp32cam_pcbdeck",
                  pcb="hardware/pcb_v4/guardianbot_v4_pcb_deck.kicad_pcb",
+                 prints="versions/v4.0_esp32cam_pcbdeck/3d_prints",
+                 decks="versions/v4.0_esp32cam_pcbdeck/acrylic",
+                 extras="mega_flipped_above",
+                 files=["hardware/pcb_v4/guardianbot_v4_pcb_deck_gerbers.zip",
+                        "hardware/pcb_v4/guardianbot_v4_pcb_deck_schematic.pdf",
+                        "hardware/pcb_v4/guardianbot_v4_pcb_deck_BOM.csv",
+                        "versions/v4.0_esp32cam_pcbdeck/GuardianBot_v4_build_guide.md"]),
+    "v4.1": dict(folder="v4.1_esp32s3_ov7670",
+                 pcb="hardware/pcb_v4/guardianbot_v4_pcb_deck.kicad_pcb",
                  prints="hardware/3d_prints",
                  decks="hardware/acrylic",
                  extras="mega_flipped_above",
@@ -67,7 +76,8 @@ VERSIONS = {
                         "hardware/pcb_v4/guardianbot_v4_pcb_deck_BOM.csv",
                         "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_top_silkscreen.pdf",
                         "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_bottom_silkscreen_mirrored.pdf",
-                        "docs/GuardianBot_v4_build_guide.md"]),
+                        "docs/GuardianBot_v4.1_build_guide.md",
+                        "docs/TEST_PLAN.md"]),
 }
 
 # colours (sRGB 0-255)

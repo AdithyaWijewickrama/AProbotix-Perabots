@@ -1,4 +1,4 @@
-// GuardianBot v4.0 - Mega <-> ESP32-CAM link protocol (identical copy in esp32cam_brain/)
+// GuardianBot v4.1 - Mega <-> ESP32-S3 link protocol (identical copy in mega_body/, esp32s3_brain/, esp32s3_testbench/)
 // Frame: 0xA5 0x5A <type> <len> <payload...> <sum8>   (sum8 = 8-bit sum of type, len and payload)
 // Both CPUs are little-endian, payloads are packed structs.
 #pragma once
