@@ -3,11 +3,11 @@ mega_sil.py - software-in-the-loop test of the REAL robot firmware.
 
 This Webots controller plays the part of the Arduino Mega (firmware/mega_body):
 every 16 ms it sends a binary Telemetry frame (firmware/mega_body/protocol.h) to
-the ESP32-CAM brain - compiled for the PC by firmware/sil/build_sil.sh - and
+the ESP32-S3 brain - compiled for the PC by firmware/sil/build_sil.sh - and
 applies the Command frame the brain sends back (wheel speeds, servos, LEDs).
-It also plays the ESP32-CAM camera task: every 4th step it sends
+It also plays the brain's OV7670 camera task: every 4th step it sends
 the 48x32 camera grid as an RGB565 'V' frame, one frame late (real latency).
-So the exact C++ that will be flashed to the ESP32-CAM drives the simulated robot.
+So the exact C++ that will be flashed to the ESP32-S3 drives the simulated robot.
 
 Use: build the brain (firmware/sil/build_sil.sh), set the robot's controller to
 "mega_sil" (controllerArgs "section3" = hold CAL+START for a Section 3 restart).
@@ -50,7 +50,7 @@ led_b, led_g = dev('led_blue'), dev('led_green')
 
 section3 = 'section3' in sys.argv[1:]
 log = open(os.path.join(HERE, 'sil_log.txt'), 'w')
-cam_r, cam_w = os.pipe()                     # ESP32-CAM stream: the brain reads fd SIL_CAM_FD
+cam_r, cam_w = os.pipe()                     # camera stream: the brain reads fd SIL_CAM_FD
 brain = subprocess.Popen([BRAIN], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log,
                          cwd=HERE, bufsize=0, pass_fds=(cam_r,), env=dict(os.environ, SIL_CAM_FD=str(cam_r)))
 os.close(cam_r)

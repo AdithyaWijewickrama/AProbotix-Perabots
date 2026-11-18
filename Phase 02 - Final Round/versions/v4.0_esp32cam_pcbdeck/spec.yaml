@@ -2,7 +2,7 @@ id: v4.0
 name: GuardianBot v4 - ESP32-CAM brain + PCB mid deck
 tag: v4.0
 date: 2026-11-17
-status: latest - simulation + real firmware + CAD + PCB deck, built from the team's real inventory
+status: superseded by v4.1 (ESP32-S3 + OV7670) - kept for reference
 summary: Rebuilt around the parts the team has. The ESP32-CAM is brain and camera (no ESP32-S3), 8 VL53L0X ToF sensors replace the Sharp IR, QTR-8RC line array, L3G4200D gyro, DRV8833 + 6 V N20 on a 2S LiPo, keypad + OLED, and a PCB is the middle floor with the Mega upside-down on it.
 body:
   shape: round 150 mm, acrylic base + 144 mm PCB mid deck + acrylic top deck, rear pocket, camera mast
@@ -41,4 +41,10 @@ simulation:
   firmware_sil_section3_restart_s: 131.5
   result: full mission, piece placed
 files:
-  - the top-level folders of "Phase 02 - Final Round" (this is the current version)
+  - firmware/esp32cam_brain (the ESP32-CAM brain; mega_body is unchanged in v4.1)
+  - 3d_prints (camera_mast for the ESP32-CAM; all other prints are the same as v4.1)
+  - acrylic (same decks as v4.1)
+  - GuardianBot_v4_build_guide.md
+  - the PCB deck is hardware/pcb_v4 at the top level (unchanged in v4.1)
+  - git tag v4.0.1
+  - known issue (fixed in v4.1): acrylic/deck_base_3mm.dxf has the side-ToF post holes 7 mm too far out; cut the v4.1 base instead

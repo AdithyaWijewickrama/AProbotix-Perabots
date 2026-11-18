@@ -493,7 +493,7 @@ $SKPOLY
   9
 $TDCREATE
  40
-2461362.881053241
+2461364.060578704
   9
 $TDUCREATE
  40
@@ -501,7 +501,7 @@ $TDUCREATE
   9
 $TDUPDATE
  40
-2461362.881053241
+2461364.060578704
   9
 $TDUUPDATE
  40
@@ -553,7 +553,7 @@ $SPLINESEGS
   9
 $HANDSEED
   5
-54
+56
   9
 $SURFTAB1
  70
@@ -933,11 +933,11 @@ $PSTYLEMODE
   9
 $FINGERPRINTGUID
   2
-{C84227B8-A66B-48F1-86E5-1BFCD4452469}
+{5310A148-CC63-4401-9CE9-8229289C546D}
   9
 $VERSIONGUID
   2
-{3A52D8DC-3259-435D-945C-33D62BC6D077}
+{17AD5C67-5D65-4154-9BCE-64114C59B030}
   9
 $EXTNAMES
 290
@@ -1377,7 +1377,7 @@ AcDbSymbolTable
   0
 VPORT
   5
-50
+52
 330
 8
 100
@@ -1725,7 +1725,7 @@ ACAD
   0
 APPID
   5
-51
+53
 330
 3
 100
@@ -1739,7 +1739,7 @@ HATCHBACKGROUNDCOLOR
   0
 APPID
   5
-52
+54
 330
 3
 100
@@ -2279,6 +2279,26 @@ AcDbEntity
 100
 AcDbCircle
  10
+5.5
+ 20
+-32.5
+ 30
+1.5
+ 40
+1.6
+  0
+CIRCLE
+  5
+3A
+330
+17
+100
+AcDbEntity
+  8
+0
+100
+AcDbCircle
+ 10
 44.0
  20
 -10.0
@@ -2289,7 +2309,7 @@ AcDbCircle
   0
 CIRCLE
   5
-3A
+3B
 330
 17
 100
@@ -2309,7 +2329,7 @@ AcDbCircle
   0
 CIRCLE
   5
-3B
+3C
 330
 17
 100
@@ -2329,7 +2349,7 @@ AcDbCircle
   0
 CIRCLE
   5
-3C
+3D
 330
 17
 100
@@ -2349,7 +2369,7 @@ AcDbCircle
   0
 CIRCLE
   5
-3D
+3E
 330
 17
 100
@@ -2369,7 +2389,7 @@ AcDbCircle
   0
 CIRCLE
   5
-3E
+3F
 330
 17
 100
@@ -2389,7 +2409,7 @@ AcDbCircle
   0
 CIRCLE
   5
-3F
+40
 330
 17
 100
@@ -2409,7 +2429,7 @@ AcDbCircle
   0
 CIRCLE
   5
-40
+41
 330
 17
 100
@@ -2429,7 +2449,7 @@ AcDbCircle
   0
 ARC
   5
-41
+42
 330
 17
 100
@@ -2455,7 +2475,7 @@ AcDbArc
   0
 LINE
   5
-42
+43
 330
 17
 100
@@ -2479,7 +2499,7 @@ AcDbLine
   0
 ARC
   5
-43
+44
 330
 17
 100
@@ -2505,7 +2525,7 @@ AcDbArc
   0
 LINE
   5
-44
+45
 330
 17
 100
@@ -2529,7 +2549,7 @@ AcDbLine
   0
 CIRCLE
   5
-45
+46
 330
 17
 100
@@ -2549,7 +2569,7 @@ AcDbCircle
   0
 CIRCLE
   5
-46
+47
 330
 17
 100
@@ -2569,7 +2589,7 @@ AcDbCircle
   0
 CIRCLE
   5
-47
+48
 330
 17
 100
@@ -2589,7 +2609,7 @@ AcDbCircle
   0
 CIRCLE
   5
-48
+49
 330
 17
 100
@@ -2609,7 +2629,7 @@ AcDbCircle
   0
 ARC
   5
-49
+4A
 330
 17
 100
@@ -2619,7 +2639,7 @@ AcDbEntity
 100
 AcDbCircle
  10
-23.0
+25.0
  20
 0.0
  30
@@ -2635,7 +2655,7 @@ AcDbArc
   0
 LINE
   5
-4A
+4B
 330
 17
 100
@@ -2645,13 +2665,13 @@ AcDbEntity
 100
 AcDbLine
  10
-23.0
+25.0
  20
 3.0
  30
 1.5
  11
-33.0
+35.0
  21
 3.0
  31
@@ -2659,7 +2679,7 @@ AcDbLine
   0
 ARC
   5
-4B
+4C
 330
 17
 100
@@ -2669,7 +2689,7 @@ AcDbEntity
 100
 AcDbCircle
  10
-33.0
+35.0
  20
 0.0
  30
@@ -2685,7 +2705,7 @@ AcDbArc
   0
 LINE
   5
-4C
+4D
 330
 17
 100
@@ -2695,13 +2715,13 @@ AcDbEntity
 100
 AcDbLine
  10
-33.0
+35.0
  20
 -3.0
  30
 1.5
  11
-23.0
+25.0
  21
 -3.0
  31
@@ -2709,7 +2729,27 @@ AcDbLine
   0
 CIRCLE
   5
-4D
+4E
+330
+17
+100
+AcDbEntity
+  8
+0
+100
+AcDbCircle
+ 10
+5.5
+ 20
+32.5
+ 30
+1.5
+ 40
+1.6
+  0
+CIRCLE
+  5
+4F
 330
 17
 100
@@ -2729,7 +2769,7 @@ AcDbCircle
   0
 CIRCLE
   5
-4E
+50
 330
 17
 100
@@ -2749,7 +2789,7 @@ AcDbCircle
   0
 CIRCLE
   5
-4F
+51
 330
 17
 100
@@ -3757,7 +3797,7 @@ CREATED_BY_EZDXF
   3
 WRITTEN_BY_EZDXF
 350
-53
+55
   0
 DICTIONARYVAR
   5
@@ -3769,11 +3809,11 @@ DictionaryVariables
 280
 0
   1
-1.4.5 @ 2026-11-17T15:38:43.892736+00:00
+1.4.5 @ 2026-11-18T19:57:14.116654+00:00
   0
 DICTIONARYVAR
   5
-53
+55
 330
 2D
 100
@@ -3781,7 +3821,7 @@ DictionaryVariables
 280
 0
   1
-1.4.5 @ 2026-11-17T15:38:43.903030+00:00
+1.4.5 @ 2026-11-18T19:57:14.125304+00:00
   0
 ENDSEC
   0

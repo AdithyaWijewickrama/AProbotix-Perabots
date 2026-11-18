@@ -16,6 +16,8 @@ struct Preferences {
   void end() { save(); }
   int getInt(const char *k, int d = 0) { auto i = kv.find(k); if (i == kv.end()) return d; int v; memcpy(&v, i->second.data(), 4); return v; }
   void putInt(const char *k, int v) { kv[k] = std::vector<char>((char *)&v, (char *)&v + 4); }
+  float getFloat(const char *k, float d = 0) { auto i = kv.find(k); if (i == kv.end()) return d; float v; memcpy(&v, i->second.data(), 4); return v; }
+  void putFloat(const char *k, float v) { kv[k] = std::vector<char>((char *)&v, (char *)&v + 4); }
   size_t getBytes(const char *k, void *b, size_t n) { auto i = kv.find(k); if (i == kv.end() || i->second.size() != n) return 0; memcpy(b, i->second.data(), n); return n; }
   size_t putBytes(const char *k, const void *b, size_t n) { kv[k] = std::vector<char>((const char *)b, (const char *)b + n); return n; }
 };

@@ -1,0 +1,46 @@
+id: v4.1
+name: GuardianBot v4.1 - ESP32-S3 N16R8 + OV7670 brain, PCB mid deck
+tag: v4.1
+date: 2026-11-19
+status: latest - simulation + real firmware + test-bench web page + CAD + PCB deck, built from the team's real inventory
+summary: v4.0 with the team's own ESP32-S3 N16R8 and OV7670 as brain and camera instead of a bought ESP32-CAM. Same PCB deck (the 5-pin link socket fits), same sensors. The S3 lies flat on the top deck behind a slimmer camera mast (10 cm camera ribbon); the base-deck ToF holes are fixed. Adds a separate Wi-Fi test-bench firmware with a web page for sensors, manual drive, camera view, calibration and CSV logs; the competition brain stays Wi-Fi-free.
+body:
+  shape: round 150 mm, acrylic base + 144 mm PCB mid deck + acrylic top deck, rear pocket, camera mast; ESP32-S3 flat on a vero carrier on the top deck
+  size_mm: [150, 150, 152]
+  height_mm: 152
+  decks: 2 (3 mm acrylic) + 1.6 mm PCB mid deck
+  gripper: rear pocket + 2 arms, one Kpower M0170 servo each
+weight_g: 580
+weight_note: about 10 g more than v4.0 - the S3 DevKit and carrier weigh a little more than the ESP32-CAM, but they sit low on the top deck
+controllers: [Arduino Mega 2560 (body, upside-down on the PCB deck), ESP32-S3 N16R8 (brain on core 1 + OV7670 camera on core 0)]
+drive: 2 x N20 6 V 300 rpm encoder motors, 43 mm wheels, DRV8833 (PWM capped at 80 %)
+battery: 2S LiPo 7.4 V 1500 mAh
+sensors:
+  - OV7670 on the ESP32-S3 (QQVGA RGB565 -> 48 x 32 grid; needs a lens of at least 52 deg)
+  - 8 x VL53L0X ToF (front, +-45 deg, two per side, back)
+  - 2 x HC-SR04
+  - 2 x TCS3200
+  - Pololu QTR-8RC line array
+  - L3G4200D gyro
+pcb:
+  type: same as v4.0 - round 144 mm PCB mid deck, 2 layers, all through-hole; the S3 uses the ESP32CAM link socket unchanged
+  rules: 0.3 mm signal tracks (0.2-0.25 mm on a few), 0.6-0.8 mm power, 0.25 mm clearance (0.2 mm min), 1.0/0.6 mm vias, 1.0 mm pin holes; DRC 0 errors
+  files: hardware/pcb_v4 (KiCad, Gerbers zip, toner-transfer PDFs, BOM, DRC report)
+budget:
+  currency: LKR
+  total: 15900
+  total_vero_fallback: 11400
+  note: ESP32-S3 and OV7670 already owned; camera carrier (vero strip, headers, 2 x 4.7 k pull-ups, cable) about Rs 300. Optional M12 wide lens about Rs 600 if the stock lens is narrower than 52 deg.
+simulation:
+  judge: neutral judge supervisor, same arena as every version
+  section1_s: 24.1
+  maze_s: 61.6
+  end_s: 153.6
+  collisions: 0
+  firmware_sil_end_s: 175.6
+  firmware_sil_section3_restart_s: 131.5
+  result: full mission, piece placed
+files:
+  - the top-level folders of "Phase 02 - Final Round" (this is the current version)
+  - firmware/esp32s3_brain, firmware/esp32s3_testbench, simulation/controllers/testbench_sim
+  - docs/GuardianBot_v4.1_build_guide.md, docs/TEST_PLAN.md

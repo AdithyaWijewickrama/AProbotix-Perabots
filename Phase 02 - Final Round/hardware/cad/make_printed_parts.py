@@ -1,5 +1,5 @@
 """
-make_printed_parts.py - GuardianBot v4 3-D printed parts (CadQuery). Units: mm.
+make_printed_parts.py - GuardianBot v4.1 3-D printed parts (CadQuery). Units: mm.
 Outputs STL (slicer) and STEP (CAD) into ../3d_prints/. Hole positions match make_acrylic_dxf.py.
 
 Print: PETG or PLA+, 0.2 mm layers, 4 walls, 40 % infill. Pads: TPU 95A (or glue on rubber strip).
@@ -16,7 +16,8 @@ Parts (quantity):
   tcs_front_bracket    (1)  GY-31 facing forward at z 28 (piece colour)
   tcs_floor_spacer     (2)  8 mm spacers: floor GY-31 lens 8 mm above the floor
   caster_spacer        (1)  sets the ball-caster height (sand to level the robot)
-  camera_mast          (1)  ESP32-CAM cradle on the top deck, lens 140 mm high, pitched 29 deg down
+  camera_mast          (1)  OV7670 holder (lens 140 mm high, pitched 29 deg down) with the ESP32-S3 carrier
+                            plate on its back; same 2 x M3 foot holes in the top deck as v4.0
   deck_spacer_54p5     (4)  base -> mid deck spacer tube on M3 threaded rod
   deck_spacer_33p4     (4)  PCB deck -> top deck spacer tube on M3 threaded rod
 Run:  python make_printed_parts.py
@@ -26,7 +27,7 @@ import os
 
 import cadquery as cq
 
-from guardianbot_geometry import (CAM_PITCH, CAM_X, CAM_Z, ESP32CAM_BOARD, TOP_Z1, ARM_L, BASE_Z1, HINGE_X, HINGE_Y, MID_Z0, POCKET_FLARE_X, POCKET_IN_HW,
+from guardianbot_geometry import (CAM_PITCH, CAM_X, CAM_Z, OV7670_BOARD, TOP_Z1, ARM_L, BASE_Z1, HINGE_X, HINGE_Y, MID_Z0, POCKET_FLARE_X, POCKET_IN_HW,
                                   POCKET_MOUTH_HW, POCKET_WALL_T, POCKET_X, SERVO_BODY, TCS_FRONT, TOF,
                                   TOP_Z0, US, MID_Z1)
 
@@ -179,25 +180,24 @@ def tcs_floor_spacer():
 
 
 def camera_mast():
-    """Holds the ESP32-CAM (27 x 40.5 mm, no mounting holes) in a slotted cradle, lens at
-    (CAM_X, CAM_Z) and pitched CAM_PITCH down. Foot: 2 x M3 into the top deck at (CAM_X - 18, +-10)."""
-    bw, bh, bt = (v * MM for v in ESP32CAM_BOARD)
-    foot = box(26, 30, 3, at=(-18 + 4, 0, 0))
-    for s in (1, -1):
-        foot = foot.cut(zhole(M3, 6, (-18, s * 10, -1)))
-    # cradle: back plate with two side rails and a bottom lip, built upright then tilted back
-    back = box(2.5, bw + 6, bh, at=(-2.5 / 2 - bt / 2, 0, 0))
-    rails = box(bt + 4.5, 3, bh, at=(0, (bw + 3) / 2, 0)).union(box(bt + 4.5, 3, bh, at=(0, -(bw + 3) / 2, 0)))
-    groove = box(bt + 0.4, bw + 0.6, bh + 2, at=(0, 0, 1.5))                 # board slides in from the top
-    lip = box(bt + 4.5, bw + 6, 2.5, at=(0, 0, 0))
-    cradle = back.union(rails).union(lip).cut(groove)
-    cradle = cradle.cut(box(10, 16, 14, at=(3, 0, bh - 22)))                 # window: camera + flash LED side
-    lens_h = bh - 9.0                                                         # lens ~9 mm below the board top
-    zl = CAM_Z * MM - TOP_Z1 * MM
-    cradle = cradle.translate((0, 0, -lens_h)).rotate((0, 0, 0), (0, 1, 0), math.degrees(CAM_PITCH))
-    cradle = cradle.translate((-2.0, 0, zl))
-    post = box(6, 20, zl - 4, at=(-9, 0, 3))
-    return foot.union(post).union(cradle).intersect(box(80, 60, 80, at=(0, 0, 0)))
+    """v4.1: OV7670 module (34 x 34 mm) screwed to a plate tilted CAM_PITCH down, lens centre at (CAM_X, CAM_Z).
+    The ESP32-S3 lies flat on the top deck behind the mast (S3_CARRIER), so the mast carries only the camera.
+    Foot: 2 x M3 into the top deck at (CAM_X - 18, +-10) as in v4.0."""
+    bw, bh, bt = (v * MM for v in OV7670_BOARD)
+    foot = box(24, 36, 3, at=(-19, 0, 0))     # ends 7 mm behind the lens: clears the front HC-SR04 hanger nuts
+    for s_ in (1, -1):
+        foot = foot.cut(zhole(M3, 6, (-18, s_ * 10, -1)))
+    zl = CAM_Z * MM - TOP_Z1 * MM                                      # lens height above the top deck
+    post = box(5, 30, zl + 4, at=(-12.5, 0, 3))
+    # camera plate: 3 mm, square to the lens axis, 4 x M2 holes 28 mm apart, lens / holder window 16 mm
+    plate = box(3, bw + 4, bh + 4, at=(0, 0, -(bh + 4) / 2))
+    plate = plate.cut(cq.Workplane("YZ").rect(16, 16).extrude(10, both=True))
+    for dy in (-14, 14):
+        for dz in (-14, 14):
+            plate = plate.cut(cq.Workplane("YZ").circle(1.1).extrude(10, both=True).translate((0, dy, dz)))
+    plate = plate.translate((-1.5, 0, 0)).rotate((0, 0, 0), (0, 1, 0), math.degrees(CAM_PITCH)).translate((-8.5, 0, zl))   # lens ~6 mm ahead of the plate
+    rib = box(10, 3, zl - 4, at=(-18, 0, 3))                           # back rib (stiffens the post)
+    return foot.union(post).union(rib).union(plate).intersect(box(80, 60, 90, at=(0, 0, 0)))
 
 
 def deck_spacer(length):

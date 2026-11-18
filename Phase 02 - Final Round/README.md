@@ -2,11 +2,11 @@
 
 PeraBots 2026, University category, final round (physical robot) – team AProbotix.
 
-Our robot is **GuardianBot v4**: a 150 mm round robot built from the parts the team really owns.
+Our robot is **GuardianBot v4.1**: a 150 mm round robot built from the parts the team really owns.
 
 - **Controllers:**
   - Arduino Mega 2560: real-time body, mounted upside-down on the PCB deck.
-  - ESP32-CAM: brain on core 1, camera on core 0. It sees maze tiles 1–2 cells ahead.
+  - ESP32-S3 N16R8 with an OV7670 camera: brain on core 1, camera on core 0. It sees maze tiles 1–2 cells ahead.
 - **Drive:** DRV8833 with two 6 V 300 rpm N20 encoder motors, on a 2S LiPo.
 - **Sensors:**
   - 8 × VL53L0X time-of-flight: front, ±45°, two per side for wall alignment, back
@@ -20,13 +20,13 @@ Our robot is **GuardianBot v4**: a 150 mm round robot built from the parts the t
 
 Everything physical is generated from one file of dimensions, `hardware/cad/guardianbot_geometry.py`: the Webots model, the laser-cut decks and the 3-D prints.
 
-![GuardianBot v4](docs/images/v4_robot_iso.png)
+![GuardianBot v4.1](docs/images/v41_robot_iso.png)
 
-**Start here: [`docs/GuardianBot_v4_build_guide.md`](docs/GuardianBot_v4_build_guide.md).** It covers:
+**Start here: [`docs/GuardianBot_v4.1_build_guide.md`](docs/GuardianBot_v4.1_build_guide.md).** It covers:
 
 - what changed from v3, and why
 - the parts
-- the Sri Lankan shopping list (about Rs 20,000; about Rs 15,500 with a vero board)
+- the Sri Lankan shopping list (about Rs 15,900; about Rs 11,400 with a vero board)
 - the PCB deck and power wiring
 - the pin map
 - the build order, calibration and the competition procedure
@@ -34,9 +34,11 @@ Everything physical is generated from one file of dimensions, `hardware/cad/guar
 | What | Where |
 |---|---|
 | Arduino Mega firmware (body: encoders, wheel PID, gyro, 8 ToF, line, sonar, colour, servos, keypad, OLED, link) | `firmware/mega_body/` |
-| ESP32-CAM firmware (brain: Sections 1–3, the same strategy as the simulation, plus the camera task) | `firmware/esp32cam_brain/` |
+| ESP32-S3 firmware (brain: Sections 1–3, the same strategy as the simulation, plus the OV7670 camera task; no Wi-Fi) | `firmware/esp32s3_brain/` |
+| **Test-bench firmware**: Wi-Fi web page for sensors, manual drive, camera, calibration and CSV logs (bench only) | `firmware/esp32s3_testbench/` |
+| The same test page for the **simulated** robot (open `testbench.wbt`, then http://localhost:8080) | `simulation/controllers/testbench_sim/` |
 | Software-in-the-loop: the real ESP32 C++ drives the Webots robot | `firmware/sil/` + `simulation/controllers/mega_sil/` |
-| Host compile check of both sketches | `firmware/hostcheck/check.sh` |
+| Host compile check of all three sketches | `firmware/hostcheck/check.sh` |
 | **Circuit simulation (like Tinkercad)**: the real Mega firmware on a virtual Mega in Wokwi, every sensor as a custom chip with sliders; checked by unit tests and a simavr co-simulation | `simulation/wokwi/` |
 | **SPICE checks** of the PCB deck: link levels and timing at 250 kbaud, battery divider, buzzer driver, power-rail dips | `hardware/spice/` |
 | **PCB mid deck** (144 mm round, through-hole, for a local PCB shop) | `hardware/pcb_v4/`, made by `hardware/cad/deck_v4/` |
@@ -47,16 +49,16 @@ Latest Webots results, 0 collisions in every run:
 | Run | Section 1 | Maze done | END reached |
 |---|---|---|---|
 | Python controller, full mission, timed by the neutral judge | 24.1 s | 61.6 s | **153.6 s** |
-| ESP32-CAM firmware + emulated Mega and camera (software-in-the-loop), full mission | 33.2 s | 75.3 s | **170.3 s** |
-| ESP32-CAM firmware, Section 3 restart with the saved clues | | | **131.5 s** |
+| ESP32-S3 brain firmware + emulated Mega and camera (software-in-the-loop), full mission | 33.2 s | 77.3 s | **175.6 s** |
+| ESP32-S3 brain firmware, Section 3 restart with the saved clues | | | **131.5 s** |
 
 ## Folder map
 
 | Folder | What is inside |
 |---|---|
-| `docs/` | Final-round rulebook (PDF and extracted text), **`GuardianBot_v4_build_guide.md`**, robot renders, rulebook figures, sample run log |
+| `docs/` | Final-round rulebook (PDF and extracted text), **`GuardianBot_v4.1_build_guide.md`**, `TEST_PLAN.md`, robot renders, rulebook figures, sample run log |
 | `simulation/` | Webots R2025a project: arena, robot, controllers |
-| `simulation/worlds/` | `perabots_arena.wbt` (full mission), `section3_start.wbt` (restart at Section 3), `guardian_hw_test.wbt` (gripper/sensor self-test), `Arena.wbt` (same as perabots_arena) |
+| `simulation/worlds/` | `perabots_arena.wbt` (full mission), `section3_start.wbt` (restart at Section 3), `guardian_hw_test.wbt` (gripper/sensor self-test), `testbench.wbt` (test web page on the simulated robot), `Arena.wbt` (same as perabots_arena) |
 | `simulation/protos/` | `Arena.proto` (Section 3 rebuilt from rulebook Figure 1), `Obstacles.proto`, `GuardianBot.proto` (generated) |
 | `simulation/controllers/` | `main_controller` (Sections 1, 2, 3; writes `run_log.txt` and `clues.json`), `mega_sil` (runs the ESP32 firmware in the loop) and `guardian_hw_test` |
 | `simulation/make_guardianbot.py`, `make_world.py` | Regenerate the robot PROTO / the worlds |

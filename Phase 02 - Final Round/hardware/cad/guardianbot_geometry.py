@@ -21,7 +21,7 @@ AXLE_Z = WHEEL_R
 
 # decks: acrylic base (motors, caster, QTR-8RC, floor TCS3200, 2S LiPo, side ToF);
 # PCB mid deck (all wiring, Mega upside-down on top, DRV8833 + gyro, bucks underneath, gripper servos);
-# acrylic top deck (ESP32-CAM mast, OLED, keypad, LEDs; HC-SR04 pair and back ToF underneath)
+# acrylic top deck (camera mast, ESP32-S3 carrier, OLED, keypad, LEDs; HC-SR04 pair and back ToF underneath)
 BASE_Z0, BASE_Z1 = 0.0125, 0.0155      # 3 mm acrylic base: motors, caster, line array, TCS3200 floor, LiPo
 MID_Z0, MID_Z1 = 0.0700, 0.0716        # 1.6 mm PCB mid deck (all wiring; Mega upside-down on top of it)
 TOP_Z0, TOP_Z1 = 0.1050, 0.1080        # 3 mm top deck
@@ -91,7 +91,21 @@ CASTER_BALL_R = 0.0063
 CAM_X, CAM_Z, CAM_PITCH = 0.062, 0.140, 0.50
 CAM_FOV = 0.90
 CAM_W, CAM_H = 48, 32
-ESP32CAM_BOARD = (0.027, 0.0405, 0.0045)     # width (y), height (z), PCB thickness
+ESP32CAM_BOARD = (0.027, 0.0405, 0.0045)     # (v4.0) width (y), height (z), PCB thickness
+# v4.1: OV7670 module (34 x 34 mm board, M12 lens holder) on the mast. The ESP32-S3 N16R8 DevKitC-1
+# (63 x 25.5 mm) lies FLAT on a 30 x 70 mm vero carrier on the top deck, just behind the mast: the board
+# plugs face-up into female headers (pins hidden, solder underneath), USB port towards the +y edge.
+# A 10 cm 18-wire female-female ribbon goes from the carrier up to the OV7670.
+# The maze code needs CAM_FOV = 0.90 rad (52 deg) of picture: the lens must be at least that wide
+# (stock OV7670 lenses vary, some are only ~25 deg; an M12 wide-angle lens fixes that).
+OV7670_BOARD = (0.034, 0.034, 0.0016)         # width (y), height (z), PCB thickness
+OV7670_LENS = (0.014, 0.014, 0.016)           # lens holder + lens (y, z, length)
+S3_BOARD = (0.0255, 0.063, 0.0016)            # ESP32-S3-DevKitC-1 N16R8: width (x), length (y), thickness
+S3_CARRIER = (0.0055, 0.0, 0.030, 0.070)      # vero carrier on the top deck: centre x, y, size x, y
+S3_CARRIER_HOLES = [(0.0055, 0.0325), (0.0055, -0.0325)]   # 2 x M3 on the centre line (under the S3's ends)
+S3_STANDOFF = 0.006                           # carrier sits on 6 mm nylon spacers (room for the solder joints)
+S3_HEADER_H = 0.0085                          # female header height: S3 board bottom above the carrier
+CAM_NOISE = 0.05                              # OV7670: noisier and less colour-accurate than the OV2640
 
 # LiPo 2S 7.4 V 1500 mAh (XT60)
 BATTERY = ((0.038, 0.0), (0.034, 0.072, 0.019))

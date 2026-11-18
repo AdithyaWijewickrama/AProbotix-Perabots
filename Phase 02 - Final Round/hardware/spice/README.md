@@ -31,13 +31,13 @@ opens in KiCad's simulator or plain ngspice.
 | Buzzer driver: Vce(sat) with 1k base resistor | 0.07 V | < 0.3 V (fully on) | pass |
 | Buzzer driver: Ic / Ib (forced gain) | 29.5 mA / 4.23 mA | Ib > Ic / 50 | pass |
 | Power, full battery: lowest VBAT at the deck | 7.88 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
-| Power, full battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-CAM, sensors) | pass |
+| Power, full battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-S3, sensors) | pass |
 | Power, full battery: lowest +5V5 (servos) | 5.27 V | > 4.8 V (M0170 min) | pass |
 | Power, nominal battery: lowest VBAT at the deck | 6.85 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
-| Power, nominal battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-CAM, sensors) | pass |
+| Power, nominal battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-S3, sensors) | pass |
 | Power, nominal battery: lowest +5V5 (servos) | 5.27 V | > 4.8 V (M0170 min) | pass |
 | Power, empty battery: lowest VBAT at the deck | 6.13 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
-| Power, empty battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-CAM, sensors) | pass |
+| Power, empty battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-S3, sensors) | pass |
 | Power, empty battery: lowest +5V5 (servos) | 5.21 V | > 4.8 V (M0170 min) | pass |
 
 **25 of 25 checks pass.**
@@ -48,4 +48,4 @@ opens in KiCad's simulator or plain ngspice.
 
 With an empty pack (6.6 V), the servo buck runs in dropout while both servos stall:
 +5V5 sags to about 5.2 V, which is still fine for the M0170. The logic rail never moves more than
-a few tens of mV, so the Mega and the ESP32-CAM do not brown out when the motors or servos start.
+a few tens of mV, so the Mega and the ESP32-S3 do not brown out when the motors or servos start.

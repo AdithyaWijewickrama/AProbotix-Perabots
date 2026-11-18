@@ -18,3 +18,8 @@ simulation/wokwi/build/
 simulation/wokwi/test/_build/
 simulation/wokwi/test/_deps/
 hardware/spice/_*.txt
+# software-in-the-loop / test-bench run-time files
+firmware/sil/brain_sil
+simulation/controllers/mega_sil/sil_log.txt
+simulation/controllers/mega_sil/sil_prefs.bin
+simulation/controllers/testbench_sim/cal.json
