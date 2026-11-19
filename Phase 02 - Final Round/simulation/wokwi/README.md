@@ -1,4 +1,4 @@
-# GuardianBot v4 in Wokwi (circuit simulation, like Tinkercad)
+# GuardianBot v4.1 in Wokwi (circuit simulation, like Tinkercad)
 
 This folder runs the **real Arduino Mega firmware** (`firmware/mega_body`) on a virtual Mega. Every part is wired
 exactly as on the PCB deck (pin map = `firmware/mega_body/pins.h`), and you can drag sliders while it runs: ToF

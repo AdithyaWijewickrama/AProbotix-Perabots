@@ -1,6 +1,8 @@
-# GuardianBot test plan (ready, not started)
+# GuardianBot test plan
 
-Status: **agreed, waiting to start**. It runs after v4.1 (ESP32-S3 + OV7670 brain).
+Status: **Phases A–C done** (19 Nov 2026, 32 test worlds; results in `test/PHASE_C_FINDINGS.md`).
+**Next:** the fixes, in this order: crooked start, tile counting, tight maze entrance, faster Section 3 (with an SG90 camera-tilt comparison).
+It runs after v4.1 (ESP32-S3 + OV7670 brain).
 It builds on the Phase 01 test harness (`Phase 01 - Online Round/test`), used only as a reference and never changed.
 
 ## Phase A: Test arenas (Final Round rules)

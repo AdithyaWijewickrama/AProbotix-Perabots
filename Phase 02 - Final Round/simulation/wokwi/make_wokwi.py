@@ -1,6 +1,6 @@
 """
 make_wokwi.py - builds the Wokwi project that runs the REAL Arduino Mega firmware (firmware/mega_body)
-with every part of GuardianBot v4 wired exactly as on the PCB deck (pin map = firmware/mega_body/pins.h).
+with every part of GuardianBot v4.1 wired exactly as on the PCB deck (pin map = firmware/mega_body/pins.h).
 
     python make_wokwi.py          -> project/   (upload these files to a new Arduino Mega project on wokwi.com)
                                       and diagram.json + wokwi.toml here (Wokwi for VS Code)
@@ -9,7 +9,7 @@ with every part of GuardianBot v4 wired exactly as on the PCB deck (pin map = fi
 Parts: Wokwi's own OLED (128x64; ours is 128x32, the text uses the top half), 2 x HC-SR04, 2 servos,
 4 keys, 2 LEDs, buzzer, a slide pot as the battery voltage, a logic analyzer on the link; and our custom
 chips (chips/): 8 x VL53L0X, L3G4200D, 2 x TCS3200, QTR-8RC, 2 x DRV8833+N20 encoder motor, and a
-"brain stub" that plays the ESP32-CAM on Serial2 (sliders for wheel speeds, servos and LEDs).
+"brain stub" that plays the ESP32-S3 brain on Serial2 (sliders for wheel speeds, servos and LEDs).
 """
 import json
 import os
@@ -85,7 +85,7 @@ for k, (pid, in1, in2, ea, eb, rev) in enumerate((("motor_l", 5, 6, 2, 3, 0), ("
                     ("ENC_A", mega(ea)), ("ENC_B", mega(eb))):
         wire(pid + ":" + pin, to, "brown")
 
-# ---------------------------------------------------------------- the ESP32-CAM stand-in on Serial2
+# ---------------------------------------------------------------- the ESP32-S3 brain stand-in on Serial2
 part("chip-brainstub", "brain", 120, 1260, {"enable": 1, "v_left": 0, "v_right": 0, "servo_left": 90,
                                             "servo_right": 90, "outputs": 0, "zero": 0})
 wire("brain:RX", mega(16), "cyan"); wire("brain:TX", mega(17), "cyan"); wire("brain:GND", GND, "black")
@@ -112,7 +112,7 @@ wire("buzzer:1", GND, "black"); wire("buzzer:2", mega(9), "red")
 part("wokwi-slide-potentiometer", "battery", 1060, 380, {"travelLength": "30"})
 wire("battery:VCC", V5, "red"); wire("battery:GND", GND, "black"); wire("battery:SIG", mega("A0"), "green")
 
-diagram = {"version": 1, "author": "AProbotix - GuardianBot v4", "editor": "wokwi",
+diagram = {"version": 1, "author": "AProbotix - GuardianBot v4.1", "editor": "wokwi",
            "parts": parts, "connections": conns, "dependencies": {}}
 
 

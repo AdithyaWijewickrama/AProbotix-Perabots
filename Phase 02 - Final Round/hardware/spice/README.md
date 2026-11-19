@@ -1,6 +1,6 @@
 # SPICE checks of the PCB deck (ngspice)
 
-Electrical checks of the circuits on the v4 PCB deck. Re-run with `python run_spice.py`
+Electrical checks of the circuits on the v4 PCB deck (unchanged in v4.1; the brain is now the ESP32-S3). Re-run with `python run_spice.py`
 (needs ngspice, numpy, matplotlib). The values come from `hardware/cad/deck_v4/deck_design.py`;
 the part models in `models.lib` are fitted to datasheet typical values. Every `*.cir` deck also
 opens in KiCad's simulator or plain ngspice.
@@ -10,11 +10,11 @@ opens in KiCad's simulator or plain ngspice.
 - **vbat_adc**: the 20k/10k + 100 nF battery divider on A0.
 - **buzzer**: the BC547 driver.
 - **power_full / nominal / empty**: the 2S LiPo and wiring feeding the DRV8833, both N20s starting from
-  standstill, the logic buck with a camera burst, and the servo buck with both servos stalled at once.
+  standstill, the logic buck with an S3 + camera current step, and the servo buck with both servos stalled at once.
 
 | Check | Result | Limit | |
 |---|---|---|---|
-| Mega -> ESP: high level at GPIO15 | 3.22 V | 2.48 V (0.75 VDD) .. 3.6 V (abs max) | pass |
+| Mega -> ESP: high level at GPIO41 | 3.22 V | 2.48 V (0.75 VDD) .. 3.6 V (abs max) | pass |
 | Mega -> ESP: low level | 0.00 V | < 0.83 V (0.25 VDD) | pass |
 | Mega -> ESP: rise time 10-90 % | 96 ns | < 400 ns (10 % of a 4 us bit) | pass |
 | Mega -> ESP: bytes decoded at mid-bit | A5 5A 00 FF 55 | A5 5A 00 FF 55 | pass |
@@ -31,14 +31,14 @@ opens in KiCad's simulator or plain ngspice.
 | Buzzer driver: Vce(sat) with 1k base resistor | 0.07 V | < 0.3 V (fully on) | pass |
 | Buzzer driver: Ic / Ib (forced gain) | 29.5 mA / 4.23 mA | Ib > Ic / 50 | pass |
 | Power, full battery: lowest VBAT at the deck | 7.88 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
-| Power, full battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-S3, sensors) | pass |
+| Power, full battery: lowest +5V (logic) | 4.98 V | > 4.75 V (ESP32-S3, sensors) | pass |
 | Power, full battery: lowest +5V5 (servos) | 5.27 V | > 4.8 V (M0170 min) | pass |
 | Power, nominal battery: lowest VBAT at the deck | 6.85 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
-| Power, nominal battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-S3, sensors) | pass |
+| Power, nominal battery: lowest +5V (logic) | 4.98 V | > 4.75 V (ESP32-S3, sensors) | pass |
 | Power, nominal battery: lowest +5V5 (servos) | 5.27 V | > 4.8 V (M0170 min) | pass |
-| Power, empty battery: lowest VBAT at the deck | 6.13 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
-| Power, empty battery: lowest +5V (logic) | 4.97 V | > 4.75 V (ESP32-S3, sensors) | pass |
-| Power, empty battery: lowest +5V5 (servos) | 5.21 V | > 4.8 V (M0170 min) | pass |
+| Power, empty battery: lowest VBAT at the deck | 6.14 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
+| Power, empty battery: lowest +5V (logic) | 4.98 V | > 4.75 V (ESP32-S3, sensors) | pass |
+| Power, empty battery: lowest +5V5 (servos) | 5.22 V | > 4.8 V (M0170 min) | pass |
 
 **25 of 25 checks pass.**
 

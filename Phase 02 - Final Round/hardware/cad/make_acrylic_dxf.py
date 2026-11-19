@@ -1,5 +1,5 @@
 """
-make_acrylic_dxf.py - GuardianBot v4 laser-cut decks (3 mm acrylic or 3 mm plywood). Units: mm.
+make_acrylic_dxf.py - GuardianBot v4.1 laser-cut decks (3 mm acrylic or 3 mm plywood). Units: mm.
 
 Top view, +X = robot forward, +Y = robot left, origin = robot centre (wheel-axle centre).
 The MIDDLE floor is the PCB deck (hardware/pcb_v4). Writes into ../acrylic/:

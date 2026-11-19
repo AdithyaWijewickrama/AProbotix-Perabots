@@ -1,5 +1,5 @@
 {
-  "name": "Brain stub (ESP32-CAM link)",
+  "name": "Brain stub (ESP32-S3 link)",
   "author": "AProbotix (GuardianBot v4)",
   "pins": ["RX", "TX", "GND", ""],
   "controls": [

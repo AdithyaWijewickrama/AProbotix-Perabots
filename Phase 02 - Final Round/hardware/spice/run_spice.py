@@ -1,10 +1,10 @@
 """
-run_spice.py - SPICE checks of the GuardianBot v4 PCB deck circuits with ngspice (KiCad's simulator).
+run_spice.py - SPICE checks of the GuardianBot v4.1 PCB deck circuits (PCB rev A, unchanged from v4.0) with ngspice (KiCad's simulator).
 
     python run_spice.py        -> README.md (results) + plots/*.png (and the .cir decks it ran)
 
-  1. link_mega_to_esp   Mega TX2 (5 V) -> 1k8 / 3k3 divider -> ESP32-CAM GPIO15, 250 kbaud, 30 cm cable
-  2. link_esp_to_mega   ESP32-CAM GPIO14 (3.3 V) -> 2N7000 + 10k / 10k pull-ups -> Mega RX2
+  1. link_mega_to_esp   Mega TX2 (5 V) -> 1k8 / 3k3 divider -> ESP32-S3 GPIO41 (RX), 250 kbaud, 30 cm cable
+  2. link_esp_to_mega   ESP32-S3 GPIO42 (TX, 3.3 V) -> 2N7000 + 10k / 10k pull-ups -> Mega RX2
   3. vbat_adc           20k / 10k + 100 nF divider -> A0: DC 5..9 V, ADC counts, settling
   4. buzzer             D9 -> 1k -> BC547 -> 5 V active buzzer (30 mA)
   5. power              2S LiPo (full / nominal / empty) -> wiring -> DRV8833 + 2 N20 stall, both bucks,
@@ -112,7 +112,7 @@ TEST_BYTES = [0xA5, 0x5A, 0x00, 0xFF, 0x55]
 
 def link_mega_to_esp():
     pwl, bits, tend = uart_pwl(TEST_BYTES, 0.0, 5.0)
-    deck = f"""* Mega TX2 -> 1k8/3k3 divider -> ESP32-CAM GPIO15 (R3, R4 on the PCB deck)
+    deck = f"""* Mega TX2 -> 1k8/3k3 divider -> ESP32-S3 GPIO41 (R3, R4 on the PCB deck)
 Vtx tx 0 {pwl}
 Rout tx a 25
 R3 a rx 1.8k
@@ -130,7 +130,7 @@ wrdata @OUT@ @VEC@
     vh, vl = vrx.max(), vrx.min()
     tr = rise_time(t, vrx, vl, vh)
     got = uart_decode(t, vrx, 0.5 * 3.3, 0, len(TEST_BYTES))
-    res("Mega -> ESP: high level at GPIO15", "%.2f V" % vh, "2.48 V (0.75 VDD) .. 3.6 V (abs max)", 2.48 <= vh <= 3.6)
+    res("Mega -> ESP: high level at GPIO41", "%.2f V" % vh, "2.48 V (0.75 VDD) .. 3.6 V (abs max)", 2.48 <= vh <= 3.6)
     res("Mega -> ESP: low level", "%.2f V" % vl, "< 0.83 V (0.25 VDD)", vl < 0.83)
     res("Mega -> ESP: rise time 10-90 %", "%.0f ns" % (tr * 1e9), "< 400 ns (10 % of a 4 us bit)", tr < 400e-9)
     res("Mega -> ESP: bytes decoded at mid-bit", " ".join("%02X" % b for b in got), " ".join("%02X" % b for b in TEST_BYTES),
@@ -140,7 +140,7 @@ wrdata @OUT@ @VEC@
 
 def link_esp_to_mega():
     pwl, bits, tend = uart_pwl(TEST_BYTES, 0.0, 3.3)
-    deck = f"""* ESP32-CAM GPIO14 (3.3 V) -> 2N7000 (Q1) -> Mega RX2, pull-ups R5 10k to 3V3, R6 10k to 5 V
+    deck = f"""* ESP32-S3 GPIO42 (3.3 V) -> 2N7000 (Q1) -> Mega RX2, pull-ups R5 10k to 3V3, R6 10k to 5 V
 .include models.lib
 V33 v33 0 3.3
 V5 v5 0 5
@@ -241,14 +241,14 @@ Smot vbat mot ctl_m 0 SWM
 Rmot mot 0 {{ 1 / (2 * 0.8 * 0.8) * 7 }}
 Vctl_m ctl_m 0 PULSE(0 1 5m 10u 10u 20m 100m)
 .model SWM SW(VT=0.5 RON=0.01 ROFF=1e9)
-* logic buck LM2596 -> +5V: Mega + ESP32-CAM + 8 ToF + QTR + sonars + OLED + TCS LEDs = 0.35 A base,
-* ESP32-CAM camera/flash bursts +0.4 A at 12 ms .. 14 ms
+* logic buck LM2596 -> +5V: Mega + ESP32-S3 + OV7670 + 8 ToF + QTR + sonars + OLED + TCS LEDs = 0.35 A base,
+* ESP32-S3 + OV7670 current step (CPU, PSRAM, camera; no Wi-Fi) +0.3 A at 12 ms .. 14 ms - conservative
 X5 vbat p5 0 BUCK params: vset=5.0 vdrop=0.6 rsw=0.25 eff=0.85
 C1 p5 c1e 470u
 Rc1 c1e 0 0.05
 Rlog p5 0 {{ 5 / 0.35 }}
 Sburst p5 bur ctl_b 0 SWM
-Rbur bur 0 {{ 5 / 0.4 }}
+Rbur bur 0 {{ 5 / 0.3 }}
 Vctl_b ctl_b 0 PULSE(0 1 12m 10u 10u 2m 100m)
 * servo buck HW-319 -> +5V5: both M0170 servos stall at once (2 x 1.5 A) from 10 ms to 30 ms
 X55 vbat p55 0 BUCK params: vset=5.5 vdrop=0.5 rsw=0.15 eff=0.88
@@ -275,11 +275,11 @@ def main():
     t1, a1, b1 = link_mega_to_esp()
     t2, a2, b2 = link_esp_to_mega()
     fig, ax = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
-    ax[0].plot(t1 * 1e6, a1, label="Mega TX2 (5 V)"); ax[0].plot(t1 * 1e6, b1, label="ESP32 GPIO15 (after 1k8/3k3)")
-    ax[0].axhline(2.48, ls=":", c="gray"); ax[0].set_ylabel("V"); ax[0].legend(loc="lower right"); ax[0].set_title("Mega -> ESP32-CAM")
-    ax[1].plot(t2 * 1e6, a2, label="ESP32 GPIO14 (3.3 V)"); ax[1].plot(t2 * 1e6, b2, label="Mega RX2 (after 2N7000)")
+    ax[0].plot(t1 * 1e6, a1, label="Mega TX2 (5 V)"); ax[0].plot(t1 * 1e6, b1, label="ESP32-S3 GPIO41 (after 1k8/3k3)")
+    ax[0].axhline(2.48, ls=":", c="gray"); ax[0].set_ylabel("V"); ax[0].legend(loc="lower right"); ax[0].set_title("Mega -> ESP32-S3")
+    ax[1].plot(t2 * 1e6, a2, label="ESP32-S3 GPIO42 (3.3 V)"); ax[1].plot(t2 * 1e6, b2, label="Mega RX2 (after 2N7000)")
     ax[1].axhline(3.0, ls=":", c="gray"); ax[1].axhline(1.5, ls=":", c="gray"); ax[1].set_ylabel("V"); ax[1].set_xlabel("us")
-    ax[1].legend(loc="lower right"); ax[1].set_title("ESP32-CAM -> Mega")
+    ax[1].legend(loc="lower right"); ax[1].set_title("ESP32-S3 -> Mega")
     fig.suptitle("Link at 250 kbaud, bytes A5 5A 00 FF 55")
     fig.tight_layout(); fig.savefig(os.path.join(PLOTS, "link.png"), dpi=110); plt.close(fig)
     vbat_adc()
@@ -289,16 +289,16 @@ def main():
         t, vb, v5, v55, mb, m5, m55 = power(vocv, tag)
         ax[0].plot(t * 1e3, vb, label="%s (%.1f V)" % (tag, vocv)); ax[1].plot(t * 1e3, v5); ax[2].plot(t * 1e3, v55)
         res("Power, %s battery: lowest VBAT at the deck" % tag, "%.2f V" % mb, "> 6.0 V (DRV8833 min 2.7 V, bucks)", mb > 6.0)
-        res("Power, %s battery: lowest +5V (logic)" % tag, "%.2f V" % m5, "> 4.75 V (ESP32-CAM, sensors)", m5 > 4.75)
+        res("Power, %s battery: lowest +5V (logic)" % tag, "%.2f V" % m5, "> 4.75 V (ESP32-S3, sensors)", m5 > 4.75)
         res("Power, %s battery: lowest +5V5 (servos)" % tag, "%.2f V" % m55, "> 4.8 V (M0170 min)", m55 > 4.8)
     ax[0].set_ylabel("VBAT (V)"); ax[0].legend(fontsize=8)
     ax[1].set_ylabel("+5V (V)"); ax[2].set_ylabel("+5V5 (V)"); ax[2].set_xlabel("ms")
-    for a, txt in ((ax[0], "motors start 5 ms, servos stall 10 ms, camera burst 12 ms"),):
+    for a, txt in ((ax[0], "motors start 5 ms, servos stall 10 ms, S3 + camera step 12 ms"),):
         a.set_title(txt)
     fig.tight_layout(); fig.savefig(os.path.join(PLOTS, "power.png"), dpi=110); plt.close(fig)
 
     lines = ["# SPICE checks of the PCB deck (ngspice)", "",
-             "Electrical checks of the circuits on the v4 PCB deck. Re-run with `python run_spice.py`",
+             "Electrical checks of the circuits on the v4 PCB deck (unchanged in v4.1; the brain is now the ESP32-S3). Re-run with `python run_spice.py`",
              "(needs ngspice, numpy, matplotlib). The values come from `hardware/cad/deck_v4/deck_design.py`;",
              "the part models in `models.lib` are fitted to datasheet typical values. Every `*.cir` deck also",
              "opens in KiCad's simulator or plain ngspice.", "",
@@ -307,7 +307,7 @@ def main():
              "- **vbat_adc**: the 20k/10k + 100 nF battery divider on A0.",
              "- **buzzer**: the BC547 driver.",
              "- **power_full / nominal / empty**: the 2S LiPo and wiring feeding the DRV8833, both N20s starting from",
-             "  standstill, the logic buck with a camera burst, and the servo buck with both servos stalled at once.", "",
+             "  standstill, the logic buck with an S3 + camera current step, and the servo buck with both servos stalled at once.", "",
              "| Check | Result | Limit | |", "|---|---|---|---|"]
     lines += ["| %s | %s | %s | %s |" % r for r in results]
     nfail = sum(1 for r in results if r[3] != "pass")
@@ -315,7 +315,7 @@ def main():
               "![link](plots/link.png)", "", "![power](plots/power.png)", ""]
     lines += ["With an empty pack (6.6 V), the servo buck runs in dropout while both servos stall:",
               "+5V5 sags to about 5.2 V, which is still fine for the M0170. The logic rail never moves more than",
-              "a few tens of mV, so the Mega and the ESP32-CAM do not brown out when the motors or servos start.", ""]
+              "a few tens of mV, so the Mega and the ESP32-S3 do not brown out when the motors or servos start.", ""]
     open(os.path.join(HERE, "README.md"), "w").write("\n".join(lines))
     for r in results:
         print("%-52s %-22s %s" % (r[0], r[1], r[3]))

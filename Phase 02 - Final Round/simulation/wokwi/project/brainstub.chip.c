@@ -1,4 +1,4 @@
-// "Brain stub" for Wokwi - stands in for the ESP32-CAM on the Mega's Serial2 link (250000 baud).
+// "Brain stub" for Wokwi - stands in for the ESP32-S3 brain on the Mega's Serial2 link (250000 baud).
 // Every 20 ms it sends a Command frame built from its sliders (wheel speeds, servos, LEDs ...), once a
 // second an OLED text frame, and it decodes every Telemetry frame from the Mega and prints a summary
 // twice a second. Frames and structs are exactly firmware/mega_body/protocol.h.

@@ -1,4 +1,4 @@
-* ESP32-CAM GPIO14 (3.3 V) -> 2N7000 (Q1) -> Mega RX2, pull-ups R5 10k to 3V3, R6 10k to 5 V
+* ESP32-S3 GPIO42 (3.3 V) -> 2N7000 (Q1) -> Mega RX2, pull-ups R5 10k to 3V3, R6 10k to 5 V
 .include models.lib
 V33 v33 0 3.3
 V5 v5 0 5

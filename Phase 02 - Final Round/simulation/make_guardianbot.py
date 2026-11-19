@@ -498,7 +498,7 @@ def build():
 
     proto = """#VRML_SIM R2025a utf8
 # license: Apache License 2.0
-# GuardianBot v4.0 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
+# GuardianBot v4.1 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
 # 150 mm round: acrylic base + PCB mid deck + acrylic top, rear capture pocket with 2 servo arms.
 # Controllers: Arduino Mega 2560 (real-time I/O, on the PCB mid deck) + ESP32-S3 N16R8 + OV7670 (brain + camera); DRV8833; 2S LiPo.
 # Sensors: 8 x VL53L0X ToF, 2 x HC-SR04, Pololu QTR-8RC line array,

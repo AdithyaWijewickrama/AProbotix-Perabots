@@ -1,9 +1,9 @@
 # PeraBots 2026 - University Category Final Round
 # The Nine Seals of Pera - Autonomous Controller for GuardianBot
-#   v4.0: 8 x VL53L0X ToF (tof_*, 3-120 cm), 2 x HC-SR04 (us_front, us_back),
+#   v4.1: 8 x VL53L0X ToF (tof_*, 3-120 cm), 2 x HC-SR04 (us_front, us_back),
 #         Pololu QTR-8RC line array (gs0..gs7), 2 x TCS3200 (tcs_floor, tcs_front),
-#         ESP32-CAM (cam, 48x32), L3G4200D gyro, N20 hall encoders, two servo gripper arms.
-#   The real robot runs the same strategy in firmware/esp32cam_brain (C++).
+#         OV7670 camera on the ESP32-S3 (cam, 48x32), L3G4200D gyro, N20 hall encoders, two servo gripper arms.
+#   The real robot runs the same strategy in firmware/esp32s3_brain (C++).
 #
 # Section 1 & 2: User's optimized A* path planner, sensor ray-casting,
 #                occupancy grid mapping, camera-based dead-end tile detection.
@@ -96,7 +96,7 @@ tcs_floor.enable(TS)
 tcs_front = robot.getDevice('tcs_front')
 tcs_front.enable(TS)
 TCS_FLOOR_XY = (0.012, 0.030)          # floor colour sensor position (robot frame)
-cam = robot.getDevice('cam')            # ESP32-CAM: the real robot receives the same 48x32 grid over UART
+cam = robot.getDevice('cam')            # OV7670: the real robot's camera task makes the same 48x32 grid
 cam.enable(TS)
 CW, CH = cam.getWidth(), cam.getHeight()
 
