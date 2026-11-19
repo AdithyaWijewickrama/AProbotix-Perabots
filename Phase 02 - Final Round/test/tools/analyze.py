@@ -281,6 +281,9 @@ def analyze(run):
     total_real = round(t_end - (0 if truth["start"] == "full" else 0), 2)
     best = sum(rf[k]["time"] for k in ("s1", "s2", "s3") if rf.get(k))
     note = []
+    A["legal"] = truth.get("legal_20cm_route", True)
+    if not A["legal"]:
+        note.append("ILLEGAL ARENA (no route for a 20 cm robot; stress test only)")
     if "end" not in m:
         note.append("DID NOT FINISH (%s)" % res["reason"])
     if A["maze_count_ok"] is False:

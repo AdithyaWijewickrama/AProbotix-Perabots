@@ -1,6 +1,6 @@
 #VRML_SIM R2025a utf8
 # license: Apache License 2.0
-# GuardianBot v4.1 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
+# GuardianBot v4.2 (final-round build, camera tilt servo) - PeraBots 2026 "Nine Seals of Pera".
 # 150 mm round: acrylic base + PCB mid deck + acrylic top, rear capture pocket with 2 servo arms.
 # Controllers: Arduino Mega 2560 (real-time I/O, on the PCB mid deck) + ESP32-S3 N16R8 + OV7670 (brain + camera); DRV8833; 2S LiPo.
 # Sensors: 8 x VL53L0X ToF, 2 x HC-SR04, Pololu QTR-8RC line array,
@@ -304,17 +304,47 @@ PROTO GuardianBot [
       near 0.002
       children [ Pose { translation -0.00400 0.00000 0.00000 children [ Shape { appearance PBRAppearance { baseColor 0.050 0.120 0.450 roughness 0.45 metalness 0.10 } geometry Box { size 0.00160 0.02800 0.02800 } } ] } Pose { translation -0.00200 0.00000 0.00000 children [ Shape { appearance PBRAppearance { baseColor 0.030 0.030 0.030 roughness 0.60 metalness 0.00 } geometry Box { size 0.00300 0.01200 0.01200 } } ] } Pose { translation -0.00250 0.00900 0.00900 children [ Shape { appearance PBRAppearance { baseColor 1.000 1.000 0.950 roughness 0.30 metalness 0.00 emissiveColor 0.700 0.700 0.600 } geometry Sphere { radius 0.00180 subdivision 2 } } ] } Pose { translation -0.00250 0.00900 -0.00900 children [ Shape { appearance PBRAppearance { baseColor 1.000 1.000 0.950 roughness 0.30 metalness 0.00 emissiveColor 0.700 0.700 0.600 } geometry Sphere { radius 0.00180 subdivision 2 } } ] } Pose { translation -0.00250 -0.00900 0.00900 children [ Shape { appearance PBRAppearance { baseColor 1.000 1.000 0.950 roughness 0.30 metalness 0.00 emissiveColor 0.700 0.700 0.600 } geometry Sphere { radius 0.00180 subdivision 2 } } ] } Pose { translation -0.00250 -0.00900 -0.00900 children [ Shape { appearance PBRAppearance { baseColor 1.000 1.000 0.950 roughness 0.30 metalness 0.00 emissiveColor 0.700 0.700 0.600 } geometry Sphere { radius 0.00180 subdivision 2 } } ] } ]
     }
-    Camera {
-      translation 0.06200 0.00000 0.14000
-      rotation 0 1 0 0.5000
-      name "cam"
-      # OV7670 on the ESP32-S3, cropped and averaged to a 48x32 grid by firmware/esp32s3_brain (camera task)
-      fieldOfView 0.900
-      noise 0.050
-      width 48
-      height 32
-      near 0.01
-      children [ Pose { translation -0.00200 0.00000 0.00000 rotation 0 1 0 1.5708 children [ Shape { appearance PBRAppearance { baseColor 0.030 0.030 0.030 roughness 0.60 metalness 0.00 } geometry Cylinder { radius 0.00420 height 0.00500 } } ] } Pose { translation 0.00060 0.00000 0.00000 rotation 0 1 0 1.5708 children [ Shape { appearance PBRAppearance { baseColor 0.050 0.080 0.120 roughness 0.05 metalness 0.60 } geometry Cylinder { radius 0.00250 height 0.00050 } } ] } ]
+    HingeJoint {
+      jointParameters HingeJointParameters { axis 0 1 0 anchor 0.06200 0.00000 0.14000 minStop -0.506 maxStop 0 dampingConstant 0.001 }
+      device [
+        RotationalMotor {
+          name "cam_tilt"
+          # SG90 / MG90S on the camera mast: about 0.1 s per 60 deg; 0 = maze view, -0.506 = 29 deg up (hard stop)
+          maxVelocity 10.5
+          acceleration 300
+          maxTorque 0.2
+          minPosition -0.506
+          maxPosition 0
+        }
+        PositionSensor { name "cam_tilt_sensor" }
+      ]
+      endPoint Solid {
+        translation 0.06200 0.00000 0.14000
+        name "cam_tilt_head"
+        children [ Camera {
+          rotation 0 1 0 0.5000
+          name "cam"
+          # OV7670 on the ESP32-S3, cropped and averaged to a 48x32 grid by firmware/esp32s3_brain (camera task)
+          fieldOfView 0.900
+          noise 0.050
+          width 48
+          height 32
+          near 0.01
+          children [ Pose { translation -0.00200 0.00000 0.00000 rotation 0 1 0 1.5708 children [ Shape { appearance PBRAppearance { baseColor 0.030 0.030 0.030 roughness 0.60 metalness 0.00 } geometry Cylinder { radius 0.00420 height 0.00500 } } ] } Pose { translation 0.00060 0.00000 0.00000 rotation 0 1 0 1.5708 children [ Shape { appearance PBRAppearance { baseColor 0.050 0.080 0.120 roughness 0.05 metalness 0.60 } geometry Cylinder { radius 0.00250 height 0.00050 } } ] } ]
+        }
+        Camera {
+          rotation 0 1 0 0.5000
+          name "cam_hi"
+          # OV7670 on the ESP32-S3, same OV7670, 96x64 grid for the Section 3 board look
+          fieldOfView 0.900
+          noise 0.050
+          width 96
+          height 64
+          near 0.01
+          
+        } ]
+        physics Physics { density -1 mass 0.015 centerOfMass [ 0 0 0 ] inertiaMatrix [ 3e-6 3e-6 3e-6, 0 0 0 ] }
+      }
     }
     InertialUnit { translation 0.04900 -0.02200 0.07460 name "imu" noise 0.001 }
     Gyro { translation 0.04900 -0.02200 0.07460 name "gyro" }

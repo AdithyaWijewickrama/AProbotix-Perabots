@@ -1,5 +1,5 @@
 """
-guardianbot_geometry.py - single source of truth for GuardianBot v4.1 (final-round build).
+guardianbot_geometry.py - single source of truth for GuardianBot v4.2 (final-round build; v4.2 adds the camera tilt servo).
 
 Built from the team's parts list (Nov 17; v4.1 Nov 19):
   Arduino Mega 2560 (real-time I/O, mounted upside-down on the PCB mid deck)
@@ -89,6 +89,8 @@ CASTER_BALL_R = 0.0063
 # CAM = lens position (x, z) and the downward pitch (rad). CAM_FOV = horizontal field of view
 # after the brain crops its 160x120 frame to a 48x32 RGB565 grid (see firmware/esp32s3_brain/cam_ov7670.h).
 CAM_X, CAM_Z, CAM_PITCH = 0.062, 0.140, 0.50
+CAM_TILT_MAX = 0.506          # Fix 4: SG90/MG90S tilt servo lifts the camera up to 29 deg (hard stop) for the board look
+CAM_TILT_LOOK = 0.25          # Fix 4: board look from the exit junction (14 deg up); the image is self-calibrated on the grid lines
 CAM_FOV = 0.90
 CAM_W, CAM_H = 48, 32
 ESP32CAM_BOARD = (0.027, 0.0405, 0.0045)     # (v4.0) width (y), height (z), PCB thickness

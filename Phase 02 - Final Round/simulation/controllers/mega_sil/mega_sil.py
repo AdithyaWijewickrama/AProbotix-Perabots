@@ -43,6 +43,8 @@ GS = [dev('gs%d' % i) for i in range(8)]
 tf, tx = dev('tcs_floor'), dev('tcs_front')
 cam = dev('cam')
 cam.enable(TS)
+cam_hi, cam_tilt = dev('cam_hi'), dev('cam_tilt')     # Fix 4: board-look grid and the tilt servo on the S3's GPIO21
+tilt_up = False
 for d in [le, re_, imu, gyro, tf, tx] + US + TOF + GS:
     d.enable(TS)
 gl, gr = dev('grip_left'), dev('grip_right')
@@ -58,16 +60,18 @@ cam_seq = 0
 cam_pending = None
 
 
-def cam_frame():
-    """Webots BGRA image -> 'V' frame with little-endian RGB565 pixels."""
+def cam_frame(c=None, kind='V'):
+    """Webots BGRA image -> 'V' (48x32) or 'W' (96x64 board look) frame with little-endian RGB565 pixels."""
     global cam_seq
-    img = cam.getImage()
+    img = (c or cam).getImage()
+    if not img:
+        return b''
     out = bytearray()
     for i in range(0, len(img), 4):
         b, g, r = img[i], img[i + 1], img[i + 2]
         v = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
         out += bytes((v & 0xFF, v >> 8))
-    hdr = bytes([0xA5, 0x5A, ord('V'), cam_seq & 0xFF, len(out) & 0xFF, len(out) >> 8])
+    hdr = bytes([0xA5, 0x5A, ord(kind), cam_seq & 0xFF, len(out) & 0xFF, len(out) >> 8])
     cam_seq += 1
     s = (sum(hdr[2:]) + sum(out)) & 0xFF
     return hdr + bytes(out) + bytes([s])
@@ -95,6 +99,18 @@ def frame(t, payload):
 rx = bytearray()
 
 
+def set_tilt(rad):
+    global tilt_up
+    if cam_tilt:
+        cam_tilt.setPosition(max(-0.506, min(0.0, rad)))
+    up = rad < -0.05
+    if up and not tilt_up and cam_hi:
+        cam_hi.enable(TS)
+    if not up and tilt_up and cam_hi:
+        cam_hi.disable()
+    tilt_up = up
+
+
 def read_commands():
     """Block until at least one Command frame has arrived; return the newest one."""
     global rx
@@ -115,6 +131,13 @@ def read_commands():
                 txt = bytes(rx[4:46]).decode('ascii', 'replace')
                 print('OLED | %s | %s' % (txt[:21].rstrip(), txt[21:].rstrip()), flush=True)
                 rx = rx[47:]
+                continue
+            if t == 0x53 and n == 2:                 # Fix 4: tilt servo angle from the S3 (its own pin, not the Mega)
+                if len(rx) < 7:
+                    break
+                if (t + n + rx[4] + rx[5]) & 0xFF == rx[6]:
+                    set_tilt(struct.unpack('<h', bytes(rx[4:6]))[0] / 1000.0)
+                rx = rx[7:]
                 continue
             if t != 0x43 or n != CMD.size:
                 rx = rx[2:]
@@ -161,6 +184,8 @@ while robot.step(TS) != -1:
             except OSError:
                 pass
         cam_pending = cam_frame()
+        if tilt_up and cam_hi:                        # the camera task makes a 96x64 grid while the board look asks
+            cam_pending += cam_frame(cam_hi, 'W')
     try:
         brain.stdin.write(frame(0x54, p))
     except BrokenPipeError:

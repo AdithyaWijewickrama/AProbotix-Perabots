@@ -4,64 +4,70 @@
  "start": "s3",
  "marks": {
   "s1": 0.02,
-  "s2": 3.14,
-  "end": 92.82
+  "s2": 2.4,
+  "end": 35.55
  },
  "reason": "reached END",
  "intervals": {
   "S3": [
-   3.14,
-   92.82
+   2.4,
+   35.55
   ]
  },
  "sections": {
   "S3": {
-   "time": 89.68,
-   "distance": 9.394,
-   "turns": 16,
-   "stops": 4,
+   "time": 33.15,
+   "distance": 4.108,
+   "turns": 10,
+   "stops": 5,
    "stop_list": [
     [
-     12.29,
-     0.62,
-     2.009,
-     3.266
+     5.28,
+     0.67,
+     2.21,
+     3.05
     ],
     [
-     14.93,
-     0.86,
+     10.85,
+     0.62,
      2.008,
-     3.362
+     3.27
     ],
     [
-     74.93,
-     0.62,
-     1.542,
-     2.749
+     13.49,
+     0.82,
+     2.008,
+     3.368
     ],
     [
-     77.57,
-     0.43,
-     1.701,
-     2.749
+     23.09,
+     0.58,
+     1.54,
+     2.751
+    ],
+    [
+     25.68,
+     0.48,
+     1.7,
+     2.751
     ]
    ],
-   "energy_J": 25.9,
-   "stopped": 4.9,
-   "turning": 8.02,
-   "cruising": 0.0,
-   "slow": 76.7,
-   "reversing": 5.28
+   "energy_J": 13.2,
+   "stopped": 4.08,
+   "turning": 5.04,
+   "cruising": 9.5,
+   "slow": 14.5,
+   "reversing": 3.17
   }
  },
  "gaps": {
   "S3": {
-   "gap": 68.25,
-   "longer path": 18.3,
-   "turning": 3.66,
-   "stops": 2.9,
-   "below top speed": 43.33,
-   "other": 0.06
+   "gap": 11.72,
+   "longer path": 0.68,
+   "turning": 0.68,
+   "stops": 2.08,
+   "below top speed": 8.25,
+   "other": 0.03
   }
  },
  "clearance_mm": 34.0,
@@ -77,7 +83,7 @@
  "robot": {
   "maze_count": null,
   "clues": null,
-  "inspected_board": true,
+  "inspected_board": false,
   "tiles_found": {}
  },
  "maze_count_ok": null,
@@ -92,8 +98,9 @@
   ]
  },
  "collisions": 0,
+ "legal": true,
  "summary": {
-  "real": "92.8 s",
+  "real": "35.5 s",
   "best": "21.4 s",
   "note": "mission complete, piece correct"
  }

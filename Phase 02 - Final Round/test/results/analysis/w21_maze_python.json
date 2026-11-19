@@ -4,24 +4,24 @@
  "start": "maze",
  "marks": {
   "s1": 1.98,
-  "s2": 45.78,
-  "end": 135.42
+  "s2": 45.09,
+  "end": 78.11
  },
  "reason": "reached END",
  "intervals": {
   "S2": [
    0.0,
-   45.78
+   45.09
   ],
   "S3": [
-   45.78,
-   135.42
+   45.09,
+   78.11
   ]
  },
  "sections": {
   "S2": {
-   "time": 45.78,
-   "distance": 8.278,
+   "time": 45.09,
+   "distance": 8.237,
    "turns": 27,
    "stops": 1,
    "stop_list": [
@@ -33,67 +33,73 @@
     ]
    ],
    "energy_J": 31.4,
-   "stopped": 2.64,
-   "turning": 13.3,
-   "cruising": 25.58,
-   "slow": 4.18,
-   "reversing": 0.05
+   "stopped": 2.78,
+   "turning": 13.39,
+   "cruising": 25.49,
+   "slow": 3.36,
+   "reversing": 0.1
   },
   "S3": {
-   "time": 89.64,
-   "distance": 9.4,
-   "turns": 16,
-   "stops": 4,
+   "time": 33.02,
+   "distance": 4.095,
+   "turns": 10,
+   "stops": 5,
    "stop_list": [
     [
-     54.91,
+     48.0,
+     0.72,
+     2.206,
+     3.055
+    ],
+    [
+     53.47,
      0.62,
      2.008,
-     3.267
+     3.265
     ],
     [
-     57.55,
-     0.86,
+     56.16,
+     0.82,
      2.008,
-     3.364
+     3.365
     ],
     [
-     117.65,
-     0.67,
-     1.542,
-     2.748
+     65.66,
+     0.58,
+     1.541,
+     2.753
     ],
     [
-     120.29,
-     0.48,
-     1.698,
-     2.748
+     68.26,
+     0.43,
+     1.7,
+     2.753
     ]
    ],
-   "energy_J": 26.0,
-   "stopped": 4.8,
-   "turning": 7.97,
-   "cruising": 0.0,
-   "slow": 76.85,
-   "reversing": 5.38
+   "energy_J": 13.1,
+   "stopped": 4.03,
+   "turning": 4.9,
+   "cruising": 9.46,
+   "slow": 14.59,
+   "reversing": 3.22
   }
  },
  "gaps": {
   "S2": {
-   "gap": 6.79,
-   "longer path": 0.39,
-   "turning": 3.41,
-   "stops": 2.64,
-   "below top speed": 0.27,
-   "other": 0.08
+   "gap": 6.1,
+   "longer path": 0.26,
+   "turning": 3.5,
+   "stops": 2.78,
+   "below top speed": -0.51,
+   "other": 0.07
   },
   "S3": {
-   "gap": 68.21,
-   "longer path": 18.32,
-   "turning": 3.61,
-   "stops": 2.8,
-   "below top speed": 43.46,
-   "other": 0.02
+   "gap": 11.59,
+   "longer path": 0.64,
+   "turning": 0.54,
+   "stops": 2.03,
+   "below top speed": 8.34,
+   "other": 0.04
   }
  },
  "s2_coverage": {
@@ -110,7 +116,7 @@
   "revisits": 3,
   "never_entered": 7
  },
- "clearance_mm": 22.6,
+ "clearance_mm": 32.8,
  "wall_overlaps": 0,
  "judge_collisions": 0,
  "s3": {
@@ -131,7 +137,7 @@
    3,
    3
   ],
-  "inspected_board": true,
+  "inspected_board": false,
   "tiles_found": {
    "1,0": "BLUE",
    "6,1": "GREEN",
@@ -146,8 +152,9 @@
   "missed": []
  },
  "collisions": 0,
+ "legal": true,
  "summary": {
-  "real": "135.4 s",
+  "real": "78.1 s",
   "best": "60.4 s",
   "note": "mission complete, piece correct"
  }

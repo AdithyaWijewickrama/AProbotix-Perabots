@@ -2,7 +2,7 @@
 
 None of this is needed to run the robot. It tests the robot code on many random but legal arenas, times every run with a neutral judge, and compares it with the best possible run.
 
-**Results so far:** see `PHASE_C_FINDINGS.md` and `results/phaseC.md`.
+**Results so far:** see `PHASE_C_FINDINGS.md`, `FIXES.md` and `results/phaseC.md`.
 
 ## Folders
 
@@ -17,6 +17,9 @@ None of this is needed to run the robot. It tests the robot code on many random 
   - `_hard`: 43 cubes, deceptive maze, more loops, 5–7 tiles;
   - `_deceptive`: dead ends near the exit, long side branches;
   - `_straight`: same arena as without it, robot placed exactly straight;
+  - `_crooked`, `_cNN` / `_cmNN`: robot placed NN degrees off straight (m = minus);
+  - `_tight`: 43 cubes, legal under the strict 20 cm-robot route check;
+  - `w15*`: **illegal** stress tests (no route for a 20 cm robot), flagged in the reports and not counted;
   - `w00_official`: the rulebook arena.
 - **`truth/<world>.json`:** the true map:
   - cubes, maze walls, dead ends and tiles;
@@ -35,10 +38,12 @@ None of this is needed to run the robot. It tests the robot code on many random 
 
 | Command | What it does |
 |---|---|
-| `python tools/gen.py <name> <seed> [full\|maze\|s3]` | Make a test world. Env options: `NOBS=a-b`, `LOOPS=a-b`, `NTILES=a-b`, `DECEPTIVE=1`, `STRAIGHT=1`. Seed 0 = the official arena |
+| `python tools/gen.py <name> <seed> [full\|maze\|s3]` | Make a test world. Env options: `NOBS=a-b`, `LOOPS=a-b`, `NTILES=a-b`, `DECEPTIVE=1`, `STRAIGHT=1`, `CROOK=deg`. Every arena is checked for a 20 cm-robot route (rulebook 4.1). Seed 0 = the official arena |
 | `bash tools/run.sh <name> [python\|sil]` | One headless judged run. `sil` runs the real ESP32-S3 brain firmware via `simulation/controllers/mega_sil` |
 | `python tools/reference.py <name>` | Best possible run per section on the true map, with GuardianBot's limits (0.30 m/s, 3.8 m/s², turn on the spot ≤ 5.2 rad/s) |
 | `python tools/analyze.py --all` | Gap analysis, pictures and the table for every run |
 | `python tools/contact.py "w*_python.png" 5` | Overview sheets of the pictures |
+| `python tools/compare.py <before analysis dir>` | Before/after table for a fix (`--md file` to save it) |
+| `bash tools/camera_study/capture.sh <world> <tilt rad>` + `python tools/camera_study/detect.py <pitch>` | Fix 4 camera study: one board-look frame from a still robot, then the board detector on it (`results/fix4_camera_study.md`) |
 
 `tools/judge.py` is the supervisor that `run.sh` adds to its throwaway copy of the world. It is never in the test worlds themselves.

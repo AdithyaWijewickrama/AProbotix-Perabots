@@ -149,44 +149,43 @@ def clue_turns(vw, hw):
 
 
 # ------------------------------------------------------------------ section 1
-def s1_free(obs, inflate):
-    """Grid (2 cm) of free space for a disc of radius `inflate`; True = free."""
-    G = 0.02
-    nx, ny = int(2.44 / G), int(1.22 / G)
-    free = [[True] * ny for _ in range(nx)]
-    for i in range(nx):
-        x = (i + 0.5) * G
-        for j in range(ny):
-            y = (j + 0.5) * G
-            if x < inflate or x > 2.44 - inflate or y < inflate:
-                free[i][j] = False
-                continue
-            if y > 1.22 - inflate and not (0.095 + inflate - 0.03 <= x <= 0.345 - inflate + 0.03):
-                free[i][j] = False
-                continue
-            for ox, oy in obs:
-                if abs(x - ox) < 0.05 + inflate and abs(y - oy) < 0.05 + inflate:
-                    if math.hypot(max(abs(x - ox) - 0.05, 0), max(abs(y - oy) - 0.05, 0)) < inflate:
-                        free[i][j] = False
-                        break
-    return free, G
+# fixed walls around Section 1 as rectangles (x0, y0, x1, y1): outer walls, the S1/S2 divider with the
+# 0.101 .. 0.339 entrance gap, and the chamber walls (the entrance is 23.8 cm wide between the inner faces)
+S1_WALLS = [(-0.1, -0.1, 2.54, 0.006), (-0.1, -0.1, 0.006, 1.5), (2.434, -0.1, 2.54, 1.5),
+            (-0.1, 1.214, 0.101, 1.5), (0.339, 1.214, 2.54, 1.5)]
+ROBOT_MAX_R = 0.10      # rulebook 4.1: robots up to 20 x 20 cm must be able to cross the obstacle field
 
 
-def s1_reachable(obs, inflate):
-    free, G = s1_free(obs, inflate)
-    nx, ny = len(free), len(free[0])
-    g = (int(0.22 / G), ny - 1)
-    s0 = [(i, j) for i in range(int(2.20 / G), nx) for j in range(0, int(0.25 / G)) if free[i][j]]
-    if not s0:
-        return False
+def s1_clear(x, y, obs):
+    """Distance from (x, y) to the nearest wall or cube surface."""
+    d = 9.0
+    for x0, y0, x1, y1 in S1_WALLS:
+        d = min(d, math.hypot(max(x0 - x, 0, x - x1), max(y0 - y, 0, y - y1)))
+    for ox, oy in obs:
+        d = min(d, math.hypot(max(abs(x - ox) - 0.05, 0), max(abs(y - oy) - 0.05, 0)))
+    return d
+
+
+def s1_reachable(obs, r=ROBOT_MAX_R, G=0.01):
+    """Is there a route from the START area into the maze entrance for a round robot of radius r?
+    Exact geometry (every wall and cube is a rectangle), 1 cm grid."""
+    nx, ny = int(2.44 / G), int(1.36 / G)
+    near = [(ox, oy) for ox, oy in obs]
+    free = {}
+
+    def ok(i, j):
+        k = (i, j)
+        if k not in free:
+            free[k] = s1_clear((i + 0.5) * G, (j + 0.5) * G, near) >= r
+        return free[k]
+    s0 = [(i, j) for i in range(int(2.19 / G), nx) for j in range(int(0.25 / G)) if ok(i, j)]
     q, seen = deque(s0), set(s0)
     while q:
         i, j = q.popleft()
-        if j >= ny - 2 and abs(i - g[0]) <= 2:
+        if (j + 0.5) * G >= 1.30:
             return True
-        for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            a, b = i + di, j + dj
-            if 0 <= a < nx and 0 <= b < ny and free[a][b] and (a, b) not in seen:
+        for a, b in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)):
+            if 0 <= a < nx and 0 <= b < ny and (a, b) not in seen and ok(a, b):
                 seen.add((a, b))
                 q.append((a, b))
     return False
@@ -212,7 +211,7 @@ def random_obstacles(rng):
                 obs.append((round(ox, 3), round(oy, 3)))
                 if len(obs) >= n:
                     break
-        if s1_reachable(obs, 0.105):                        # rulebook: a passage wide enough for the robot (>= 21 cm)
+        if s1_reachable(obs):                               # rulebook 4.1: a 20 cm robot must get through
             return obs
     raise RuntimeError("no legal Section 1 layout found")
 
@@ -370,6 +369,7 @@ def build(name, seed, start="full"):
         "clues": {"blue": nb, "green": ng, "right": R, "left": L, "clue_path": path},
         "board": {str(k): v for k, v in sorted(board.items())}, "board_note": note,
         "clan": clan, "winning_cells": winning_cells(board, clan),
+        "legal_20cm_route": s1_reachable(obs),
     }
     os.makedirs(os.path.join(TEST, "truth"), exist_ok=True)
     json.dump(truth, open(os.path.join(TEST, "truth", "%s.json" % name), "w"), indent=1)

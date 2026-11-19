@@ -402,5 +402,6 @@
  "clan": "GREEN",
  "winning_cells": [
   3
- ]
+ ],
+ "legal_20cm_route": true
 }

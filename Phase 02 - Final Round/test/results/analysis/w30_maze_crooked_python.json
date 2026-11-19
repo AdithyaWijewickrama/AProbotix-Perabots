@@ -3,113 +3,108 @@
  "world": "w30_maze_crooked",
  "start": "maze",
  "marks": {
-  "s1": 2.27,
-  "s2": 40.24,
-  "end": 131.28
+  "s1": 2.24,
+  "s2": 54.27,
+  "end": 89.74
  },
  "reason": "reached END",
  "intervals": {
   "S2": [
    0.0,
-   40.24
+   54.27
   ],
   "S3": [
-   40.24,
-   131.28
+   54.27,
+   89.74
   ]
  },
  "sections": {
   "S2": {
-   "time": 40.24,
-   "distance": 6.763,
-   "turns": 27,
+   "time": 54.27,
+   "distance": 10.754,
+   "turns": 30,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 28.1,
-   "stopped": 2.74,
-   "turning": 12.67,
-   "cruising": 20.59,
-   "slow": 4.18,
-   "reversing": 0.14
+   "energy_J": 35.5,
+   "stopped": 2.98,
+   "turning": 13.68,
+   "cruising": 33.6,
+   "slow": 3.94,
+   "reversing": 0.1
   },
   "S3": {
-   "time": 91.04,
-   "distance": 8.802,
-   "turns": 19,
+   "time": 35.47,
+   "distance": 4.08,
+   "turns": 12,
    "stops": 5,
    "stop_list": [
     [
-     49.3,
+     57.17,
      0.67,
-     2.008,
-     2.84
+     2.207,
+     3.049
     ],
     [
-     52.03,
-     0.82,
-     2.008,
-     2.746
-    ],
-    [
-     60.0,
-     0.77,
-     1.703,
-     2.893
-    ],
-    [
-     116.59,
+     62.88,
      0.62,
-     1.14,
-     2.759
+     2.008,
+     2.836
     ],
     [
-     119.23,
+     65.52,
+     0.86,
+     2.007,
+     2.739
+    ],
+    [
+     78.77,
+     0.62,
+     1.141,
+     2.75
+    ],
+    [
+     81.41,
      0.43,
-     1.297,
-     2.758
+     1.3,
+     2.749
     ]
    ],
-   "energy_J": 27.1,
-   "stopped": 5.95,
-   "turning": 9.31,
-   "cruising": 0.0,
-   "slow": 75.7,
-   "reversing": 7.06
+   "energy_J": 14.4,
+   "stopped": 4.22,
+   "turning": 6.24,
+   "cruising": 7.68,
+   "slow": 17.28,
+   "reversing": 3.17
   }
  },
  "gaps": {
   "S2": {
-   "gap": 9.03,
-   "longer path": 0.34,
-   "turning": 5.16,
-   "stops": 2.74,
-   "below top speed": 0.73,
-   "other": 0.06
+   "gap": 23.06,
+   "longer path": 13.65,
+   "turning": 6.17,
+   "stops": 2.98,
+   "below top speed": 0.19,
+   "other": 0.07
   },
   "S3": {
-   "gap": 69.11,
-   "longer path": 16.33,
-   "turning": 4.54,
-   "stops": 3.95,
-   "below top speed": 44.21,
-   "other": 0.08
+   "gap": 13.54,
+   "longer path": 0.59,
+   "turning": 1.47,
+   "stops": 2.22,
+   "below top speed": 9.21,
+   "other": 0.05
   }
  },
  "s2_coverage": {
   "dead_ends": 4,
-  "checked": 3,
-  "missed": [
-   [
-    0,
-    3
-   ]
-  ],
-  "cells_entered": 26,
-  "cells_unique": 23,
-  "revisits": 3,
-  "never_entered": 13
+  "checked": 4,
+  "missed": [],
+  "cells_entered": 42,
+  "cells_unique": 30,
+  "revisits": 12,
+  "never_entered": 6
  },
- "clearance_mm": 31.6,
+ "clearance_mm": 27.6,
  "wall_overlaps": 0,
  "judge_collisions": 2,
  "s3": {
@@ -132,11 +127,11 @@
    4,
    4
   ],
-  "inspected_board": true,
+  "inspected_board": false,
   "tiles_found": {
    "3,2": "GREEN",
-   "0,3": "GREEN",
-   "5,3": "GREEN"
+   "5,3": "GREEN",
+   "0,3": "GREEN"
   }
  },
  "maze_count_ok": true,
@@ -147,8 +142,9 @@
   "missed": []
  },
  "collisions": 0,
+ "legal": true,
  "summary": {
-  "real": "131.3 s",
+  "real": "89.7 s",
   "best": "53.1 s",
   "note": "mission complete, piece correct"
  }

@@ -2,7 +2,7 @@
 
 PeraBots 2026, University category, final round (physical robot) – team AProbotix.
 
-Our robot is **GuardianBot v4.1**: a 150 mm round robot built from the parts the team really owns.
+Our robot is **GuardianBot v4.2**: a 150 mm round robot built from the parts the team really owns. v4.2 is v4.1 with the camera on an SG90 tilt servo, so one look reads the whole Section 3 board (`test/FIXES.md`, Fix 4); its tilting camera mast is still to be designed, so the build guide below is still v4.1.
 
 - **Controllers:**
   - Arduino Mega 2560: real-time body, mounted upside-down on the PCB deck.

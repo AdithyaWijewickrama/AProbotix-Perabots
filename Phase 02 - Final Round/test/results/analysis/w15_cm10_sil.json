@@ -1,0 +1,83 @@
+{
+ "run": "w15_cm10_sil",
+ "world": "w15_cm10",
+ "start": "full",
+ "marks": {},
+ "reason": "no movement for 60 s",
+ "intervals": {
+  "S1": [
+   0.0,
+   77.28
+  ]
+ },
+ "sections": {
+  "S1": {
+   "time": 77.28,
+   "distance": 2.26,
+   "turns": 100,
+   "stops": 1,
+   "stop_list": [
+    [
+     0.05,
+     1.54,
+     2.315,
+     0.125
+    ]
+   ],
+   "energy_J": 70.2,
+   "stopped": 8.06,
+   "turning": 60.86,
+   "cruising": 5.9,
+   "slow": 2.35,
+   "reversing": 0.0
+  }
+ },
+ "gaps": {
+  "S1": {
+   "gap": 67.62,
+   "longer path": -0.84,
+   "turning": 59.88,
+   "stops": 8.06,
+   "below top speed": 0.41,
+   "other": 0.11
+  }
+ },
+ "clearance_mm": 37.9,
+ "wall_overlaps": 0,
+ "judge_collisions": 0,
+ "s3": {
+  "clan": "BLUE",
+  "winning_cells": [
+   2
+  ],
+  "placed_at": null,
+  "correct": false,
+  "board_disturbed": []
+ },
+ "robot": {
+  "maze_count": null,
+  "clues": null,
+  "inspected_board": false,
+  "tiles_found": {}
+ },
+ "maze_count_ok": null,
+ "tiles": {
+  "true": 5,
+  "found_right": 0,
+  "false_or_wrong_colour": [],
+  "missed": [
+   "0,1",
+   "2,0",
+   "4,3",
+   "5,1",
+   "7,2"
+  ]
+ },
+ "collisions": 0,
+ "legal": false,
+ "summary": {
+  "real": "-",
+  "best": "73.2 s",
+  "note": "ILLEGAL ARENA (no route for a 20 cm robot; stress test only), DID NOT FINISH (no movement for 60 s), piece not on a correct cell"
+ }
+}
