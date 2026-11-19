@@ -14,7 +14,7 @@ one `spec.yaml` per version, so bodies, PCBs, budgets, speed, weight and parts c
 | v3.2 + ESP32-CAM | `v3.2-camera` | camera reads dead ends from a distance | 152.1 s | Rs 10,050 |
 | v3.3 + Mega shield PCB | `v3.3-pcb` | all wiring on a local-made PCB | 152.1 s | Rs 13,750 |
 | v4.0 ESP32-CAM brain + PCB deck | `v4.0` / `v4.0.1` | real inventory: 8 ToF, QTR-8RC, DRV8833 + 2S, PCB middle floor | 153.6 s | Rs 20,000 (vero: 15,500) |
-| **v4.1 ESP32-S3 + OV7670 brain** | `v4.1` | the team's own S3 + OV7670 instead of a bought ESP32-CAM; S3 flat on the top deck; Wi-Fi test-bench page | 153.6 s (firmware: 175.6 s) | Rs 15,900 (vero: 11,400) |
+| **v4.1 ESP32-S3 + OV7670 brain** | `v4.1` | the team's own S3 + OV7670 instead of a bought ESP32-CAM; S3 flat on the top deck; Wi-Fi test-bench page | 153.6 s (firmware: 187.7 s) | Rs 15,900 (vero: 11,400) |
 
 Times come from one neutral "judge" supervisor on the same arena for every version
 (`judge/judge.py`).
