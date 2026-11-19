@@ -46,6 +46,13 @@ def load():
         d["_models"] = os.path.exists(os.path.join(os.path.dirname(f), "models", "manifest.json"))
         vs.append(d)
     vs.sort(key=vkey)
+    # latest version: the test-run overview pictures (all run plots stay on GitHub)
+    lt = vs[-1]
+    lt["_gallery"] = []
+    for p in sorted(glob.glob(os.path.join(ROOT, "test", "results", "plots", "overview_*.png"))):
+        name = "%s_test_%s" % (lt["id"], os.path.basename(p))
+        shutil.copy(p, os.path.join(OUT, "img", name))
+        lt["_gallery"].append("img/" + name)
     return vs
 
 
@@ -124,6 +131,12 @@ th { color: var(--text-secondary); font-weight: 600; width: 180px; }
 .better { color: var(--good); font-weight: 600; } .worse { color: var(--bad); }
 .wrap { overflow-x: auto; }
 ul { margin: 0; padding-left: 18px; }
+.path { margin-top: 10px; font-size: 12.5px; }
+.path b { font-size: 13px; display: block; margin-bottom: 4px; }
+.path img { width: 100%; max-height: 260px; object-fit: contain; background: #fff; border-radius: 6px; border: 1px solid var(--border); }
+.path .none { color: var(--text-muted); }
+.gallery { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 6px; }
+.gallery img { width: 100%; height: 70px; object-fit: cover; object-position: top; border-radius: 4px; border: 1px solid var(--border); background: #fff; }
 .tests { margin-top: 10px; font-size: 12.5px; }
 .tests b { font-size: 13px; }
 .tests ul { list-style: none; padding: 0; margin: 4px 0 0; }
@@ -179,6 +192,17 @@ const fmt = (v, u) => v == null ? "not measured" : (u === "Rs" ? "Rs " + Math.ro
 const latest = V[V.length - 1];
 const REPO = "https://github.com/AdithyaWijewickrama/AProbotix-Perabots/blob/HEAD/Phase%2002%20-%20Final%20Round/";
 const LBL = {pass: "pass", fail: "fail", partial: "partly", info: "note"};
+const PLOTS = "https://github.com/AdithyaWijewickrama/AProbotix-Perabots/tree/HEAD/Phase%2002%20-%20Final%20Round/test/results/plots";
+function pathBox(v, big) {
+  const p = v.images.find(i => i.endsWith("_path.png"));
+  let h = `<div class="path"><b>Path on the official arena</b>`;
+  h += p ? `<a href="${esc(p)}" target="_blank" title="open full size"><img src="${esc(p)}" alt="${esc(v.id)} path" ${big ? 'style="height:520px;max-height:520px;width:auto;max-width:100%"' : ""}></a>`
+         : `<div class="none">-</div>`;
+  if (v._gallery && v._gallery.length)
+    h += `<div class="gallery">` + v._gallery.map(g => `<a href="${esc(g)}" target="_blank"><img src="${esc(g)}" alt="test runs overview"></a>`).join("") +
+         `</div><a href="${PLOTS}" target="_blank" rel="noopener">All test-run path plots &rarr;</a>`;
+  return h + `</div>`;
+}
 function testList(v) {
   const t = v.tests || [];
   if (!t.length) return `<div class="tests"><b>Tests done</b><div class="none">-</div></div>`;
@@ -208,6 +232,7 @@ $("#cards").innerHTML = V.map(v => `
       <span>END reached</span><span>${fmt(v.simulation?.end_s, "s")}</span>
       <span>PCB</span><span>${esc(v.pcb?.type)}</span>
     </div>
+    ${pathBox(v)}
     ${testList(v)}
     ${v._models ? `<a class="viewlink" href="viewer.html?v=${encodeURIComponent(v.id)}">3-D PCB, parts &amp; files &rarr;</a>` : ""}
   </div>`).join("");
@@ -296,6 +321,7 @@ function render() {
     num("END reached", v => v.simulation?.end_s ?? null, "s", true) +
     num("Collisions", v => v.simulation?.collisions ?? null, "", true) +
     row("Simulation result", esc(A.simulation?.result), esc(B.simulation?.result)) +
+    row("Path", pathBox(A, true), pathBox(B, true)) +
     row("Tests done", testList(A), testList(B)) +
     row("Git tag", `<code>${esc(A.tag)}</code>`, `<code>${esc(B.tag)}</code>`);
 }

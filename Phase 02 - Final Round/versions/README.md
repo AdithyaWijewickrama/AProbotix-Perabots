@@ -19,6 +19,11 @@ one `spec.yaml` per version, so bodies, PCBs, budgets, speed, weight and parts c
 Times come from one neutral "judge" supervisor on the same arena for every version
 (`judge/judge.py`).
 
+**Path pictures:** the judge also writes `judge_path.csv` (position every 0.1 s). Put a version's copy in
+`<version>/path/judge_path.csv` and run `python make_path_plots.py`; it draws `<version>/images/path.png`, which
+the site shows on the card and in the comparison. The latest version uses the official-arena run in `test/results/runs`.
+So far: v3.2, v4.0 and v4.1. The other versions still need a re-run with the new judge.
+
 **Website:** the GitHub Pages site that `.github/workflows/versions-site.yml` rebuilds on every push
 (or run `python build_site.py` and open `_site/index.html` through a local server, e.g. `python -m http.server`
 inside `_site`). It has two pages:
