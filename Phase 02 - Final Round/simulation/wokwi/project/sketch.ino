@@ -1,5 +1,5 @@
 // =============================================================================
-// GuardianBot v4.0 - Arduino Mega 2560 "body" firmware
+// GuardianBot v4.1 - Arduino Mega 2560 "body" firmware
 // PeraBots 2026 University Category, Final Round
 //
 // Job: everything that must be on time, every time.
@@ -11,7 +11,7 @@
 //   * Pololu QTR-8RC line array (8 x RC decay times, 2.5 ms window)
 //   * 2 x HC-SR04 and 2 x TCS3200 timed with pin-change interrupts (never blocks)
 //   * 2 gripper servos, 1x4 keypad, 128x32 OLED (text from the brain), LEDs, buzzer, battery
-//   * 50 Hz binary telemetry to the ESP32-CAM brain, commands back (protocol.h)
+//   * 50 Hz binary telemetry to the ESP32-S3 brain, commands back (protocol.h)
 //
 // Libraries (Arduino Library Manager): "VL53L0X" by Pololu, "SSD1306Ascii" by Bill Greiman.
 // Built in: Servo, Wire. Board: Arduino Mega 2560.
@@ -30,7 +30,10 @@
 // The 6 V 300 rpm N20 ratio is not printed: turn a wheel 10 times by hand, read "enc" on USB, divide by 10.
 static const float ENC_CPR     = 2800.0f;
 static const float WHEEL_D_MM  = 43.0f;
-static const int8_t ENC_L_SIGN = +1, ENC_R_SIGN = -1;     // flip if a wheel counts backwards
+// The right motor is mounted mirrored, so its encoder turns the other way; isrEncR() reads A/B in swapped
+// order (D18 = A is bit 1), which already undoes that. Both signs are +1 for motors wired as on the PCB deck
+// (found by the Wokwi / simavr co-simulation: with -1 the right wheel ran away at full speed).
+static const int8_t ENC_L_SIGN = +1, ENC_R_SIGN = +1;     // flip if a wheel counts backwards
 static const int8_t MOT_L_SIGN = +1, MOT_R_SIGN = +1;     // flip if a wheel turns backwards
 static const int   PWM_MAX = 205;  // 80 % of 2S (8.4 V) ~= 6.7 V: keeps the 6 V N20 motors healthy
 static const float KFF = 0.33f;    // PWM per (mm/s): 205 PWM ~ 620 mm/s free running
@@ -102,7 +105,7 @@ void isrEncL() {
   encL += QDEC[encLState];
 }
 void isrEncR() {
-  encRState = ((encRState << 2) | ((PIND >> 2) & 0x03)) & 0x0F;   // D19 = PD2, D18 = PD3
+  encRState = ((encRState << 2) | ((PIND >> 2) & 0x03)) & 0x0F;   // D19 (B) = PD2 = bit 0, D18 (A) = PD3 = bit 1
   encR += QDEC[encRState];
 }
 
@@ -336,7 +339,7 @@ void setup() {
   oled.begin(&Adafruit128x32, 0x3C);
   oled.setFont(System5x7);
   oled.clear();
-  oled.println(F("GuardianBot v4.0"));
+  oled.println(F("GuardianBot v4.1"));
   oled.println(F("starting - keep still"));
   digitalWrite(PIN_LED_BLUE, HIGH); digitalWrite(PIN_LED_GREEN, HIGH);
   tofInit();

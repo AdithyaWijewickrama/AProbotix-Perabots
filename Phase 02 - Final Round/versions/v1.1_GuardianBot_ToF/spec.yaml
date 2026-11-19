@@ -38,3 +38,8 @@ simulation:
 files:
   - simulation/
   - GuardianBot_BOM_v1_ToF.md
+tests:
+  - name: Judge simulation run (Webots, same arena for every version)
+    result: Sections 1 and 2 done (25.1 s, 76.6 s), stopped on the Nine-Point Board
+    status: partial
+    link: versions/judge/judge.py

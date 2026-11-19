@@ -68,7 +68,7 @@ static void on_ctl(void *u) {
   double v = awake ? (d1 - d2) * vbat : 0.0;
   bool brake = awake && d1 > 0.98 && d2 > 0.98;
   double target = 300.0 * v / 6.0 * (1.0 - 0.6 * load);
-  double tau = brake ? 0.010 : (awake ? 0.040 : 0.150);       // seconds
+  double tau = brake ? 0.010 : (awake ? 0.040 : 0.060);       // seconds (gearbox friction stops a coasting N20 fast)
   c->rpm += (target - c->rpm) * (0.001 / tau);
   if (fabs(c->rpm) < 0.5 && fabs(target) < 0.5) c->rpm = 0;
   if (!c->edge_on && fabs(counts_per_s(c)) >= 2.0) { c->edge_on = true; timer_start(c->edge, 50, false); }

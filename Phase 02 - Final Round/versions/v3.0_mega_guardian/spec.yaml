@@ -35,3 +35,4 @@ simulation:
   result: not measured (10 cm occupancy grid, no camera)
 files:
   - mega_guardian/ (Arduino sketch), test/test_logic.c, GuardianBot_v3_Mega_build_guide.md
+tests: []   # no tests were run on this version

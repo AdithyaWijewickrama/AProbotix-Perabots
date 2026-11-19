@@ -1,0 +1,109 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "../protos/Arena_w03_deceptive.proto"
+EXTERNPROTO "../protos/Obstacles_w03_deceptive.proto"
+EXTERNPROTO "../../simulation/protos/GuardianBot.proto"
+
+WorldInfo {
+  title "GuardianBot test world w03_deceptive (seed 3, start full)"
+  info [
+    "PeraBots 2026 Final Round - University Category"
+    "Arena 2.44 m x 3.66 m. Section 3 rebuilt from rulebook Figure 1."
+    "Robot: GuardianBot v2 (HC-SR04 + Sharp IR build)"
+  ]
+  basicTimeStep 16
+  contactProperties [
+    ContactProperties {
+      material1 "default"
+      material2 "default"
+      coulombFriction [ 0.8 ]
+    }
+    ContactProperties {
+      material1 "default"
+      material2 "tire"
+      coulombFriction [ 1.0 ]
+    }
+    ContactProperties {
+      material1 "default"
+      material2 "caster"
+      coulombFriction [ 0.05 ]
+    }
+    ContactProperties {
+      material1 "default"
+      material2 "chassis"
+      coulombFriction [ 0.15 ]
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.3221 0.1331 -0.9373 2.4956
+  position 4.93 3.79 3.30
+  follow ""
+}
+TexturedBackground {
+  texture "empty_office"
+}
+TexturedBackgroundLight {
+  texture "empty_office"
+}
+DirectionalLight {
+  direction 0.3 0.4 -1
+  intensity 2.2
+  castShadows TRUE
+}
+Arena_w03_deceptive {
+}
+Obstacles_w03_deceptive {
+}
+# ---- movable game pieces (from the clues, see test/truth/w03_deceptive.json) ----
+Solid {
+  translation 1.500 3.050 0.025
+  children [ Shape { appearance PBRAppearance { baseColor 0.05 0.2 0.9 roughness 0.4 metalness 0 } geometry Cylinder { height 0.05 radius 0.025 } } ]
+  name "board_blue_cyl_pos1"
+  boundingObject Cylinder { height 0.05 radius 0.025 }
+  physics Physics { density -1 mass 0.03 }
+}
+Solid {
+  translation 0.700 2.750 0.025
+  children [ Shape { appearance PBRAppearance { baseColor 0.05 0.75 0.15 roughness 0.4 metalness 0 } geometry Box { size 0.05 0.05 0.05 } } ]
+  name "board_green_cube_pos2"
+  boundingObject Box { size 0.05 0.05 0.05 }
+  physics Physics { density -1 mass 0.03 }
+}
+Solid {
+  translation 1.100 3.350 0.025
+  children [ Shape { appearance PBRAppearance { baseColor 0.05 0.75 0.15 roughness 0.4 metalness 0 } geometry Box { size 0.05 0.05 0.05 } } ]
+  name "board_green_cube_pos3"
+  boundingObject Box { size 0.05 0.05 0.05 }
+  physics Physics { density -1 mass 0.03 }
+}
+Solid {
+  translation 1.500 3.350 0.025
+  children [ Shape { appearance PBRAppearance { baseColor 0.05 0.2 0.9 roughness 0.4 metalness 0 } geometry Cylinder { height 0.05 radius 0.025 } } ]
+  name "board_blue_cyl_pos8"
+  boundingObject Cylinder { height 0.05 radius 0.025 }
+  physics Physics { density -1 mass 0.03 }
+}
+Solid {
+  translation 2.006 2.700 0.025
+  children [ Shape { appearance PBRAppearance { baseColor 0.05 0.75 0.15 roughness 0.4 metalness 0 } geometry Box { size 0.05 0.05 0.05 } } ]
+  name "collect_green_cube"
+  boundingObject Box { size 0.05 0.05 0.05 }
+  physics Physics { density -1 mass 0.03 }
+}
+Solid {
+  translation 2.006 3.400 0.025
+  children [ Shape { appearance PBRAppearance { baseColor 0.05 0.2 0.9 roughness 0.4 metalness 0 } geometry Cylinder { height 0.05 radius 0.025 } } ]
+  name "collect_blue_cyl"
+  boundingObject Cylinder { height 0.05 radius 0.025 }
+  physics Physics { density -1 mass 0.03 }
+}
+# ---- robot ----
+GuardianBot {
+  translation 2.315 0.125 0
+  rotation 0 0 1 1.5815
+  name "team_robot"
+  controller "test_runner"
+}

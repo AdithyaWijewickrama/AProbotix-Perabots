@@ -1,0 +1,156 @@
+{
+ "run": "w19_maze_python",
+ "world": "w19_maze",
+ "start": "maze",
+ "marks": {
+  "s1": 2.11,
+  "s2": 38.67,
+  "end": 125.6
+ },
+ "reason": "reached END",
+ "intervals": {
+  "S2": [
+   0.0,
+   38.67
+  ],
+  "S3": [
+   38.67,
+   125.6
+  ]
+ },
+ "sections": {
+  "S2": {
+   "time": 38.67,
+   "distance": 7.254,
+   "turns": 22,
+   "stops": 1,
+   "stop_list": [
+    [
+     0.05,
+     0.34,
+     0.22,
+     1.275
+    ]
+   ],
+   "energy_J": 26.2,
+   "stopped": 2.16,
+   "turning": 10.22,
+   "cruising": 22.56,
+   "slow": 3.65,
+   "reversing": 0.14
+  },
+  "S3": {
+   "time": 86.93,
+   "distance": 9.077,
+   "turns": 16,
+   "stops": 4,
+   "stop_list": [
+    [
+     47.62,
+     0.62,
+     2.009,
+     2.838
+    ],
+    [
+     50.26,
+     0.86,
+     2.008,
+     2.741
+    ],
+    [
+     108.0,
+     0.62,
+     1.537,
+     3.348
+    ],
+    [
+     110.64,
+     0.43,
+     1.696,
+     3.348
+    ]
+   ],
+   "energy_J": 25.1,
+   "stopped": 4.56,
+   "turning": 7.82,
+   "cruising": 0.0,
+   "slow": 74.5,
+   "reversing": 5.23
+  }
+ },
+ "gaps": {
+  "S2": {
+   "gap": 4.2,
+   "longer path": 0.31,
+   "turning": 1.27,
+   "stops": 2.16,
+   "below top speed": 0.38,
+   "other": 0.08
+  },
+  "S3": {
+   "gap": 65.5,
+   "longer path": 17.24,
+   "turning": 3.46,
+   "stops": 2.56,
+   "below top speed": 42.19,
+   "other": 0.05
+  }
+ },
+ "s2_coverage": {
+  "dead_ends": 4,
+  "checked": 3,
+  "missed": [
+   [
+    2,
+    3
+   ]
+  ],
+  "cells_entered": 28,
+  "cells_unique": 25,
+  "revisits": 3,
+  "never_entered": 11
+ },
+ "clearance_mm": 25.4,
+ "wall_overlaps": 0,
+ "judge_collisions": 2,
+ "s3": {
+  "clan": "GREEN",
+  "winning_cells": [
+   8
+  ],
+  "placed_at": 8,
+  "correct": true,
+  "board_disturbed": []
+ },
+ "robot": {
+  "maze_count": [
+   1,
+   2
+  ],
+  "clues": [
+   1,
+   2,
+   4,
+   4
+  ],
+  "inspected_board": true,
+  "tiles_found": {
+   "2,3": "GREEN",
+   "6,3": "GREEN",
+   "8,0": "BLUE"
+  }
+ },
+ "maze_count_ok": true,
+ "tiles": {
+  "true": 3,
+  "found_right": 3,
+  "false_or_wrong_colour": [],
+  "missed": []
+ },
+ "collisions": 0,
+ "summary": {
+  "real": "125.6 s",
+  "best": "55.9 s",
+  "note": "mission complete, piece correct"
+ }
+}

@@ -1,8 +1,10 @@
 // cam_ov7670.h - OV7670 camera on the ESP32-S3 N16R8 (identical copy in esp32s3_brain/ and esp32s3_testbench/)
-// GuardianBot v4.1. The camera sits with the S3 on a small carrier on the mast: keep the 13 camera wires short.
+// GuardianBot v4.1. The S3 lies flat on a vero carrier on the top deck, behind the camera mast; the camera
+// connects through a 10 cm 18-wire ribbon. Keep it flat and in one piece; if the picture shows stripes,
+// lower CAM_XCLK_HZ to 8 MHz.
 //
 // N16R8 notes: GPIO 35/36/37 belong to the octal PSRAM, 19/20 are USB, 0/3/45/46 are strapping pins,
-// 43/44 are the USB-UART log. RESET is tied to 3V3 and PWDN to GND on the carrier (saves two pins).
+// 43/44 are the USB-UART log. RESET is tied to 3V3 and PWDN to GND on the S3 carrier (saves two pins).
 // SIOD / SIOC need 4.7 k pull-ups to 3V3 on most 18-pin OV7670 boards (they have none).
 #pragma once
 #ifndef SIL

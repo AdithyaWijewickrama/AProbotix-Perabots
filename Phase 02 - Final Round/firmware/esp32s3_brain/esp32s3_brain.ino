@@ -446,8 +446,22 @@ void mazeSense() {
 }
 
 int nOpen(int c, int r) { int k = 0; for (int h = 0; h < 4; h++) k += edge(c, r, h) == OPEN; return k; }
+// Fix 2 (test plan): an opening counts as sure only with >= 3 'open' votes and more than twice as many 'open'
+// as 'wall' votes. A single stray ray must not rule out a dead end (it hid a tile next to the exit).
+bool sureOpen(int c, int r, int h) { const int *e = edgeRef(c, r, h); return e[0] >= 3 && e[0] > 2 * e[1]; }
+int nSureOpen(int c, int r) { int k = 0; for (int h = 0; h < 4; h++) k += sureOpen(c, r, h); return k; }
+// Tiles are only in dead ends: a tile seen in a cell with 2+ sure openings is the camera spilling a neighbouring
+// tile into it - don't count it twice.
+bool tileCounts(int c, int r) { return (seen[c][r] == BLUE || seen[c][r] == GREEN) && nSureOpen(c, r) <= 1; }
+void tileTotals(int &nb, int &ng) {
+  nb = ng = 0;
+  for (int c = 0; c < COLS; c++) for (int r = 0; r < ROWS; r++) {
+    if (tileCounts(c, r)) { nb += seen[c][r] == BLUE; ng += seen[c][r] == GREEN; }
+    else if (seen[c][r] == BLUE || seen[c][r] == GREEN) logf_("tile at c%d r%d ignored: not a dead end", c + 1, r + 1);
+  }
+}
 bool needed(int c, int r) {
-  if (seen[c][r] >= 0 || nOpen(c, r) >= 2) return false;
+  if (seen[c][r] >= 0 || nSureOpen(c, r) >= 2) return false;
   for (int h = 0; h < 4; h++) if (edge(c, r, h) != WALL) return true;
   return false;
 }
@@ -531,8 +545,8 @@ bool exploreGoal(int c, int r, int h) {
 bool endGoal(int c, int r, int h) { return c == END_C && r == END_R; }
 
 void showMajority() {
-  int nb = 0, ng = 0;
-  for (int c = 0; c < COLS; c++) for (int r = 0; r < ROWS; r++) { nb += seen[c][r] == BLUE; ng += seen[c][r] == GREEN; }
+  int nb, ng;
+  tileTotals(nb, ng);
   bool blue = nb >= ng;
   out.out = (out.out & ~(OUT_LED_BLUE | OUT_LED_GREEN)) | (blue ? OUT_LED_BLUE : OUT_LED_GREEN);
   logf_("explored. blue=%d green=%d -> %s", nb, ng, blue ? "BLUE" : "GREEN");
@@ -824,7 +838,36 @@ void runS1() {
 }
 
 // ============================================================ start detection
+// Fix 1 (test plan): the robot may be placed a little crooked, and the gyro only knows how far it has turned.
+// While it stands still, the two side ToF pairs (66 mm apart) give its angle to a straight wall beside it
+// (the east wall in the START area, the chamber / maze walls at the maze entrance). Same signs as sideAlign().
+void startHeading(int n = 15) {
+  float sum[2] = {0, 0}; int cnt[2] = {0, 0};
+  const int pr[2][2] = {{TOF_LF, TOF_LR}, {TOF_RF, TOF_RR}};
+  for (int i = 0; i < n; i++) {
+    step();
+    for (int k = 0; k < 2; k++) {
+      float df = D[pr[k][0]], dr = D[pr[k][1]];
+      if (df > TOF_MIN && df < 0.25f && dr > TOF_MIN && dr < 0.25f) {
+        sum[k] += atan2f(dr - df, SIDE_PAIR_DX) * (k == 0 ? 1.0f : -1.0f);
+        cnt[k]++;
+      }
+    }
+  }
+  float th = 0; int m = 0;
+  for (int k = 0; k < 2; k++)
+    if (cnt[k] >= n / 2 && fabsf(sum[k] / cnt[k]) < 0.5f) { th += sum[k] / cnt[k]; m++; }
+  if (!m) { logf_("start heading: no wall beside the robot - assuming it is straight"); return; }
+  th /= m;
+  float k = roundf(yaw / HP_F);
+  float c = wrapA(k * HP_F + th - yaw);
+  yawOff += c;
+  yaw = wrapA(yaw + c);
+  logf_("start heading: placed %.1f deg off straight (from the side ToF pairs)", th * 180.0f / PI_F);
+}
+
 int whereAmI() {
+  startHeading();
   float k = roundf(yaw / HP_F);
   turnTo(k * HP_F); stopNow(3);
   float wd[4] = {9, 9, 9, 9}, wox[4] = {0}, woy[4] = {0};
@@ -1038,8 +1081,7 @@ bool go(P2 t, float vMax = 0.20f) {
 
 // ---- clues
 void mazeClues(int &nb, int &ng, int &R, int &L) {
-  nb = ng = 0;
-  for (int c = 0; c < COLS; c++) for (int r = 0; r < ROWS; r++) { nb += seen[c][r] == BLUE; ng += seen[c][r] == GREEN; }
+  tileTotals(nb, ng);
   // Dijkstra on (cells, turns) lexicographic, entering cell (0,0) heading +y
   static int bc[NST], bt[NST], bR[NST], bL[NST]; static bool done[NST];
   for (int i = 0; i < NST; i++) { bc[i] = 1 << 20; bt[i] = 0; done[i] = false; }

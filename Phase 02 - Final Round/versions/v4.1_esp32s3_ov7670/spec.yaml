@@ -24,7 +24,7 @@ sensors:
   - L3G4200D gyro
 pcb:
   type: same as v4.0 - round 144 mm PCB mid deck, 2 layers, all through-hole; the S3 uses the ESP32CAM link socket unchanged
-  rules: 0.3 mm signal tracks (0.2-0.25 mm on a few), 0.6-0.8 mm power, 0.25 mm clearance (0.2 mm min), 1.0/0.6 mm vias, 1.0 mm pin holes; DRC 0 errors
+  rules: 0.3 mm signal tracks (0.2-0.25 mm on a few), 0.6-0.8 mm power, 0.25 mm clearance (0.2 mm min), 1.0/0.6 mm vias, 1.0 mm pin holes; DRC 0 unconnected pads, 5 one-spoke GND thermal errors (see tests)
   files: hardware/pcb_v4 (KiCad, Gerbers zip, toner-transfer PDFs, BOM, DRC report)
 budget:
   currency: LKR
@@ -44,3 +44,43 @@ files:
   - the top-level folders of "Phase 02 - Final Round" (this is the current version)
   - firmware/esp32s3_brain, firmware/esp32s3_testbench, simulation/controllers/testbench_sim
   - docs/GuardianBot_v4.1_build_guide.md, docs/TEST_PLAN.md
+tests:
+  - name: Judge simulation run (Webots, same arena for every version)
+    result: full mission in 153.6 s, 0 collisions
+    status: pass
+    link: versions/judge/judge.py
+  - name: Real firmware in the simulation (SIL)
+    result: full mission in 175.6 s; Section 3 restart in 131.5 s
+    status: pass
+  - name: 'Test plan Phases A-C: 32 new test arenas, best-path reference, gap analysis'
+    result: '63 runs, 53 fully right; problems found: crooked start, tile counting, tight maze entrance'
+    status: partial
+    link: test/results/phaseC.md
+  - name: Fix 1 - crooked start (re-run of every arena)
+    result: 6 failing runs fixed
+    status: pass
+    link: test/results/fix1_compare.md
+  - name: Fix 2 - tile counting (re-run)
+    result: all 44 runs fully right
+    status: pass
+    link: test/results/fix2_compare.md
+  - name: Fix 3 - tight entrance, strict 20 cm arena rule, exploration (re-run)
+    result: all 53 legal-arena runs fully right (Python and firmware)
+    status: pass
+    link: test/results/fix3_compare.md
+  - name: PCB deck design-rule check (KiCad DRC)
+    result: 'same board as v4.0: 0 unconnected pads; 5 errors (Mega GND pads with 1 thermal spoke instead of 2), 77 warnings'
+    status: partial
+    link: hardware/pcb_v4/guardianbot_v4_pcb_deck_drc.txt
+  - name: SPICE checks of the deck with the ESP32-S3
+    result: 25/25 pass
+    status: pass
+    link: hardware/spice/README.md
+  - name: Wokwi virtual Mega (S3 brain stub)
+    result: chip unit tests and co-simulation pass
+    status: pass
+    link: simulation/wokwi/README.md
+  - name: Firmware compile check on a PC (hostcheck)
+    result: all 3 sketches compile, shared headers identical
+    status: pass
+    link: firmware/hostcheck/check.sh

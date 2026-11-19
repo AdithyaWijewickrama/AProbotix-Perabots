@@ -1,5 +1,5 @@
-// GuardianBot v4.0 - Arduino Mega 2560 pin map (the "body": all real-time I/O)
-// The Mega sits upside-down on the PCB mid deck (hardware/pcb_v4). Keep in sync with docs/GuardianBot_v4_build_guide.md
+// GuardianBot v4.1 - Arduino Mega 2560 pin map (the "body": all real-time I/O)
+// The Mega sits upside-down on the PCB mid deck (hardware/pcb_v4). Keep in sync with docs/GuardianBot_v4.1_build_guide.md
 #pragma once
 #include <stdint.h>
 
@@ -26,8 +26,8 @@ static const uint8_t PIN_XSHUT[8] = {30, 31, 32, 33, 34, 35, 36, 37};
 // ---- Pololu QTR-8RC on PORTA (D22..D29 = PA0..PA7; sensor 1 = right-most) + emitter control
 #define PIN_QTR_LEDON 38
 
-// ---- link to the ESP32-CAM brain: Serial2. TX2 16 -> 1k8/3k3 divider -> ESP GPIO15 (RX),
-//      RX2 17 <- 2N7000 shifter <- ESP GPIO14 (TX). Both on the PCB.
+// ---- link to the ESP32-S3 brain: Serial2. TX2 16 -> 1k8/3k3 divider -> S3 GPIO41 (RX),
+//      RX2 17 <- 2N7000 shifter <- S3 GPIO42 (TX). Both on the PCB (socket J18, silkscreen "ESP32CAM" from v4.0).
 #define LINK_BAUD 250000UL
 
 // ---- 2 x HC-SR04: trig on plain outputs, echo on PCINT0 pins (non-blocking)

@@ -1,9 +1,9 @@
 """
-guardianbot_geometry.py - single source of truth for GuardianBot v4.0 (final-round build).
+guardianbot_geometry.py - single source of truth for GuardianBot v4.1 (final-round build).
 
-Built from the team's parts list (Nov 17):
+Built from the team's parts list (Nov 17; v4.1 Nov 19):
   Arduino Mega 2560 (real-time I/O, mounted upside-down on the PCB mid deck)
-  + ESP32-CAM (brain AND camera: dual-core ESP32 + OV2640) on a front mast,
+  + ESP32-S3 N16R8 (brain, flat on the top deck) with an OV7670 camera on a front mast,
   DRV8833 driver, 2 x N20 6 V 300 rpm encoder gear-motors with 43 mm wheels, 2S 7.4 V 1500 mAh LiPo,
   8 x VL53L0X ToF (GY-VL53L0XV2), 2 x HC-SR04, 2 x TCS3200, Pololu QTR-8RC line array,
   GY-50 L3G4200D gyro, 2 x Kpower M0170 servos (gripper), OLED 128x32 + 1x4 keypad.
@@ -85,9 +85,9 @@ TCS_FRONT = (0.071, 0.0, 0.028)              # facing forward at game-piece heig
 CASTER_X = 0.060
 CASTER_BALL_R = 0.0063
 
-# ESP32-CAM vision board (OV2640) on a printed mast at the front of the top deck.
+# Camera on a printed mast at the front of the top deck (v4.1: OV7670; v4.0 was an ESP32-CAM).
 # CAM = lens position (x, z) and the downward pitch (rad). CAM_FOV = horizontal field of view
-# after the ESP32-CAM crops its 160x120 frame to a 48x32 RGB565 grid (see firmware/esp32cam_brain, camera task).
+# after the brain crops its 160x120 frame to a 48x32 RGB565 grid (see firmware/esp32s3_brain/cam_ov7670.h).
 CAM_X, CAM_Z, CAM_PITCH = 0.062, 0.140, 0.50
 CAM_FOV = 0.90
 CAM_W, CAM_H = 48, 32

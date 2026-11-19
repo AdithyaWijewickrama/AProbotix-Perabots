@@ -1,5 +1,5 @@
 // =============================================================================
-// GuardianBot v4.0 - Arduino Mega 2560 "body" firmware
+// GuardianBot v4.1 - Arduino Mega 2560 "body" firmware
 // PeraBots 2026 University Category, Final Round
 //
 // Job: everything that must be on time, every time.
@@ -11,7 +11,7 @@
 //   * Pololu QTR-8RC line array (8 x RC decay times, 2.5 ms window)
 //   * 2 x HC-SR04 and 2 x TCS3200 timed with pin-change interrupts (never blocks)
 //   * 2 gripper servos, 1x4 keypad, 128x32 OLED (text from the brain), LEDs, buzzer, battery
-//   * 50 Hz binary telemetry to the ESP32-CAM brain, commands back (protocol.h)
+//   * 50 Hz binary telemetry to the ESP32-S3 brain, commands back (protocol.h)
 //
 // Libraries (Arduino Library Manager): "VL53L0X" by Pololu, "SSD1306Ascii" by Bill Greiman.
 // Built in: Servo, Wire. Board: Arduino Mega 2560.
@@ -339,7 +339,7 @@ void setup() {
   oled.begin(&Adafruit128x32, 0x3C);
   oled.setFont(System5x7);
   oled.clear();
-  oled.println(F("GuardianBot v4.0"));
+  oled.println(F("GuardianBot v4.1"));
   oled.println(F("starting - keep still"));
   digitalWrite(PIN_LED_BLUE, HIGH); digitalWrite(PIN_LED_GREEN, HIGH);
   tofInit();

@@ -39,3 +39,11 @@ simulation:
   result: full mission, piece placed
 files:
   - git tag v3.2-camera (commit fa9ce86)
+tests:
+  - name: Judge simulation run (Webots, same arena for every version)
+    result: full mission in 152.1 s, 0 collisions
+    status: pass
+    link: versions/judge/judge.py
+  - name: Real firmware in the simulation (SIL)
+    result: full mission in 187.8 s
+    status: pass

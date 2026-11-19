@@ -1,0 +1,169 @@
+{
+ "run": "w01_python",
+ "world": "w01",
+ "start": "full",
+ "marks": {
+  "s1": 30.38,
+  "s2": 74.38,
+  "end": 163.84
+ },
+ "reason": "reached END",
+ "intervals": {
+  "S1": [
+   0.0,
+   30.38
+  ],
+  "S2": [
+   30.38,
+   74.38
+  ],
+  "S3": [
+   74.38,
+   163.84
+  ]
+ },
+ "sections": {
+  "S1": {
+   "time": 30.38,
+   "distance": 4.581,
+   "turns": 19,
+   "stops": 0,
+   "stop_list": [],
+   "energy_J": 16.0,
+   "stopped": 3.31,
+   "turning": 8.54,
+   "cruising": 13.06,
+   "slow": 5.38,
+   "reversing": 1.1
+  },
+  "S2": {
+   "time": 44.0,
+   "distance": 7.76,
+   "turns": 29,
+   "stops": 0,
+   "stop_list": [],
+   "energy_J": 31.5,
+   "stopped": 2.35,
+   "turning": 13.58,
+   "cruising": 23.9,
+   "slow": 4.13,
+   "reversing": 0.1
+  },
+  "S3": {
+   "time": 89.46,
+   "distance": 9.406,
+   "turns": 17,
+   "stops": 4,
+   "stop_list": [
+    [
+     83.47,
+     0.67,
+     2.009,
+     3.272
+    ],
+    [
+     86.21,
+     0.82,
+     2.008,
+     3.366
+    ],
+    [
+     146.21,
+     0.62,
+     1.539,
+     2.751
+    ],
+    [
+     148.85,
+     0.43,
+     1.696,
+     2.751
+    ]
+   ],
+   "energy_J": 25.9,
+   "stopped": 4.75,
+   "turning": 7.78,
+   "cruising": 0.0,
+   "slow": 76.9,
+   "reversing": 5.28
+  }
+ },
+ "gaps": {
+  "S1": {
+   "gap": 17.84,
+   "longer path": 4.61,
+   "turning": 7.22,
+   "stops": 3.31,
+   "below top speed": 2.61,
+   "other": 0.09
+  },
+  "S2": {
+   "gap": 6.07,
+   "longer path": 0.33,
+   "turning": 3.08,
+   "stops": 2.35,
+   "below top speed": 0.27,
+   "other": 0.04
+  },
+  "S3": {
+   "gap": 68.03,
+   "longer path": 18.34,
+   "turning": 3.42,
+   "stops": 2.75,
+   "below top speed": 43.49,
+   "other": 0.03
+  }
+ },
+ "s2_coverage": {
+  "dead_ends": 6,
+  "checked": 6,
+  "missed": [],
+  "cells_entered": 30,
+  "cells_unique": 26,
+  "revisits": 4,
+  "never_entered": 10
+ },
+ "clearance_mm": 12.6,
+ "wall_overlaps": 0,
+ "judge_collisions": 0,
+ "s3": {
+  "clan": "BLUE",
+  "winning_cells": [
+   6
+  ],
+  "placed_at": 6,
+  "correct": true,
+  "board_disturbed": []
+ },
+ "robot": {
+  "maze_count": [
+   2,
+   1
+  ],
+  "clues": [
+   2,
+   1,
+   7,
+   7
+  ],
+  "inspected_board": true,
+  "tiles_found": {
+   "1,1": "GREEN",
+   "8,0": "BLUE",
+   "7,3": "BLUE"
+  }
+ },
+ "maze_count_ok": true,
+ "tiles": {
+  "true": 3,
+  "found_right": 3,
+  "false_or_wrong_colour": [],
+  "missed": []
+ },
+ "collisions": 0,
+ "summary": {
+  "real": "163.8 s",
+  "best": "71.9 s",
+  "note": "mission complete, piece correct"
+ }
+}

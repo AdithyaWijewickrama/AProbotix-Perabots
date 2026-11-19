@@ -40,3 +40,12 @@ simulation:
 files:
   - cad/, hardware/, simulation/, docs/GuardianBot_build_guide_and_BOM.md
   - GuardianBot_v2_webots_project.zip
+tests:
+  - name: Judge simulation run (Webots, same arena for every version)
+    result: full mission in 180.7 s, 0 collisions
+    status: pass
+    link: versions/judge/judge.py
+  - name: PCB design-rule check (KiCad DRC)
+    result: 0 errors, 0 unconnected pads; 82 warnings (70 library-footprint, 12 silkscreen)
+    status: pass
+    link: versions/v2.0_GuardianBot/hardware/pcb/drc_routed.rpt

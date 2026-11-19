@@ -1,9 +1,9 @@
 # PeraBots 2026 - University Category Final Round
 # The Nine Seals of Pera - Autonomous Controller for GuardianBot
-#   v4.0: 8 x VL53L0X ToF (tof_*, 3-120 cm), 2 x HC-SR04 (us_front, us_back),
+#   v4.1: 8 x VL53L0X ToF (tof_*, 3-120 cm), 2 x HC-SR04 (us_front, us_back),
 #         Pololu QTR-8RC line array (gs0..gs7), 2 x TCS3200 (tcs_floor, tcs_front),
-#         ESP32-CAM (cam, 48x32), L3G4200D gyro, N20 hall encoders, two servo gripper arms.
-#   The real robot runs the same strategy in firmware/esp32cam_brain (C++).
+#         OV7670 camera on the ESP32-S3 (cam, 48x32), L3G4200D gyro, N20 hall encoders, two servo gripper arms.
+#   The real robot runs the same strategy in firmware/esp32s3_brain (C++).
 #
 # Section 1 & 2: User's optimized A* path planner, sensor ray-casting,
 #                occupancy grid mapping, camera-based dead-end tile detection.
@@ -96,7 +96,7 @@ tcs_floor.enable(TS)
 tcs_front = robot.getDevice('tcs_front')
 tcs_front.enable(TS)
 TCS_FLOOR_XY = (0.012, 0.030)          # floor colour sensor position (robot frame)
-cam = robot.getDevice('cam')            # ESP32-CAM: the real robot receives the same 48x32 grid over UART
+cam = robot.getDevice('cam')            # OV7670: the real robot's camera task makes the same 48x32 grid
 cam.enable(TS)
 CW, CH = cam.getWidth(), cam.getHeight()
 
@@ -118,6 +118,8 @@ def wrap(a):
 px, py = 2.315, 0.125
 yaw = 0.0
 yaw_off = 0.0           # heading correction learned from the side ToF pairs (the real gyro drifts)
+_imu0 = None            # first inertial-unit reading: the real robot only has a gyro (turn since power-on),
+                        # so the heading is "turned since start + 90 deg", corrected by start_heading()
 _pl = _pr = None
 _last_l = _last_r = 0.0
 t_sim = 0.0
@@ -129,7 +131,11 @@ def step():
         raise SystemExit
     t_sim += TS / 1000.0
     l, r = le.getValue(), re_.getValue()
-    y2 = wrap(imu.getRollPitchYaw()[2] + yaw_off)
+    global _imu0
+    a = imu.getRollPitchYaw()[2]
+    if _imu0 is None:
+        _imu0 = a
+    y2 = wrap(a - _imu0 + HP + yaw_off)          # like the gyro: relative to the start, assumed facing +y
     if _pl is not None:
         d = ((l - _pl) + (r - _pr)) * 0.5 * R_WHEEL
         mid = yaw + wrap(y2 - yaw) * 0.5
@@ -471,10 +477,37 @@ def n_open(c, r):
     return sum(1 for h in range(4) if edge(c, r, h) == OPEN)
 
 
+def sure_open(c, r, h):
+    """Fix 2 (test plan): an opening counts as sure only with at least 3 'open' votes and more than twice as
+    many 'open' as 'wall' votes. A single stray ray must not rule out a dead end (it hid a tile next to the exit)."""
+    e = edge_ref(c, r, h)
+    return e[0] >= 3 and e[0] > 2 * e[1]
+
+
+def n_sure_open(c, r):
+    return sum(1 for h in range(4) if sure_open(c, r, h))
+
+
 def needed(c, r):
-    if (c, r) in seen or n_open(c, r) >= 2:
+    """Could this cell still be a dead end with an unseen tile? Only two SURE openings rule it out."""
+    if (c, r) in seen or n_sure_open(c, r) >= 2:
         return False
     return any(edge(c, r, h) != WALL for h in range(4))
+
+
+def tile_counts(key):
+    """Fix 2: tiles are only in dead ends, so a tile seen in a cell with 2+ sure openings is the camera
+    spilling a neighbouring tile into it - don't count it twice."""
+    return seen.get(key) in (BLUE, GREEN) and n_sure_open(*key) <= 1
+
+
+def tile_totals():
+    nb = sum(1 for k in seen if tile_counts(k) and seen[k] == BLUE)
+    ng = sum(1 for k in seen if tile_counts(k) and seen[k] == GREEN)
+    ignored = [k for k in seen if seen[k] in (BLUE, GREEN) and not tile_counts(k)]
+    for c, r in ignored:
+        print('tile at c%d r%d ignored: that cell is not a dead end (camera saw a neighbouring tile)' % (c + 1, r + 1))
+    return nb, ng
 
 
 def plan(c0, r0, h0, goal, allow_unk=False, bonus=None):
@@ -570,8 +603,7 @@ def next_plan(c, r, h):
 
 
 def show_majority():
-    nb = sum(1 for v in seen.values() if v == BLUE)
-    ng = sum(1 for v in seen.values() if v == GREEN)
+    nb, ng = tile_totals()
     blue = nb >= ng
     led_b.set(1 if blue else 0)
     led_g.set(0 if blue else 1)
@@ -908,8 +940,34 @@ def run_s1():
             stuck = 0
 
 
+def start_heading(n=15):
+    """Fix 1 (test plan): the robot may be placed a little crooked. While it stands still, the two side ToF
+    pairs (66 mm apart) give its angle to a straight wall beside it (the east wall in the START area, the
+    chamber/maze walls at the maze entrance). Same sign convention as side_align()."""
+    global yaw_off, yaw
+    acc = {'l': [], 'r': []}
+    for _ in range(n):
+        step()
+        for key, f, r in (('l', 'tof_lf', 'tof_lr'), ('r', 'tof_rf', 'tof_rr')):
+            df, dr = D[f], D[r]
+            if TOF_MIN < df < 0.25 and TOF_MIN < dr < 0.25:
+                acc[key].append(math.atan2(dr - df, SIDE_PAIR_DX) * (1 if key == 'l' else -1))
+    th = [sum(v) / len(v) for v in acc.values() if len(v) >= n // 2]
+    th = [t for t in th if abs(t) < 0.5]
+    if not th:
+        print('start heading: no wall beside the robot - assuming it is straight')
+        return
+    theta = sum(th) / len(th)
+    k = round(yaw / HP)
+    c = wrap(k * HP + theta - yaw)
+    yaw_off += c
+    yaw = wrap(yaw + c)
+    print('start heading: placed %.1f deg off straight (from the side ToF pairs)' % math.degrees(theta))
+
+
 def where_am_i():
     global px, py
+    start_heading()
     k = round(yaw / HP)
     turn_to(k * HP)
     stop_now(3)
@@ -1235,8 +1293,7 @@ def go(target, v_max=0.16, extra=()):
 
 # ------------------------------------------------------------------ clues
 def maze_clues():
-    nb = sum(1 for v in seen.values() if v == BLUE)
-    ng = sum(1 for v in seen.values() if v == GREEN)
+    nb, ng = tile_totals()
     # shortest path (fewest cells, then fewest turns) through the mapped maze;
     # the robot enters cell (0,0) heading +y (h=0). Turns in the exit cell are not counted.
     start = (0, 0, 0)

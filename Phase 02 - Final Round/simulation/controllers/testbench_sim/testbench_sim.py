@@ -2,7 +2,7 @@
 testbench_sim.py - the robot TEST BENCH web page, driving the SIMULATED robot in Webots.
 
 It serves exactly the page of the real test-bench firmware (firmware/esp32s3_testbench/web/index.html)
-with the same /api/... calls, so you can try the page - and drive the robot with the joystick - before
+with the same /api/... calls, so you can try the page - and drive the robot with the joystick on any tab - before
 the hardware exists. Open worlds/testbench.wbt in Webots, press play, then browse to http://localhost:8080
 
 What it simulates: the Mega's telemetry (encoders, gyro yaw, 2 sonars, 8 ToF, QTR-8RC decay times,

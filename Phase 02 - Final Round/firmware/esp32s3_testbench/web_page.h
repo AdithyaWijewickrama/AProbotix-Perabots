@@ -46,6 +46,26 @@ input[type=range] { width: 100%; }
 .note { color: var(--muted); font-size: 12px; }
 .msg { padding: 6px 9px; border-radius: 6px; background: var(--soft); margin: 6px 0; min-height: 30px; }
 label { user-select: none; }
+/* drive panel: on every tab, so you can drive while watching sensors / camera / calibration */
+#dock { position: fixed; right: 12px; bottom: 12px; z-index: 6; width: 212px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 8px 10px 10px; box-shadow: 0 6px 22px #0000002e; }
+#dock .dh { display: flex; align-items: center; gap: 6px; }
+#dock .dh b { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+#dmin { margin-left: auto; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 6px; width: 28px; height: 24px; cursor: pointer; font: inherit; line-height: 1; }
+#joy { width: 168px; height: 168px; margin: 6px auto 4px; }
+#dnow { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 34px; }
+#dnow b { color: var(--text); font-weight: 600; }
+#dstop { width: 100%; background: var(--bad); color: #fff; border: 0; border-radius: 8px; font-weight: 700; padding: 8px; font-size: 14px; cursor: pointer; margin-top: 4px; }
+#dfab { display: none; position: fixed; right: 12px; bottom: 12px; z-index: 6; border: 0; border-radius: 99px; padding: 12px 18px;
+  background: var(--accent); color: #fff; font: 600 14px system-ui, sans-serif; box-shadow: 0 6px 22px #0000002e; cursor: pointer; }
+body.dmin #dock { display: none; } body.dmin #dfab { display: block; }
+@media (min-width: 760px) { body:not(.dmin) main { padding-right: 240px; } }
+@media (max-width: 759px) {
+  #dock { left: 0; right: 0; bottom: 0; width: auto; border-radius: 12px 12px 0 0; display: grid; grid-template-columns: 136px 1fr; gap: 0 12px; align-items: center; }
+  #dock .dh { grid-column: 1 / 3; }
+  #joy { width: 132px; height: 132px; grid-row: 2 / 5; margin: 4px 0 0; }
+  body:not(.dmin) main { padding-bottom: 210px; }
+}
 </style>
 </head>
 <body>
@@ -76,10 +96,11 @@ label { user-select: none; }
 <!-- ================= DRIVE ================= -->
 <section class="tab" id="t-drive">
   <div class="grid">
-    <div class="card"><h3>Drive (drag, or W A S D / arrow keys)</h3>
-      <canvas id="joy" width="300" height="300" style="margin:auto"></canvas>
-      <div class="row"><label>Speed limit <b id="vmaxv">30</b> %</label><input type="range" id="vmax" min="10" max="100" value="30"></div>
-      <div class="note">The robot stops if this page stops sending for 0.3 s (closed tab, Wi-Fi drop). The Mega stops on its own after 0.25 s too.</div>
+    <div class="card"><h3>Driving</h3>
+      <p>The joystick is in the <b>Drive panel</b> (bottom right, bottom edge on a phone). It is there on <b>every tab</b>,
+      so you can drive while you watch the radar, the camera, a calibration or a log. Keys: W A S D / arrows, Space = stop.</p>
+      <div class="note">The robot stops if this page stops sending for 0.3 s (closed tab, Wi-Fi drop). The Mega stops on its own after 0.25 s too.
+      Moving the joystick during Drive 1 m or Spin 360° stops that routine.</div>
     </div>
     <div class="card"><h3>Gripper servos</h3>
       <div class="row"><label style="width:60px">Left</label><input type="range" id="sl" min="0" max="180" value="90"><b id="slv">90</b></div>
@@ -148,6 +169,14 @@ label { user-select: none; }
   </div>
 </section>
 </main>
+<div id="dock" aria-label="Drive panel">
+  <div class="dh"><b>Drive</b><span class="note">drag · WASD · Space = stop</span><button id="dmin" type="button" title="Hide the drive panel">–</button></div>
+  <canvas id="joy" width="336" height="336"></canvas>
+  <div class="row" style="margin:2px 0"><label>Speed <b id="vmaxv">30</b> %</label><input type="range" id="vmax" min="10" max="100" value="30"></div>
+  <div id="dnow">-</div>
+  <button id="dstop" type="button">STOP</button>
+</div>
+<button id="dfab" type="button" title="Show the drive panel">Drive</button>
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
@@ -190,6 +219,7 @@ function render() {
   pill("#link", s.link.ok ? `Mega link ${s.link.fps} fps` : "Mega link LOST", s.link.ok);
   pill("#bat", `battery ${(s.vbat / 1000).toFixed(2)} V`, s.vbat > 6800);
   pill("#camst", s.cam.ok ? `camera ${s.cam.fps} fps` : "camera -", s.cam.ok);
+  renderDock(s);
   if (tab === "sensors") renderSensors(s);
   if (tab === "drive") renderDrive(s);
   if (tab === "cal") renderCal(s);
@@ -238,6 +268,10 @@ function renderSensors(s) {
     ["link", `${s.link.fps} frames/s, ${s.link.bad} bad, last ${s.link.age} ms ago`], ["PSRAM", s.psram ? (s.psram / 1048576).toFixed(1) + " MB" : "none"],
     ["Mega time", (s.ms / 1000).toFixed(1) + " s"]]);
 }
+function renderDock(s) {
+  const r = s.routine && s.routine.running ? `<br>routine: <b>${s.routine.name}</b> running` : "";
+  $("#dnow").innerHTML = `L <b>${s.v[0]}</b> · R <b>${s.v[1]}</b> mm/s<br>yaw <b>${s.yaw.toFixed(1)}°</b> · ${s.gz.toFixed(0)} °/s${r}`;
+}
 function kv(rows) { return rows.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join(""); }
 function compass(yaw) {
   const c = $("#compass"), g = c.getContext("2d"), R = 70;
@@ -257,7 +291,7 @@ function drawJoy() {
   g.fillStyle = css("--soft"); g.strokeStyle = css("--accent");
   g.beginPath(); g.arc(W / 2, W / 2, R, 0, 7); g.fill(); g.stroke();
   g.strokeStyle = css("--line"); g.beginPath(); g.moveTo(W / 2, 12); g.lineTo(W / 2, W - 12); g.moveTo(12, W / 2); g.lineTo(W - 12, W / 2); g.stroke();
-  g.fillStyle = css("--accent"); g.beginPath(); g.arc(W / 2 + joy.x * R, W / 2 - joy.y * R, 26, 0, 7); g.fill();
+  g.fillStyle = css("--accent"); g.beginPath(); g.arc(W / 2 + joy.x * R, W / 2 - joy.y * R, W * .09, 0, 7); g.fill();
 }
 function joyFrom(e) {
   const c = $("#joy"), r = c.getBoundingClientRect(), R = r.width / 2 - 10 * r.width / c.width;
@@ -270,7 +304,8 @@ jc.addEventListener("pointerdown", e => { joy.active = true; jc.setPointerCaptur
 jc.addEventListener("pointermove", e => { if (joy.active) joyFrom(e); });
 const joyEnd = () => { joy.active = false; joy.x = joy.y = 0; drawJoy(); sendCmd(true); };
 jc.addEventListener("pointerup", joyEnd); jc.addEventListener("pointercancel", joyEnd);
-addEventListener("keydown", e => { if (["w", "a", "s", "d", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) { keysDown.add(e.key); if (e.key === " ") stopAll(); e.preventDefault(); } });
+const typing = e => /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== "checkbox";
+addEventListener("keydown", e => { if (typing(e) && e.key !== " ") return; if (["w", "a", "s", "d", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) { keysDown.add(e.key); if (e.key === " ") stopAll(); e.preventDefault(); } });
 addEventListener("keyup", e => keysDown.delete(e.key));
 function wanted() {
   let x = joy.x, y = joy.y;
@@ -292,6 +327,11 @@ async function sendCmd(force) {
 setInterval(sendCmd, 100);                        // keeps the deadman alive while you hold the stick
 function stopAll() { joy.x = joy.y = 0; keysDown.clear(); drawJoy(); api("api/stop"); }
 $("#stop").onclick = stopAll;
+$("#dstop").onclick = stopAll;
+function dockMin(m) { document.body.classList.toggle("dmin", m); try { localStorage.setItem("gbDockMin", m ? "1" : "0"); } catch (e) { } if (!m) drawJoy(); }
+$("#dmin").onclick = () => dockMin(true);
+$("#dfab").onclick = () => dockMin(false);
+try { if (localStorage.getItem("gbDockMin") === "1") dockMin(true); } catch (e) { }
 document.querySelectorAll("#outs input").forEach(i => i.onchange = () => { outBits = [...document.querySelectorAll("#outs input")].reduce((a, c) => a | (c.checked ? +c.dataset.bit : 0), 0); });
 for (const id of ["sl", "sr", "gl", "gr"]) $("#" + id).oninput = () => {
   $("#" + id + "v").textContent = $("#" + id).value;

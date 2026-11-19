@@ -41,3 +41,11 @@ simulation:
   result: full mission, piece placed
 files:
   - versions/v3.3_shield_pcb (firmware, shield PCB + generator, v3 guide, old acrylic/prints) and git tag v3.3-pcb
+tests:
+  - name: Simulation
+    result: not re-run - same electronics and code as v3.2 (the shield changes wiring only)
+    status: info
+  - name: Shield PCB design-rule check (KiCad DRC)
+    result: 0 unconnected pads; 6 errors (GND pads with 1 thermal spoke instead of 2), 139 warnings (silkscreen, library footprint)
+    status: partial
+    link: versions/v3.3_shield_pcb/pcb_v3/guardianbot_v3_mega_shield_drc.txt

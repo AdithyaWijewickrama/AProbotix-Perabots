@@ -1,0 +1,104 @@
+{
+ "run": "w08_s3_python",
+ "world": "w08_s3",
+ "start": "s3",
+ "marks": {
+  "s1": 0.02,
+  "s2": 3.33,
+  "end": 46.74
+ },
+ "reason": "reached END",
+ "intervals": {
+  "S3": [
+   3.33,
+   46.74
+  ]
+ },
+ "sections": {
+  "S3": {
+   "time": 43.41,
+   "distance": 4.092,
+   "turns": 12,
+   "stops": 4,
+   "stop_list": [
+    [
+     12.67,
+     0.62,
+     2.009,
+     3.267
+    ],
+    [
+     15.36,
+     0.82,
+     2.008,
+     3.361
+    ],
+    [
+     31.92,
+     0.62,
+     1.14,
+     2.754
+    ],
+    [
+     34.56,
+     0.43,
+     1.297,
+     2.754
+    ]
+   ],
+   "energy_J": 14.1,
+   "stopped": 3.7,
+   "turning": 5.76,
+   "cruising": 0.0,
+   "slow": 33.89,
+   "reversing": 5.42
+  }
+ },
+ "gaps": {
+  "S3": {
+   "gap": 21.48,
+   "longer path": 0.63,
+   "turning": 0.99,
+   "stops": 1.7,
+   "below top speed": 18.1,
+   "other": 0.06
+  }
+ },
+ "clearance_mm": 34.0,
+ "wall_overlaps": 0,
+ "judge_collisions": 0,
+ "s3": {
+  "clan": "BLUE",
+  "winning_cells": [
+   7
+  ],
+  "placed_at": 7,
+  "correct": true,
+  "board_disturbed": []
+ },
+ "robot": {
+  "maze_count": null,
+  "clues": null,
+  "inspected_board": false,
+  "tiles_found": {}
+ },
+ "maze_count_ok": null,
+ "tiles": {
+  "true": 5,
+  "found_right": 0,
+  "false_or_wrong_colour": [],
+  "missed": [
+   "0,3",
+   "1,0",
+   "2,2",
+   "4,0",
+   "8,0"
+  ]
+ },
+ "collisions": 0,
+ "summary": {
+  "real": "46.7 s",
+  "best": "21.9 s",
+  "note": "mission complete, piece correct"
+ }
+}

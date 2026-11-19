@@ -11,14 +11,14 @@ Smot vbat mot ctl_m 0 SWM
 Rmot mot 0 { 1 / (2 * 0.8 * 0.8) * 7 }
 Vctl_m ctl_m 0 PULSE(0 1 5m 10u 10u 20m 100m)
 .model SWM SW(VT=0.5 RON=0.01 ROFF=1e9)
-* logic buck LM2596 -> +5V: Mega + ESP32-CAM + 8 ToF + QTR + sonars + OLED + TCS LEDs = 0.35 A base,
-* ESP32-CAM camera/flash bursts +0.4 A at 12 ms .. 14 ms
+* logic buck LM2596 -> +5V: Mega + ESP32-S3 + OV7670 + 8 ToF + QTR + sonars + OLED + TCS LEDs = 0.35 A base,
+* ESP32-S3 + OV7670 current step (CPU, PSRAM, camera; no Wi-Fi) +0.3 A at 12 ms .. 14 ms - conservative
 X5 vbat p5 0 BUCK params: vset=5.0 vdrop=0.6 rsw=0.25 eff=0.85
 C1 p5 c1e 470u
 Rc1 c1e 0 0.05
 Rlog p5 0 { 5 / 0.35 }
 Sburst p5 bur ctl_b 0 SWM
-Rbur bur 0 { 5 / 0.4 }
+Rbur bur 0 { 5 / 0.3 }
 Vctl_b ctl_b 0 PULSE(0 1 12m 10u 10u 2m 100m)
 * servo buck HW-319 -> +5V5: both M0170 servos stall at once (2 x 1.5 A) from 10 ms to 30 ms
 X55 vbat p55 0 BUCK params: vset=5.5 vdrop=0.5 rsw=0.15 eff=0.88
