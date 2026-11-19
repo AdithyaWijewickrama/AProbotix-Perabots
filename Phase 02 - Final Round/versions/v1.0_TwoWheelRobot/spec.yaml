@@ -38,3 +38,8 @@ simulation:
   result: did not finish - drove into the Section 1 wall at (2.30, 1.17) and stayed there
 files:
   - simulation/  (Webots project of this version)
+tests:
+  - name: Judge simulation run (Webots, same arena for every version)
+    result: did not finish - drove into the Section 1 wall, 6 collisions
+    status: fail
+    link: versions/judge/judge.py

@@ -24,7 +24,7 @@ sensors:
   - L3G4200D gyro
 pcb:
   type: round 144 mm PCB mid deck, 2 layers, all through-hole, 24 JST-XH + 4 pin-header connectors, Mega plugs on upside-down
-  rules: 0.3 mm signal tracks (0.2-0.25 mm on a few), 0.6-0.8 mm power, 0.25 mm clearance (0.2 mm min), 1.0/0.6 mm vias, 1.0 mm pin holes; DRC 0 errors
+  rules: 0.3 mm signal tracks (0.2-0.25 mm on a few), 0.6-0.8 mm power, 0.25 mm clearance (0.2 mm min), 1.0/0.6 mm vias, 1.0 mm pin holes; DRC 0 unconnected pads, 5 one-spoke GND thermal errors (see tests)
   files: hardware/pcb_v4 (KiCad, Gerbers zip, toner-transfer PDFs, BOM, DRC report)
 budget:
   currency: LKR
@@ -48,3 +48,23 @@ files:
   - the PCB deck is hardware/pcb_v4 at the top level (unchanged in v4.1)
   - git tag v4.0.1
   - known issue (fixed in v4.1): acrylic/deck_base_3mm.dxf has the side-ToF post holes 7 mm too far out; cut the v4.1 base instead
+tests:
+  - name: Judge simulation run (Webots, same arena for every version)
+    result: full mission in 153.6 s, 0 collisions
+    status: pass
+    link: versions/judge/judge.py
+  - name: Real firmware in the simulation (SIL)
+    result: full mission in 170.3 s; Section 3 restart in 131.5 s
+    status: pass
+  - name: PCB deck design-rule check (KiCad DRC)
+    result: 0 unconnected pads; 5 errors (Mega GND pads with 1 thermal spoke instead of 2), 77 warnings (silkscreen, library footprint)
+    status: partial
+    link: hardware/pcb_v4/guardianbot_v4_pcb_deck_drc.txt
+  - name: SPICE checks of the deck (link, battery sense, buzzer, power)
+    result: 'made for this deck; re-run with the S3 in v4.1: 25/25 pass'
+    status: info
+    link: hardware/spice/README.md
+  - name: Wokwi virtual Mega (chip unit tests + firmware co-simulation)
+    result: co-simulation 14/14 pass; found and fixed a right-encoder bug
+    status: pass
+    link: simulation/wokwi/README.md

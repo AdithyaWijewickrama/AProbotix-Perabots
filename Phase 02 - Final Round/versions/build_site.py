@@ -124,6 +124,16 @@ th { color: var(--text-secondary); font-weight: 600; width: 180px; }
 .better { color: var(--good); font-weight: 600; } .worse { color: var(--bad); }
 .wrap { overflow-x: auto; }
 ul { margin: 0; padding-left: 18px; }
+.tests { margin-top: 10px; font-size: 12.5px; }
+.tests b { font-size: 13px; }
+.tests ul { list-style: none; padding: 0; margin: 4px 0 0; }
+.tests li { padding: 3px 0; border-top: 1px solid var(--grid); }
+.tests .none { color: var(--text-muted); }
+.badge { display: inline-block; min-width: 54px; text-align: center; font-size: 11px; font-weight: 600; border-radius: 4px;
+  padding: 0 5px; margin-right: 6px; border: 1px solid currentColor; }
+.st-pass { color: var(--good); } .st-fail { color: var(--bad); } .st-partial { color: #b26b00; } .st-info { color: var(--text-muted); }
+.tests .res { color: var(--text-secondary); display: block; }
+.tests a { color: var(--series-1); }
 footer { margin-top: 40px; color: var(--text-muted); font-size: 12.5px; }
 .theme { float: right; }
 </style>
@@ -167,6 +177,16 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt = (v, u) => v == null ? "not measured" : (u === "Rs" ? "Rs " + Math.round(v).toLocaleString("en-US") : v.toLocaleString("en-US") + (u ? " " + u : ""));
 const latest = V[V.length - 1];
+const REPO = "https://github.com/AdithyaWijewickrama/AProbotix-Perabots/blob/HEAD/Phase%2002%20-%20Final%20Round/";
+const LBL = {pass: "pass", fail: "fail", partial: "partly", info: "note"};
+function testList(v) {
+  const t = v.tests || [];
+  if (!t.length) return `<div class="tests"><b>Tests done</b><div class="none">-</div></div>`;
+  return `<div class="tests"><b>Tests done (${t.length})</b><ul>` + t.map(x =>
+    `<li><span class="badge st-${esc(x.status)}">${esc(LBL[x.status] || x.status)}</span>` +
+    (x.link ? `<a href="${REPO + x.link.split("/").map(encodeURIComponent).join("/")}" target="_blank" rel="noopener">${esc(x.name)}</a>` : esc(x.name)) +
+    `<span class="res">${esc(x.result)}</span></li>`).join("") + `</ul></div>`;
+}
 $("#latestname").textContent = latest.id + " " + latest.name;
 document.getElementById("theme").onclick = () => {
   const r = document.documentElement, dark = matchMedia("(prefers-color-scheme: dark)").matches;
@@ -188,6 +208,7 @@ $("#cards").innerHTML = V.map(v => `
       <span>END reached</span><span>${fmt(v.simulation?.end_s, "s")}</span>
       <span>PCB</span><span>${esc(v.pcb?.type)}</span>
     </div>
+    ${testList(v)}
     ${v._models ? `<a class="viewlink" href="viewer.html?v=${encodeURIComponent(v.id)}">3-D PCB, parts &amp; files &rarr;</a>` : ""}
   </div>`).join("");
 
@@ -275,6 +296,7 @@ function render() {
     num("END reached", v => v.simulation?.end_s ?? null, "s", true) +
     num("Collisions", v => v.simulation?.collisions ?? null, "", true) +
     row("Simulation result", esc(A.simulation?.result), esc(B.simulation?.result)) +
+    row("Tests done", testList(A), testList(B)) +
     row("Git tag", `<code>${esc(A.tag)}</code>`, `<code>${esc(B.tag)}</code>`);
 }
 $("#selA").onchange = render; $("#selB").onchange = render; render();
@@ -283,7 +305,8 @@ $("#selA").onchange = render; $("#selB").onchange = render; render();
 const cols = [["Version", v => v.id + " " + v.name], ["Tag", v => v.tag], ["Size (mm)", v => (v.body?.size_mm || []).join(" × ")],
   ["Weight", v => fmt(v.weight_g, "g")], ["Budget", v => fmt(v._budget_lkr, "Rs")], ["Controllers", v => list(v.controllers).join(", ")],
   ["PCB", v => v.pcb?.type], ["S1", v => fmt(v.simulation?.section1_s, "s")], ["S2", v => fmt(v.simulation?.maze_s, "s")],
-  ["END", v => fmt(v.simulation?.end_s, "s")], ["Collisions", v => fmt(v.simulation?.collisions, "")], ["Result", v => v.simulation?.result]];
+  ["END", v => fmt(v.simulation?.end_s, "s")], ["Collisions", v => fmt(v.simulation?.collisions, "")], ["Result", v => v.simulation?.result],
+  ["Tests", v => (v.tests || []).length ? (v.tests.length + " (" + v.tests.filter(t => t.status === "pass").length + " pass)") : "-"]];
 $("#all").innerHTML = "<tr>" + cols.map(c => `<th style="width:auto">${c[0]}</th>`).join("") + "</tr>" +
   V.map(v => "<tr>" + cols.map(c => `<td>${esc(c[1](v))}</td>`).join("") + "</tr>").join("");
 </script>

@@ -23,7 +23,7 @@ Times come from one neutral "judge" supervisor on the same arena for every versi
 (or run `python build_site.py` and open `_site/index.html` through a local server, e.g. `python -m http.server`
 inside `_site`). It has two pages:
 
-- `index.html`: version cards, charts and a side-by-side comparison.
+- `index.html`: version cards (with the tests done on each version), charts and a side-by-side comparison.
 - `viewer.html`: **hardware in 3-D** for v2.0, v3.3, v4.0 and v4.1. You can turn and zoom the PCB with every part (and
   the Arduino Mega / ESP32 board where it sits), every 3-D printed part, and every laser-cut deck in 3-D or as its
   cut drawing. It also has the downloads: Gerbers, schematic, BOM, DXF, STL and the build guide.
@@ -37,6 +37,8 @@ footprint. three.js is included in `viewer_lib/` (MIT licence), so the page need
 **Add a version:**
 
 1. Create `vX.Y_name/spec.yaml` (copy the latest one) and `images/iso.jpg`.
+   List the tests run on that version under `tests:` (name, result, status pass/partial/fail/info, optional
+   repo-relative `link`). Leave it as `tests: []` if none were run; the site then shows "-".
 2. If it has hardware, add it to `VERSIONS` in `export_models.py` and run that script.
 3. Push.
 Run `python build_site.py` to preview locally (`pip install pyyaml`).
