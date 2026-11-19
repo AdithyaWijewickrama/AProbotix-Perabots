@@ -1,8 +1,9 @@
 # PeraBots 2026 - University Category Final Round
 # The Nine Seals of Pera - Autonomous Controller for GuardianBot
-#   v4.1: 8 x VL53L0X ToF (tof_*, 3-120 cm), 2 x HC-SR04 (us_front, us_back),
+#   v4.2: 8 x VL53L0X ToF (tof_*, 3-120 cm), 2 x HC-SR04 (us_front, us_back),
 #         Pololu QTR-8RC line array (gs0..gs7), 2 x TCS3200 (tcs_floor, tcs_front),
-#         OV7670 camera on the ESP32-S3 (cam, 48x32), L3G4200D gyro, N20 hall encoders, two servo gripper arms.
+#         OV7670 camera on the ESP32-S3 (cam, 48x32; cam_hi 96x64 for the board look) on an SG90 tilt servo
+#         (cam_tilt, Fix 4), L3G4200D gyro, N20 hall encoders, two servo gripper arms.
 #   The real robot runs the same strategy in firmware/esp32s3_brain (C++).
 #
 # Section 1 & 2: User's optimized A* path planner, sensor ray-casting,
@@ -99,6 +100,14 @@ TCS_FLOOR_XY = (0.012, 0.030)          # floor colour sensor position (robot fra
 cam = robot.getDevice('cam')            # OV7670: the real robot's camera task makes the same 48x32 grid
 cam.enable(TS)
 CW, CH = cam.getWidth(), cam.getHeight()
+cam_hi = robot.getDevice('cam_hi')      # Fix 4: the same OV7670 as a 96x64 grid, only switched on for the board look
+cam_tilt = robot.getDevice('cam_tilt')  # Fix 4: SG90/MG90S tilt servo, 0 = maze view, up to -0.506 rad (29 deg hard stop)
+if cam_tilt:
+    cam_tilt.setPosition(0.0)
+cam_tilt_sensor = robot.getDevice('cam_tilt_sensor')
+if cam_tilt_sensor:
+    cam_tilt_sensor.enable(TS)
+CAM_TILT_LOOK = 0.25                    # board look: 14 deg up from the maze view
 
 
 def rng_max(n):
@@ -484,6 +493,12 @@ def sure_open(c, r, h):
     return e[0] >= 3 and e[0] > 2 * e[1]
 
 
+def sure_wall(c, r, h):
+    """Fix 3 (test plan): same rule for walls - a single stray 'wall' vote sealed off 8 cells once."""
+    e = edge_ref(c, r, h)
+    return e[1] >= 3 and e[1] > 2 * e[0]
+
+
 def n_sure_open(c, r):
     return sum(1 for h in range(4) if sure_open(c, r, h))
 
@@ -492,7 +507,7 @@ def needed(c, r):
     """Could this cell still be a dead end with an unseen tile? Only two SURE openings rule it out."""
     if (c, r) in seen or n_sure_open(c, r) >= 2:
         return False
-    return any(edge(c, r, h) != WALL for h in range(4))
+    return any(not sure_wall(c, r, h) for h in range(4))
 
 
 def tile_counts(key):
@@ -531,7 +546,7 @@ def plan(c0, r0, h0, goal, allow_unk=False, bonus=None):
             break
         nxt = [((c, r, (h + 1) % 4), 0.7), ((c, r, (h + 3) % 4), 0.7), ((c, r, (h + 2) % 4), 1.0)]
         e = edge(c, r, h)
-        if e == OPEN or (allow_unk and e == UNK):
+        if e == OPEN or (allow_unk and (e == UNK or (e == WALL and not sure_wall(c, r, h)))):
             nc, nr = c + DIRS[h][0], r + DIRS[h][1]
             if in_grid(nc, nr):
                 nxt.append(((nc, nr, h), 1.0 if e == OPEN else 3.0))
@@ -573,7 +588,7 @@ def end_bonus():
 def explore_goal(c, r, h):
     """Stand where the camera sees an undecided possible dead end 1 or 2 cells ahead."""
     nc, nr = c + DIRS[h][0], r + DIRS[h][1]
-    if not in_grid(nc, nr) or edge(c, r, h) == WALL:
+    if not in_grid(nc, nr) or sure_wall(c, r, h):
         return False
     if needed(nc, nr):
         return True
@@ -592,6 +607,10 @@ def next_plan(c, r, h):
     global exploring
     if exploring:
         p = plan(c, r, h, explore_goal, bonus=end_bonus() if LAM else None)
+        if p is None:
+            # Fix 3 (test plan): a possible dead end can lie behind openings not mapped yet. "No route through
+            # known openings" is not "explored": try through unknown edges too (walls get found on the way).
+            p = plan(c, r, h, explore_goal, allow_unk=True, bonus=end_bonus() if LAM else None)
         if p is not None:
             return p
         exploring = False
@@ -1030,6 +1049,11 @@ def log_tick():
 #   transverse lines x = 0.50 0.90 1.30 1.70 ; long lines y = 2.60 2.90 3.20 3.50
 # ==============================================================================
 GRIP_OPEN, GRIP_CLOSED = 0.0, 1.05
+INSPECT_V = 0.20                    # Fix 4: ToF inspection pass (was 0.10)
+S3_ACC = 1.2                        # Fix 4: start-up acceleration on the lines, m/s^2 (same as the braking)
+CARRY_V, CARRY_ACC = 0.16, 0.6         # Fix 4: gentler while the piece is in the gripper (it slips out above this)
+carrying = False
+S3_V = 0.25                         # Fix 4: line legs at 0.25 m/s (was 0.16); short moves near pieces stay slow
 POCKET_OFF = 0.033                  # piece centre is 33 mm behind the axle
 LINE_X = 0.045                      # line array is 45 mm ahead of the axle
 GS_Y = [(i - (N_GS - 1) / 2) * 0.009525 for i in range(N_GS)]   # gs0 = right-most (Pololu QTR-8RC)
@@ -1191,7 +1215,8 @@ def drive_line(tx, ty, v_max=0.16, reverse=False, follow=True, stop_tol=0.004):
             break
         lat = -(tx - px) * uy + (ty - py) * ux          # + = target line is to the left of travel
         e = wrap(hd - yaw)
-        v = min(v_max, math.sqrt(2 * 1.2 * rem) + 0.015)
+        acc = CARRY_ACC if carrying else S3_ACC
+        v = min(CARRY_V if carrying else v_max, math.sqrt(2 * acc * rem) + 0.015, abs(speed()) + acc * TS / 1000.0 + 0.01)   # Fix 4: no wheel spin on starts
         w = 4.0 * e + 12.0 * lat
         w = max(-1.5, min(1.5, w))
         drive_lr(-v if reverse else v, w)
@@ -1281,12 +1306,26 @@ def route(a, b, extra=()):
     return None
 
 
-def go(target, v_max=0.16, extra=()):
+def corners(path):
+    """Fix 4: keep only the turning points, so the robot drives straight through crossings without stopping."""
+    out = [path[0]]
+    for q in path[1:]:
+        if len(out) >= 2:
+            a, b = out[-2], out[-1]
+            same = (abs(a[0] - b[0]) < 1e-6 and abs(b[0] - q[0]) < 1e-6) or (abs(a[1] - b[1]) < 1e-6 and abs(b[1] - q[1]) < 1e-6)
+            if same and seg_of(a, q) is not None:
+                out[-1] = q
+                continue
+        out.append(q)
+    return out
+
+
+def go(target, v_max=S3_V, extra=()):
     path = route((px, py), target, extra)
     if path is None:
         print('[S3] no route to', target)
         return False
-    for q in path[1:]:
+    for q in corners(path)[1:]:
         drive_line(q[0], q[1], v_max)
     return True
 
@@ -1362,19 +1401,23 @@ def pick_piece(clan):
     grip_set(GRIP_OPEN)
     drive_line(cx, cy - sgn * POCKET_OFF, 0.05, reverse=True, follow=False)
     grip_set(GRIP_CLOSED, 0.8)
+    global carrying
+    carrying = True
     ok = True
     print('[S3] picked %s piece' % clan)
-    drive_line(COLLECT_JUNC[0], COLLECT_JUNC[1], 0.12)
+    drive_line(COLLECT_JUNC[0], COLLECT_JUNC[1], S3_V)
     return ok
 
 
 def place_piece(pos):
     cx, cy = POS_CELL[pos]
     ax = cx + 0.20                                        # transverse line on the entrance side
-    go((ax, cy), 0.14)
+    go((ax, cy))
     turn_to(0.0, 0.008)                                   # face +x: pocket points into the cell
     drive_line(cx + POCKET_OFF, cy, 0.05, reverse=True, follow=False)
     grip_set(GRIP_OPEN, 0.6)
+    global carrying
+    carrying = False
     print('[S3] piece released in position %d at (%.2f, %.2f)' % (pos, cx, cy))
     drive_line(ax, cy, 0.08, follow=False)
     grip_set(GRIP_CLOSED, 0.4)
@@ -1407,7 +1450,7 @@ def inspect_board():
             sample()
             e = wrap(PI - yaw)
             lat = (y - py) * -1.0
-            drive_lr(min(0.10, math.sqrt(2 * 1.2 * (px - tx)) + 0.015), max(-1.5, min(1.5, 4 * e + 12 * lat)))
+            drive_lr(min(CARRY_V if carrying else INSPECT_V, math.sqrt(2 * 1.2 * (px - tx)) + 0.015), max(-1.5, min(1.5, 4 * e + 12 * lat)))
         stop_drive()
     occ = sorted(p for p, n in hits.items() if n >= 4)
     print('[S3] inspection: occupied positions', occ, 'hits', hits)
@@ -1417,7 +1460,7 @@ def inspect_board():
 def look_colour(pos):
     """Drive up to the piece (without touching it) and read it with the front TCS3200."""
     cx, cy = POS_CELL[pos]
-    go((cx + 0.20, cy), 0.12)
+    go((cx + 0.20, cy))
     turn_to(PI, 0.01)
     drive_line(cx + 0.108, cy, 0.05, follow=False)       # sensor ~1.2 cm from the piece face
     nb = ng = 0
@@ -1430,6 +1473,181 @@ def look_colour(pos):
     print('[S3] front colour sensor at position %d reads %s (%d blue / %d green samples)' % (pos, col, nb, ng))
     drive_line(cx + 0.20, cy, 0.06, reverse=True, follow=False)
     return col
+
+
+# ------------------------------------------------------------------ Fix 4: camera board look
+PIECE_H, PIECE_R = 0.05, 0.025
+TILT_PX, TILT_PZ = 0.036, 0.151          # v4.2: SG90 shaft (tilt axis), hardware/cad/guardianbot_geometry.py TILT_PIVOT
+_lx, _lz = CAM_X - TILT_PX, CAM_Z - TILT_PZ
+LOOK_X = TILT_PX + _lx * math.cos(CAM_TILT_LOOK) - _lz * math.sin(CAM_TILT_LOOK)   # lens when tilted for the board look
+LOOK_Z = TILT_PZ + _lx * math.sin(CAM_TILT_LOOK) + _lz * math.cos(CAM_TILT_LOOK)
+
+
+def cam_ray(u, v, W, H, pitch):
+    f = (W / 2) / math.tan(CAM_FOV / 2)
+    x, y, z = f, -(u + 0.5 - W / 2), -(v + 0.5 - H / 2)
+    return x * math.cos(pitch) + z * math.sin(pitch), y, -x * math.sin(pitch) + z * math.cos(pitch)
+
+
+def cam_hit(u, v, W, H, pitch, zp, pose):
+    """World (x, y) where a pixel's ray meets the plane z = zp, plus the distance from the camera."""
+    x2, y, z2 = cam_ray(u, v, W, H, pitch)
+    if z2 >= -1e-6:
+        return None
+    t = (zp - LOOK_Z) / z2
+    gx, gy = LOOK_X + t * x2, t * y
+    c, s_ = math.cos(pose[2]), math.sin(pose[2])
+    return pose[0] + c * gx - s_ * gy, pose[1] + s_ * gx + c * gy, math.hypot(gx - LOOK_X, gy)
+
+
+def cam_project(wx, wy, W, H, pitch, pose):
+    c, s_ = math.cos(pose[2]), math.sin(pose[2])
+    dx, dy = wx - pose[0], wy - pose[1]
+    X, Y, Z = c * dx + s_ * dy - LOOK_X, -s_ * dx + c * dy, -LOOK_Z
+    x = X * math.cos(pitch) - Z * math.sin(pitch)
+    z = X * math.sin(pitch) + Z * math.cos(pitch)
+    if x <= 0.01:
+        return None
+    f = (W / 2) / math.tan(CAM_FOV / 2)
+    return int(round(W / 2 - f * Y / x - 0.5)), int(round(H / 2 - f * z / x - 0.5))
+
+
+def cam_calibrate(dark, W, H, pose, pitch, span=0.08):
+    """Fit pitch and heading to the board's black grid lines (servo, floor and odometry are never exact)."""
+    pts = [(x, 2.62 + 0.04 * k, 0.08, 0.0) for x in XT for k in range(22)] + \
+          [(1.68 - 0.04 * k, y, 0.0, 0.06) for y in YL for k in range(30)]
+    best = (-1e9, pitch, 0.0)
+    for dyaw in (-0.04, -0.02, 0.0, 0.02, 0.04):
+        pz = (pose[0], pose[1], pose[2] + dyaw)
+        for i in range(int(2 * span / 0.002) + 1):
+            p = pitch - span + 0.002 * i
+            sc = 0
+            for wx, wy, ox, oy in pts:
+                q = [cam_project(wx + k * ox, wy + k * oy, W, H, p, pz) for k in (0, -1, 1)]
+                if None in q or any(not (0 <= u < W and 0 <= v < H) for u, v in q):
+                    continue
+                sc += dark[q[0][1]][q[0][0]] - 0.5 * (dark[q[1][1]][q[1][0]] + dark[q[2][1]][q[2][0]])
+            if sc > best[0]:
+                best = (sc, p, dyaw)
+    return best
+
+
+def hidden_cells(found, pose):
+    """Empty cells in the shadow of a seen piece (same bearing, farther away, inside its shadow)."""
+    cx0, cy0 = pose[0] + LOOK_X * math.cos(pose[2]), pose[1] + LOOK_X * math.sin(pose[2])
+    out = []
+    for q, (qx, qy) in POS_CELL.items():
+        if q in found:
+            continue
+        dq, aq = math.hypot(qx - cx0, qy - cy0), math.atan2(qy - cy0, qx - cx0)
+        for p in found:
+            px_, py_ = POS_CELL[p]
+            dp, ap = math.hypot(px_ - cx0, py_ - cy0), math.atan2(py_ - cy0, px_ - cx0)
+            if dp < dq and abs(math.sin(aq - ap)) * dq < 0.04 and dq - PIECE_R < (dp + PIECE_R) * LOOK_Z / (LOOK_Z - PIECE_H):
+                out.append(q)
+                break
+    return out
+
+
+def board_from_image(img, W, H, pose, pitch):
+    """Pieces on the board seen in one frame: {position: 'BLUE'/'GREEN'}."""
+    lab = [[0] * W for _ in range(H)]
+    dark = [[0] * W for _ in range(H)]
+    for v in range(H):
+        for u in range(W):
+            i = 4 * (v * W + u)
+            b, g, r = img[i], img[i + 1], img[i + 2]
+            k = classify(r, g, b)
+            lab[v][u] = k if k in (BLUE, GREEN) else 0
+            dark[v][u] = 1 if max(r, g, b) < 90 else 0
+    sc, pitch, dyaw = cam_calibrate(dark, W, H, pose, pitch)
+    pose = (pose[0], pose[1], pose[2] + dyaw)
+    for v in range(1, H - 1):                       # close 1-pixel gaps left by sensor noise
+        for u in range(W):
+            if not lab[v][u] and lab[v - 1][u] and lab[v - 1][u] == lab[v + 1][u]:
+                lab[v][u] = lab[v - 1][u]
+    for v in range(H):
+        for u in range(1, W - 1):
+            if not lab[v][u] and lab[v][u - 1] and lab[v][u - 1] == lab[v][u + 1]:
+                lab[v][u] = lab[v][u - 1]
+    seen_px = [[False] * W for _ in range(H)]
+    votes = {}
+    for v0 in range(H):
+        for u0 in range(W):
+            k = lab[v0][u0]
+            if not k or seen_px[v0][u0]:
+                continue
+            st, pts = [(u0, v0)], []
+            seen_px[v0][u0] = True
+            while st:
+                u, v = st.pop()
+                pts.append((u, v))
+                for du in (-1, 0, 1):
+                    for dv in (-1, 0, 1):
+                        a, b = u + du, v + dv
+                        if 0 <= a < W and 0 <= b < H and not seen_px[b][a] and lab[b][a] == k:
+                            seen_px[b][a] = True
+                            st.append((a, b))
+            if len(pts) < 2:
+                continue
+            cols = {}
+            for u, v in pts:
+                lo, hi = cols.get(u, (v, v))
+                cols[u] = (min(lo, v), max(hi, v))
+            for u, (top, bot) in cols.items():
+                h = cam_hit(u, bot + 0.5, W, H, pitch, 0.0, pose)      # lower edge of the lowest pixel = the piece's foot
+                if h is None:
+                    continue
+                cx0, cy0 = pose[0] + LOOK_X * math.cos(pose[2]), pose[1] + LOOK_X * math.sin(pose[2])
+                ux, uy = h[0] - cx0, h[1] - cy0
+                n = math.hypot(ux, uy) or 1.0
+                cx, cy = h[0] + PIECE_R * ux / n, h[1] + PIECE_R * uy / n
+                best = min(POS_CELL, key=lambda p: math.hypot(POS_CELL[p][0] - cx, POS_CELL[p][1] - cy))
+                if math.hypot(POS_CELL[best][0] - cx, POS_CELL[best][1] - cy) < 0.13:
+                    votes.setdefault(best, [0, 0])[0 if k == BLUE else 1] += 1
+    found = {p: ('BLUE' if nb >= ng else 'GREEN') for p, (nb, ng) in votes.items() if nb + ng >= 2}
+    return found, pitch, dyaw
+
+
+def board_look():
+    """Fix 4: lift the camera with the tilt servo and read the whole board from the exit junction.
+    Returns {position: colour} with all 4 pieces, or None if the picture is not clear enough."""
+    if not cam_tilt or not cam_hi:
+        return None
+    turn_to(PI, 0.01)
+    cam_tilt.setPosition(-CAM_TILT_LOOK)
+    cam_hi.enable(TS)
+    wait(0.5)                                       # servo move + settle
+    pose = (px, py, yaw)
+    tally = {}
+    for _ in range(3):
+        wait(0.05)
+        img = cam_hi.getImage()
+        if not img:
+            continue
+        f, p_fit, dyaw = board_from_image(img, cam_hi.getWidth(), cam_hi.getHeight(), pose, CAM_P - CAM_TILT_LOOK)
+        for q, c in f.items():
+            tally.setdefault(q, {}).setdefault(c, 0)
+            tally[q][c] += 1
+    cam_tilt.setPosition(0.0)                       # back to the maze view while driving on
+    cam_hi.disable()
+    found = {q: max(cs, key=cs.get) for q, cs in tally.items() if sum(cs.values()) >= 2}
+    nb = sum(1 for c in found.values() if c == 'BLUE')
+    ng = len(found) - nb
+    if nb < 2 or ng < 2:                            # a piece hidden behind another: unambiguous only if one cell is hidden
+        miss = ['BLUE'] * (2 - nb) + ['GREEN'] * (2 - ng)
+        hid = hidden_cells(found, pose)
+        if nb <= 2 and ng <= 2 and len(set(miss)) == 1 and len(hid) == len(miss):
+            for q in hid:
+                found[q] = miss[0]
+            print('[S3] camera: position(s) %s hidden behind a piece -> the missing %s' % (hid, miss[0]))
+    nb = sum(1 for c in found.values() if c == 'BLUE')
+    print('[S3] camera board look (tilt %.0f deg, fitted pitch %.1f deg): %s' % (
+        math.degrees(CAM_TILT_LOOK), math.degrees(p_fit), '  '.join('%d:%s' % (q, found[q][0]) for q in sorted(found)) or 'nothing'))
+    if nb == 2 and len(found) == 4:
+        return found
+    print('[S3] camera board look incomplete -> the ToF inspection decides')
+    return None
 
 
 # ------------------------------------------------------------------ main section 3
@@ -1465,9 +1683,15 @@ def run_phase3(saved=None):
 
     # leave the maze and drive to the collection junction
     turn_to(HP, 0.01)
-    drive_line(EXIT_JUNC[0], 2.44, 0.12, follow=False)
+    drive_line(EXIT_JUNC[0], 2.44, 0.20, follow=False)
     calibrate_line()
-    drive_line(EXIT_JUNC[0], EXIT_JUNC[1], 0.16)
+    drive_line(EXIT_JUNC[0], EXIT_JUNC[1], S3_V)
+    seen_board = board_look() if os.environ.get('GB_NO_TILT') is None else None
+    if seen_board is not None:
+        for p, col in board.items():
+            if seen_board.get(p) != col:
+                print('[S3] clue says position %d is %s but the camera sees %s - trusting the camera' % (p, col, seen_board.get(p, 'nothing')))
+        board, unresolved = dict(seen_board), []
     pick_piece(clan)
 
     if unresolved:
@@ -1502,8 +1726,8 @@ def run_phase3(saved=None):
         print('[S3] winning move: position %d completes line %s' % (win, line))
     place_piece(win)
 
-    go(BOARD_OUT, 0.15)
-    drive_line(END_PT[0], END_PT[1], 0.12)
+    go(BOARD_OUT)
+    drive_line(END_PT[0], END_PT[1], S3_V)
     print('[S3] reached the END zone at (%.2f, %.2f)  t=%.1fs' % (px, py, t_sim))
     print('==================== MISSION COMPLETE ====================')
 

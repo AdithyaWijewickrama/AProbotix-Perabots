@@ -1,8 +1,9 @@
 # GuardianBot test plan
 
 Status: **Phases A–C done** (19 Nov 2026, 32 test worlds; results in `test/PHASE_C_FINDINGS.md`).
-**Next:** the fixes, in this order: crooked start, tile counting, tight maze entrance, faster Section 3 (with an SG90 camera-tilt comparison).
-It runs after v4.1 (ESP32-S3 + OV7670 brain).
+**Phase F:** fixes 1–4 done (crooked start, tile counting, tight maze entrance, faster Section 3 with the SG90 camera tilt); see `test/FIXES.md`.
+**Next:** the camera mast with the tilt servo (hardware), a crooked Section 3 restart, a second board look when two pieces hide.
+It runs after v4.1 (ESP32-S3 + OV7670 brain); Fix 4 became v4.2 (camera tilt servo).
 It builds on the Phase 01 test harness (`Phase 01 - Online Round/test`), used only as a reference and never changed.
 
 ## Phase A: Test arenas (Final Round rules)
@@ -57,7 +58,7 @@ For each world, check that every dead-end cell was seen by the camera or the flo
 
 1. Model what the camera can see from the board entrance and a few spots around it, including pieces hiding each other. Pick the fewest viewpoints that see all 9 cells (turning in place is cheap).
 2. Read each piece's colour and shape (cube or cylinder) from the camera. Only check with the distance sensors or the front colour sensor when the camera isn't sure.
-3. **Optional, no extra cost:** a pan servo (SG90) for the camera, so it can sweep the board without moving the robot.
+3. **Done as a tilt servo (Fix 4):** an SG90 lifts the camera 14° and one look from the exit junction reads the whole board (45/45 test boards); a pan servo is not needed.
 4. Compare against the current behaviour, which is driving the two inner lines.
 
 ## Phase F: Fix, re-test, report

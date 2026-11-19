@@ -1,5 +1,5 @@
 """
-make_guardianbot.py - generates protos/GuardianBot.proto  (v4.1: final-round build)
+make_guardianbot.py - generates protos/GuardianBot.proto  (v4.2: final-round build + camera tilt servo)
 
 GuardianBot v4.1: 150 mm round differential-drive robot for PeraBots 2026, built from the
 team's own parts (Arduino Mega + ESP32-S3 N16R8 with OV7670, DRV8833, N20 6 V 300 rpm encoder motors,
@@ -36,6 +36,7 @@ PETG = "IS accentColor"                               # 3-D printed parts
 SILVER = pbr((0.78, 0.78, 0.80), 0.25, 0.9)
 WHITE_NYLON = pbr((0.92, 0.92, 0.88), 0.6, 0.0)
 VERO = pbr((0.72, 0.52, 0.30), 0.6, 0.0)            # vero strip board (brown FR paper)
+SG90_BLUE = pbr((0.10, 0.30, 0.75), 0.5, 0.0)       # v4.2: SG90 tilt servo case
 RIBBON = pbr((0.55, 0.55, 0.58), 0.7, 0.0)          # grey ribbon cable
 BRASS = pbr((0.80, 0.64, 0.25), 0.25, 0.9)
 STEEL = pbr((0.85, 0.85, 0.88), 0.08, 0.95)
@@ -411,11 +412,16 @@ def build():
                        "TCS3200 #1 facing the floor: maze tiles, red zones, collection pads"))
     dev.append(tcs3200("tcs_front", TCS_FRONT, "0 0 1 0",
                        "TCS3200 #2 facing forward at piece height: piece colour"))
-    # v4.1: OV7670 on its mast (front of the top deck), lens pitched down; the ESP32-S3 lies flat behind it
+    # v4.2: OV7670 on a printed bracket on an SG90 tilt servo (hardware/cad/make_printed_parts.py: camera_mast,
+    # camera_tilt_bracket). The mast plate and the servo are fixed; the bracket and the board tilt with the joint below.
     bw, bh, bt = OV7670_BOARD
+    tpx, tpz = TILT_PIVOT
+    sl, sw, sh = SG90_BODY
     vis.append(box((CAM_X - 0.019, 0, TOP_Z1 + 0.0015), (0.024, 0.036, 0.003), accent()))            # mast foot
-    vis.append(box((CAM_X - 0.0125, 0, (TOP_Z1 + CAM_Z) / 2 + 0.004), (0.005, 0.030, CAM_Z - TOP_Z1 + 0.010), accent()))
-    vis.append(box((CAM_X - 0.010, 0, CAM_Z - 0.004), (bt, bw, bh), PCB_BLACK, "0 1 0 %.4f" % CAM_PITCH))   # OV7670 board
+    mz1 = tpz + SG90_SHAFT_END + 0.0063                                                               # mast plate top
+    vis.append(box((tpx - 0.0015, 0.0004, (TOP_Z1 + mz1) / 2), (0.034, 0.003, mz1 - TOP_Z1), accent()))  # mast plate
+    vis.append(box((tpx, SG90_Y0 + sh / 2, tpz + SG90_SHAFT_END - sl / 2), (sw, sh, sl), SG90_BLUE))  # SG90 case
+    vis.append(box((tpx, SG90_Y0 + SG90_TABS[2] + 0.00125, tpz + SG90_SHAFT_END - sl / 2), (sw, 0.0025, SG90_TABS[0]), SG90_BLUE))
     cx, cy, csx, csy = S3_CARRIER
     zc = TOP_Z1 + S3_STANDOFF
     for hx, hy in S3_CARRIER_HOLES:                                                                   # nylon spacers
@@ -430,20 +436,54 @@ def build():
     vis.append(box((cx, cy + sl / 2 - 0.004, zs + st + 0.0016), (0.009, 0.0075, 0.0032), SILVER))    # USB-C (+y edge)
     rib_x0, rib_x1 = cx + csx / 2, CAM_X - 0.012                                                      # 18-wire ribbon
     vis.append(box(((rib_x0 + rib_x1) / 2, 0, zc + 0.004), (rib_x1 - rib_x0, 0.022, 0.001), RIBBON))
-    dev.append("""Camera {
-      translation %s
-      rotation 0 1 0 %.4f
-      name "cam"
-      # OV7670 on the ESP32-S3, cropped and averaged to a %dx%d grid by firmware/esp32s3_brain (camera task)
-      fieldOfView %.3f
-      noise %.3f
-      width %d
-      height %d
-      near 0.01
-      children [ %s %s ]
-    }""" % (v3((CAM_X, 0, CAM_Z)), CAM_PITCH, CAM_W, CAM_H, CAM_FOV, CAM_NOISE, CAM_W, CAM_H,
-            cyl((-0.002, 0, 0), 0.0042, 0.005, BLACK_PLASTIC, ROT_X_AXIS),
-            cyl((0.0006, 0, 0), 0.0025, 0.0005, GLASS, ROT_X_AXIS)))
+    # Fix 4: the camera sits on a tilt servo (SG90 / MG90S, 29 deg hard stop). Position 0 = the maze view
+    # (28.6 deg down); the servo can lift it up to 29 deg (-0.506 rad) to look across the Section 3 board.
+    # "cam" is the 48 x 32 maze grid, "cam_hi" the 96 x 64 grid the firmware makes for the board look (same lens).
+    cam_dev = []
+    for nm, w, h, note in (("cam", CAM_W, CAM_H, "cropped and averaged to a %dx%d grid by firmware/esp32s3_brain (camera task)" % (CAM_W, CAM_H)),
+                           ("cam_hi", 2 * CAM_W, 2 * CAM_H, "same OV7670, 96x64 grid for the Section 3 board look")):
+        cam_dev.append("""Camera {
+          rotation 0 1 0 %.4f
+          name "%s"
+          # OV7670 on the ESP32-S3, %s
+          fieldOfView %.3f
+          noise %.3f
+          width %d
+          height %d
+          near 0.01
+          %s
+        }""" % (CAM_PITCH, nm, note, CAM_FOV, CAM_NOISE, w, h,
+                "children [ %s %s ]" % (cyl((-0.002, 0, 0), 0.0042, 0.005, BLACK_PLASTIC, ROT_X_AXIS),
+                                        cyl((0.0006, 0, 0), 0.0025, 0.0005, GLASS, ROT_X_AXIS)) if nm == "cam" else ""))
+    lx, lz = CAM_X - TILT_PIVOT[0], CAM_Z - TILT_PIVOT[1]               # lens relative to the servo shaft
+    head = ["""Pose { translation %s children [ %s ] }""" % (v3((lx, 0, lz)), "\n        ".join(cam_dev)),
+            box((lx - 0.0070 * math.cos(CAM_PITCH), 0, lz + 0.0070 * math.sin(CAM_PITCH)), (bt, bw, bh), PCB_BLACK,
+                "0 1 0 %.4f" % CAM_PITCH),                                                          # OV7670 board
+            box((lx - 0.0093 * math.cos(CAM_PITCH), 0, lz + 0.0093 * math.sin(CAM_PITCH)), (0.003, bw + 0.004, bh + 0.002),
+                accent(), "0 1 0 %.4f" % CAM_PITCH),                                                # bracket plate
+            box((lx / 2 - 0.004, 0.0165, lz / 2 + 0.001), (abs(lx) + 0.010, 0.003, 0.012), accent())]   # bracket arm (+y side)
+    dev.append("""HingeJoint {
+      jointParameters HingeJointParameters { axis 0 1 0 anchor %s minStop %.3f maxStop %.3f dampingConstant 0.001 }
+      device [
+        RotationalMotor {
+          name "cam_tilt"
+          # SG90 on the camera mast: about 0.1 s per 60 deg; 0 = maze view, -0.506 = 29 deg up (printed stop; the other stop is 2 deg below 0)
+          maxVelocity 10.5
+          acceleration 300
+          maxTorque 0.2
+          minPosition %.3f
+          maxPosition 0
+        }
+        PositionSensor { name "cam_tilt_sensor" }
+      ]
+      endPoint Solid {
+        translation %s
+        name "cam_tilt_head"
+        children [ %s ]
+        physics Physics { density -1 mass 0.015 centerOfMass [ 0 0 0 ] inertiaMatrix [ 3e-6 3e-6 3e-6, 0 0 0 ] }
+      }
+    }""" % (v3((TILT_PIVOT[0], 0, TILT_PIVOT[1])), -CAM_TILT_MAX, math.radians(-TILT_STOPS_DEG[0]), -CAM_TILT_MAX,
+            v3((TILT_PIVOT[0], 0, TILT_PIVOT[1])), "\n        ".join(head)))
     (ix, iy), _, _ = MODULES["gyro"]
     imu_xyz = v3((ix, iy, MID_Z1 + 0.003))
     dev.append('InertialUnit { translation %s name "imu" noise 0.001 }' % imu_xyz)
@@ -498,7 +538,7 @@ def build():
 
     proto = """#VRML_SIM R2025a utf8
 # license: Apache License 2.0
-# GuardianBot v4.1 (final-round build) - PeraBots 2026 "Nine Seals of Pera".
+# GuardianBot v4.2 (final-round build, camera tilt servo) - PeraBots 2026 "Nine Seals of Pera".
 # 150 mm round: acrylic base + PCB mid deck + acrylic top, rear capture pocket with 2 servo arms.
 # Controllers: Arduino Mega 2560 (real-time I/O, on the PCB mid deck) + ESP32-S3 N16R8 + OV7670 (brain + camera); DRV8833; 2S LiPo.
 # Sensors: 8 x VL53L0X ToF, 2 x HC-SR04, Pololu QTR-8RC line array,

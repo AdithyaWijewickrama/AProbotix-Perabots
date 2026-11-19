@@ -3,115 +3,121 @@
  "world": "w13",
  "start": "full",
  "marks": {
-  "s1": 19.12,
-  "s2": 68.16,
-  "end": 110.21
+  "s1": 20.67,
+  "s2": 67.79,
+  "end": 100.67
  },
  "reason": "reached END",
  "intervals": {
   "S1": [
    0.0,
-   19.12
+   20.67
   ],
   "S2": [
-   19.12,
-   68.16
+   20.67,
+   67.79
   ],
   "S3": [
-   68.16,
-   110.21
+   67.79,
+   100.67
   ]
  },
  "sections": {
   "S1": {
-   "time": 19.12,
+   "time": 20.67,
    "distance": 3.078,
-   "turns": 17,
+   "turns": 15,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 11.4,
-   "stopped": 1.87,
-   "turning": 6.19,
-   "cruising": 9.26,
-   "slow": 1.73,
-   "reversing": 0.0
+   "energy_J": 11.3,
+   "stopped": 2.02,
+   "turning": 6.72,
+   "cruising": 8.98,
+   "slow": 2.88,
+   "reversing": 0.38
   },
   "S2": {
-   "time": 49.04,
-   "distance": 8.707,
-   "turns": 31,
+   "time": 47.12,
+   "distance": 8.719,
+   "turns": 30,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 34.5,
+   "energy_J": 33.3,
    "stopped": 2.69,
-   "turning": 15.07,
-   "cruising": 27.12,
-   "slow": 4.08,
-   "reversing": 0.05
+   "turning": 13.97,
+   "cruising": 26.59,
+   "slow": 3.84,
+   "reversing": 0.1
   },
   "S3": {
-   "time": 42.05,
-   "distance": 4.095,
+   "time": 32.88,
+   "distance": 4.074,
    "turns": 10,
-   "stops": 4,
+   "stops": 5,
    "stop_list": [
     [
-     77.18,
-     0.62,
-     2.006,
-     2.831
-    ],
-    [
-     79.82,
-     0.82,
-     2.005,
-     2.734
-    ],
-    [
-     92.45,
+     70.61,
      0.67,
-     1.546,
-     3.35
+     2.207,
+     3.037
     ],
     [
-     95.09,
+     76.13,
+     0.62,
+     2.007,
+     2.837
+    ],
+    [
+     78.82,
+     0.82,
+     2.007,
+     2.736
+    ],
+    [
+     88.18,
+     0.62,
+     1.541,
+     3.348
+    ],
+    [
+     90.82,
      0.48,
-     1.702,
-     3.35
+     1.7,
+     3.347
     ]
    ],
-   "energy_J": 12.9,
-   "stopped": 3.74,
-   "turning": 4.8,
-   "cruising": 0.0,
-   "slow": 33.5,
-   "reversing": 5.38
+   "energy_J": 13.1,
+   "stopped": 4.13,
+   "turning": 4.9,
+   "cruising": 9.41,
+   "slow": 14.4,
+   "reversing": 3.17
   }
  },
  "gaps": {
   "S1": {
-   "gap": 6.37,
+   "gap": 7.92,
    "longer path": 0.97,
-   "turning": 3.6,
-   "stops": 1.87,
-   "below top speed": -0.14,
+   "turning": 4.13,
+   "stops": 2.02,
+   "below top speed": 0.73,
    "other": 0.07
   },
   "S2": {
-   "gap": 9.25,
-   "longer path": 1.82,
-   "turning": 4.46,
+   "gap": 7.33,
+   "longer path": 1.86,
+   "turning": 3.36,
    "stops": 2.69,
-   "below top speed": 0.2,
-   "other": 0.08
+   "below top speed": -0.61,
+   "other": 0.03
   },
   "S3": {
-   "gap": 20.62,
-   "longer path": 0.64,
-   "turning": 0.44,
-   "stops": 1.74,
-   "below top speed": 17.79,
-   "other": 0.01
+   "gap": 11.45,
+   "longer path": 0.57,
+   "turning": 0.54,
+   "stops": 2.13,
+   "below top speed": 8.17,
+   "other": 0.04
   }
  },
  "s2_coverage": {
@@ -123,7 +129,7 @@
   "revisits": 7,
   "never_entered": 9
  },
- "clearance_mm": 31.4,
+ "clearance_mm": 12.0,
  "wall_overlaps": 0,
  "judge_collisions": 0,
  "s3": {
@@ -161,8 +167,9 @@
   "missed": []
  },
  "collisions": 0,
+ "legal": true,
  "summary": {
-  "real": "110.2 s",
+  "real": "100.7 s",
   "best": "74.0 s",
   "note": "mission complete, piece correct"
  }

@@ -406,5 +406,6 @@
  "clan": "BLUE",
  "winning_cells": [
   6
- ]
+ ],
+ "legal_20cm_route": true
 }

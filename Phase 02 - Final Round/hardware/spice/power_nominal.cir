@@ -20,13 +20,13 @@ Rlog p5 0 { 5 / 0.35 }
 Sburst p5 bur ctl_b 0 SWM
 Rbur bur 0 { 5 / 0.3 }
 Vctl_b ctl_b 0 PULSE(0 1 12m 10u 10u 2m 100m)
-* servo buck HW-319 -> +5V5: both M0170 servos stall at once (2 x 1.5 A) from 10 ms to 30 ms
+* servo buck HW-319 -> +5V5: both M0170 servos (2 x 1.5 A) and the v4.2 SG90 camera tilt servo (0.75 A) stall at once, 10 ms .. 30 ms
 X55 vbat p55 0 BUCK params: vset=5.5 vdrop=0.5 rsw=0.15 eff=0.88
 C2 p55 c2e 470u
 Rc2 c2e 0 0.05
 Ridle p55 0 { 5.5 / 0.02 }
 Ssrv p55 srv ctl_s 0 SWM
-Rsrv srv 0 { 5.5 / 3.0 }
+Rsrv srv 0 { 5.5 / 3.75 }
 Vctl_s ctl_s 0 PULSE(0 1 10m 10u 10u 20m 100m)
 .tran 5u 40m
 .control

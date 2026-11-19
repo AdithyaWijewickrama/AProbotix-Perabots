@@ -1,5 +1,5 @@
 // =============================================================================
-// GuardianBot v4.1 - ESP32-S3 N16R8 "brain + eye" firmware (OV7670 camera)
+// GuardianBot v4.2 - ESP32-S3 N16R8 "brain + eye" firmware (OV7670 camera on an SG90 tilt servo)
 // PeraBots 2026 University Category, Final Round - The Nine Seals of Pera
 //
 // One ESP32-S3 (dual core, 8 MB octal PSRAM) with an OV7670 camera on the mast is the whole brain:
@@ -75,23 +75,30 @@ CamGain camGain;                     // camera white balance (K4 on white paper)
 uint16_t camImg[CAM_W * CAM_H];
 bool camNew = false;
 uint32_t camFrames = 0;
+uint16_t camHi[CAM_HI_W * CAM_HI_H];  // Fix 4: 96 x 64 grid for the Section 3 board look (made only on request)
+bool camHiNew = false;
+volatile bool camHiReq = false;
 #ifdef SIL
-void camPoll() {                 // SIL: 'V' frames (same format the old esp32cam_vision sent) on a pipe
-  static uint8_t buf[CAM_W * CAM_H * 2];
-  static uint8_t st = 0, sum = 0;
+void camPoll() {                 // SIL: 'V' frames (48 x 32) and 'W' frames (96 x 64, board look) on a pipe
+  static uint8_t buf[CAM_HI_W * CAM_HI_H * 2];
+  static uint8_t st = 0, sum = 0, type = 0;
   static uint16_t len = 0, pos = 0;
   while (CamPipe.available()) {
     uint8_t b = CamPipe.read();
     switch (st) {
       case 0: if (b == 0xA5) st = 1; break;
       case 1: st = (b == 0x5A) ? 2 : 0; break;
-      case 2: if (b == 'V') { sum = b; st = 3; } else st = 0; break;
+      case 2: if (b == 'V' || b == 'W') { type = b; sum = b; st = 3; } else st = 0; break;
       case 3: sum += b; st = 4; break;
       case 4: len = b; sum += b; st = 5; break;
-      case 5: len |= b << 8; sum += b; pos = 0; st = (len == sizeof(buf)) ? 6 : 0; break;
+      case 5: len |= b << 8; sum += b; pos = 0;
+        st = (len == (type == 'V' ? CAM_W * CAM_H * 2 : CAM_HI_W * CAM_HI_H * 2)) ? 6 : 0; break;
       case 6: buf[pos++] = b; sum += b; if (pos >= len) st = 7; break;
       case 7:
-        if (b == sum) { memcpy(camImg, buf, sizeof(buf)); camNew = true; camFrames++; }
+        if (b == sum) {
+          if (type == 'V') { memcpy(camImg, buf, sizeof(camImg)); camNew = true; camFrames++; }
+          else { memcpy(camHi, buf, sizeof(camHi)); camHiNew = true; }
+        }
         st = 0; break;
     }
   }
@@ -100,10 +107,21 @@ void camPoll() {                 // SIL: 'V' frames (same format the old esp32ca
 // ---- real camera: OV7670 on the S3 (cam_ov7670.h), task on core 0
 static uint16_t camGrid[CAM_W * CAM_H];
 static volatile bool camGridNew = false;
+static uint16_t *camHiGrid = nullptr;          // PSRAM
+static volatile bool camHiGridNew = false;
 static portMUX_TYPE camMux = portMUX_INITIALIZER_UNLOCKED;
 void cameraTask(void *) {
   static uint16_t grid[CAM_W * CAM_H];
   for (;;) {
+    if (camHiReq && camHiGrid) {                 // board look: one 96 x 64 grid per frame while requested
+      static uint16_t hi[CAM_HI_W * CAM_HI_H];
+      if (!camGrab(hi, CAM_HI_W, CAM_HI_H, CAM_FOV, LENS_HFOV)) { vTaskDelay(5); continue; }
+      portENTER_CRITICAL(&camMux);
+      memcpy(camHiGrid, hi, sizeof(hi));
+      camHiGridNew = true;
+      portEXIT_CRITICAL(&camMux);
+      continue;
+    }
     if (!camGrab(grid, CAM_W, CAM_H, CAM_FOV, LENS_HFOV)) { vTaskDelay(5); continue; }
     portENTER_CRITICAL(&camMux);
     memcpy(camGrid, grid, sizeof(grid));
@@ -112,6 +130,13 @@ void cameraTask(void *) {
   }
 }
 void camPoll() {
+  if (camHiGridNew) {
+    portENTER_CRITICAL(&camMux);
+    memcpy(camHi, camHiGrid, sizeof(camHi));
+    camHiGridNew = false;
+    portEXIT_CRITICAL(&camMux);
+    camHiNew = true;
+  }
   if (!camGridNew) return;
   portENTER_CRITICAL(&camMux);
   memcpy(camImg, camGrid, sizeof(camImg));
@@ -254,6 +279,22 @@ bool nearCardinal(float tol) {
   return fabsf(wrapA(yaw - k * HP_F)) < tol;
 }
 
+// ---- Fix 4: camera tilt servo (SG90 / MG90S) on S3 GPIO21; up = rad above the maze view (0 .. TILT_MAX)
+float tiltNow = 0;
+void tiltSet(float up) {
+  up = clampf(up, 0.0f, TILT_MAX);
+  tiltNow = up;
+#ifdef SIL
+  int16_t mrad = (int16_t)lroundf(-up * 1000.0f);   // to the Webots emulator: the S3's own servo pin, not the Mega link
+  uint8_t f[7] = {0xA5, 0x5A, 'S', 2, (uint8_t)(mrad & 0xFF), (uint8_t)((uint16_t)mrad >> 8), 0};
+  f[6] = (uint8_t)(f[2] + f[3] + f[4] + f[5]);
+  Link.write(f, sizeof(f));
+#else
+  float deg = clampf(TILT_DEG_MAZE + TILT_DIR * up * 57.2958f, 0.0f, 180.0f);
+  uint32_t us = 500 + (uint32_t)(deg / 180.0f * 2000.0f);
+  ledcWrite(TILT_PIN, us * 16383UL / 20000UL);       // 50 Hz, 14-bit
+#endif
+}
 void waitS(float sec) { for (int i = 0; i < (int)(sec / STEP_S); i++) { driveLR(0, 0); step(); } }
 
 // ============================================================ colour
@@ -449,6 +490,8 @@ int nOpen(int c, int r) { int k = 0; for (int h = 0; h < 4; h++) k += edge(c, r,
 // Fix 2 (test plan): an opening counts as sure only with >= 3 'open' votes and more than twice as many 'open'
 // as 'wall' votes. A single stray ray must not rule out a dead end (it hid a tile next to the exit).
 bool sureOpen(int c, int r, int h) { const int *e = edgeRef(c, r, h); return e[0] >= 3 && e[0] > 2 * e[1]; }
+// Fix 3 (test plan): same rule for walls - a single stray 'wall' vote sealed off 8 cells once.
+bool sureWall(int c, int r, int h) { const int *e = edgeRef(c, r, h); return e[1] >= 3 && e[1] > 2 * e[0]; }
 int nSureOpen(int c, int r) { int k = 0; for (int h = 0; h < 4; h++) k += sureOpen(c, r, h); return k; }
 // Tiles are only in dead ends: a tile seen in a cell with 2+ sure openings is the camera spilling a neighbouring
 // tile into it - don't count it twice.
@@ -462,7 +505,7 @@ void tileTotals(int &nb, int &ng) {
 }
 bool needed(int c, int r) {
   if (seen[c][r] >= 0 || nSureOpen(c, r) >= 2) return false;
-  for (int h = 0; h < 4; h++) if (edge(c, r, h) != WALL) return true;
+  for (int h = 0; h < 4; h++) if (!sureWall(c, r, h)) return true;
   return false;
 }
 
@@ -517,7 +560,7 @@ bool plan(int c0, int r0, int h0, bool (*goal)(int, int, int), bool allowUnk, bo
     nx[nn] = sid(c, r, (h + 3) % 4); nk[nn++] = 0.7f;
     nx[nn] = sid(c, r, (h + 2) % 4); nk[nn++] = 1.0f;
     int e = edge(c, r, h);
-    if (e == OPEN || (allowUnk && e == UNK)) {
+    if (e == OPEN || (allowUnk && (e == UNK || (e == WALL && !sureWall(c, r, h))))) {
       int nc = c + DC[h], nr = r + DR[h];
       if (inGrid(nc, nr)) { nx[nn] = sid(nc, nr, h); nk[nn++] = e == OPEN ? 1.0f : 3.0f; }
     }
@@ -537,7 +580,7 @@ bool plan(int c0, int r0, int h0, bool (*goal)(int, int, int), bool allowUnk, bo
 // stand where the camera looks at an undecided possible dead end 1 or 2 cells ahead
 bool exploreGoal(int c, int r, int h) {
   int nc = c + DC[h], nr = r + DR[h];
-  if (!inGrid(nc, nr) || edge(c, r, h) == WALL) return false;
+  if (!inGrid(nc, nr) || sureWall(c, r, h)) return false;
   if (needed(nc, nr)) return true;
   int fc = nc + DC[h], fr = nr + DR[h];
   return edge(c, r, h) == OPEN && inGrid(fc, fr) && edge(nc, nr, h) == OPEN && needed(fc, fr);
@@ -556,6 +599,9 @@ bool nextPlan(int c, int r, int h) {
   if (exploring) {
     endBonus();
     if (plan(c, r, h, exploreGoal, false, true)) return true;
+    // Fix 3 (test plan): a possible dead end can lie behind openings not mapped yet. "No route through known
+    // openings" is not "explored": try through unknown edges too (walls get found on the way).
+    if (plan(c, r, h, exploreGoal, true, true)) return true;
     exploring = false;
     showMajority();
   }
@@ -978,7 +1024,10 @@ int segOf(P2 p, P2 q) {
 }
 void stopDrive() { while (fabsf(lastL) > 0.002f || fabsf(lastR) > 0.002f) { driveLR(0, 0); step(); } driveLR(0, 0); step(); }
 
-void driveLine(float tx, float ty, float vMax = 0.20f, bool reverse = false, bool follow = true, float stopTol = 0.004f) {
+// Fix 4: Section 3 speeds (were 0.12 .. 0.20 m/s and stopped at every crossing)
+static const float S3_V = 0.25f, S3_ACC = 1.2f, CARRY_V = 0.16f, CARRY_ACC = 0.6f, INSPECT_V = 0.20f;
+bool carrying = false;
+void driveLine(float tx, float ty, float vMax = S3_V, bool reverse = false, bool follow = true, float stopTol = 0.004f) {
   crossDone = 0;
   float x0 = px, y0 = py, L = hypotf(tx - x0, ty - y0);
   if (L < 0.003f) return;
@@ -992,7 +1041,8 @@ void driveLine(float tx, float ty, float vMax = 0.20f, bool reverse = false, boo
     float rem = (tx - px) * ux + (ty - py) * uy;
     if (rem < stopTol) break;
     float lat = -(tx - px) * uy + (ty - py) * ux, e = wrapA(hd - yaw);
-    float v = fminf(vMax, sqrtf(2 * 1.2f * rem) + 0.015f);
+    float acc = carrying ? CARRY_ACC : S3_ACC;       // Fix 4: gentle starts (no wheel spin), gentler with a piece
+    float v = fminf(fminf(carrying ? CARRY_V : vMax, sqrtf(2 * acc * rem) + 0.015f), fabsf(lastL + lastR) * 0.5f + acc * STEP_S + 0.01f);
     driveLR(reverse ? -v : v, clampf(4.0f * e + 12.0f * lat, -1.5f, 1.5f));
   }
   stopDrive();
@@ -1073,9 +1123,21 @@ bool route(P2 a, P2 b) {
   for (int i = 0; i < n; i++) routeOut[i] = tmp[n - 1 - i];
   return true;
 }
-bool go(P2 t, float vMax = 0.20f) {
+bool go(P2 t, float vMax = S3_V) {
   if (!route({px, py}, t)) { logf_("[S3] no route to %.2f %.2f", t.x, t.y); return false; }
-  for (int i = 1; i < routeN; i++) driveLine(nodes[routeOut[i]].x, nodes[routeOut[i]].y, vMax);
+  // Fix 4: keep only the turning points, so the robot drives straight through crossings without stopping
+  int k[MAXN], n = 0;
+  k[n++] = routeOut[0];
+  for (int i = 1; i < routeN; i++) {
+    int q = routeOut[i];
+    if (n >= 2) {
+      P2 a = nodes[k[n - 2]], b = nodes[k[n - 1]], c = nodes[q];
+      bool same = (fabsf(a.x - b.x) < 1e-4f && fabsf(b.x - c.x) < 1e-4f) || (fabsf(a.y - b.y) < 1e-4f && fabsf(b.y - c.y) < 1e-4f);
+      if (same && segOf(a, c) >= 0) { k[n - 1] = q; continue; }
+    }
+    k[n++] = q;
+  }
+  for (int i = 1; i < n; i++) driveLine(nodes[k[i]].x, nodes[k[i]].y, vMax);
   return true;
 }
 
@@ -1141,16 +1203,18 @@ void pickPiece(int clan) {
   gripSet(false);
   driveLine(cp.x, cp.y - sgn * POCKET_OFF, 0.05f, true, false);
   gripSet(true, 0.8f);
+  carrying = true;
   logf_("[S3] picked %s piece", clan == BLUE ? "BLUE" : "GREEN");
-  driveLine(COLLECT_JUNC.x, COLLECT_JUNC.y, 0.12f);
+  driveLine(COLLECT_JUNC.x, COLLECT_JUNC.y);
 }
 void placePiece(int pos) {
   P2 c = POS_CELL[pos];
   float ax = c.x + 0.20f;
-  go({ax, c.y}, 0.14f);
+  go({ax, c.y});
   turnTo(0.0f, 0.008f);
   driveLine(c.x + POCKET_OFF, c.y, 0.05f, true, false);
   gripSet(false, 0.6f);
+  carrying = false;
   logf_("[S3] piece released in position %d at (%.2f, %.2f)", pos, c.x, c.y);
   driveLine(ax, c.y, 0.08f, false, false);
   gripSet(true, 0.4f);
@@ -1174,7 +1238,7 @@ int inspectBoard(int occOut[10]) {
         for (int p = 1; p <= 9; p++) if (hypotf(hx - POS_CELL[p].x, hy - POS_CELL[p].y) < 0.06f) hits[p]++;
       }
       float e = wrapA(PI_F - yaw), lat = -(y - py);
-      driveLR(fminf(0.12f, sqrtf(2 * 1.2f * (px - tx)) + 0.015f), clampf(4 * e + 12 * lat, -1.5f, 1.5f));
+      driveLR(fminf(carrying ? CARRY_V : INSPECT_V, sqrtf(2 * 1.2f * (px - tx)) + 0.015f), clampf(4 * e + 12 * lat, -1.5f, 1.5f));
     }
     stopDrive();
   }
@@ -1185,7 +1249,7 @@ int inspectBoard(int occOut[10]) {
 }
 int lookColour(int pos) {
   P2 c = POS_CELL[pos];
-  go({c.x + 0.20f, c.y}, 0.12f);
+  go({c.x + 0.20f, c.y});
   turnTo(PI_F, 0.01f);
   out.out |= OUT_TCS_FRONT;
   driveLine(c.x + 0.108f, c.y, 0.05f, false, false);
@@ -1196,6 +1260,168 @@ int lookColour(int pos) {
   logf_("[S3] front colour sensor at position %d reads %s (%d/%d)", pos, col == BLUE ? "BLUE" : col == GREEN ? "GREEN" : "?", nb, ng);
   driveLine(c.x + 0.20f, c.y, 0.06f, true, false);
   return col;
+}
+
+// ---- Fix 4: camera board look. The tilt servo lifts the camera 14 deg; from the exit junction the 96 x 64 grid
+// shows the whole board. Pitch and heading are fitted to the black grid lines first (servo, floor and odometry are
+// never exact), then every blue / green blob's lowest pixel gives the piece's foot on the floor -> its cell.
+static const float PIECE_H = 0.05f, PIECE_R = 0.025f;
+// v4.2: the servo shaft is 26 mm behind and 11 mm above the lens, so the lens moves when the camera tilts
+static const float LOOK_X = TILT_PX + (CAM_X - TILT_PX) * cosf(TILT_LOOK) - (CAM_Z - TILT_PZ) * sinf(TILT_LOOK);
+static const float LOOK_Z = TILT_PZ + (CAM_X - TILT_PX) * sinf(TILT_LOOK) + (CAM_Z - TILT_PZ) * cosf(TILT_LOOK);
+struct CamPose { float x, y, yaw; };
+static bool camHit(float u, float v, float pitch, float zp, const CamPose &P, float &wx, float &wy) {
+  float f = (CAM_HI_W / 2.0f) / tanf(CAM_FOV / 2);
+  float x = f, y = -(u + 0.5f - CAM_HI_W / 2.0f), z = -(v + 0.5f - CAM_HI_H / 2.0f);
+  float x2 = x * cosf(pitch) + z * sinf(pitch), z2 = -x * sinf(pitch) + z * cosf(pitch);
+  if (z2 >= -1e-6f) return false;
+  float t = (zp - LOOK_Z) / z2, gx = LOOK_X + t * x2, gy = t * y;
+  float c = cosf(P.yaw), s_ = sinf(P.yaw);
+  wx = P.x + c * gx - s_ * gy; wy = P.y + s_ * gx + c * gy;
+  return true;
+}
+static bool camProject(float wx, float wy, float cp, float sp, const CamPose &P, float cy_, float sy_, int &u, int &v) {
+  float dx = wx - P.x, dy = wy - P.y;
+  float X = cy_ * dx + sy_ * dy - LOOK_X, Y = -sy_ * dx + cy_ * dy, Z = -LOOK_Z;
+  float x = X * cp - Z * sp, z = X * sp + Z * cp;
+  if (x <= 0.01f) return false;
+  float f = (CAM_HI_W / 2.0f) / tanf(CAM_FOV / 2);
+  u = (int)lroundf(CAM_HI_W / 2.0f - f * Y / x - 0.5f); v = (int)lroundf(CAM_HI_H / 2.0f - f * z / x - 0.5f);
+  return u >= 0 && u < CAM_HI_W && v >= 0 && v < CAM_HI_H;
+}
+static uint8_t bLab[CAM_HI_H][CAM_HI_W], bDark[CAM_HI_H][CAM_HI_W];
+static void boardCalibrate(CamPose &P, float &pitch) {
+  float best = -1e9f, bp = pitch, by = 0;
+  for (int iy = -2; iy <= 2; iy++) {
+    CamPose Q = P; Q.yaw += 0.02f * iy;
+    float cy_ = cosf(Q.yaw), sy_ = sinf(Q.yaw);
+    for (int i = 0; i <= 80; i++) {
+      float p = pitch - 0.08f + 0.002f * i, cp = cosf(p), sp = sinf(p), sc = 0;
+      for (int L = 0; L < 8; L++) {
+        int nk = L < 4 ? 22 : 30;
+        for (int k = 0; k < nk; k++) {
+          float wx = L < 4 ? XT[L] : 1.68f - 0.04f * k, wy = L < 4 ? 2.62f + 0.04f * k : YL[L - 4];
+          float ox = L < 4 ? 0.08f : 0, oy = L < 4 ? 0 : 0.06f;
+          int u0, v0, u1, v1, u2, v2;
+          if (!camProject(wx, wy, cp, sp, Q, cy_, sy_, u0, v0) || !camProject(wx - ox, wy - oy, cp, sp, Q, cy_, sy_, u1, v1) ||
+              !camProject(wx + ox, wy + oy, cp, sp, Q, cy_, sy_, u2, v2)) continue;
+          sc += bDark[v0][u0] - 0.5f * (bDark[v1][u1] + bDark[v2][u2]);
+        }
+      }
+      if (sc > best) { best = sc; bp = p; by = 0.02f * iy; }
+    }
+  }
+  pitch = bp; P.yaw += by;
+}
+// pieces in one frame -> votes[pos][0 blue, 1 green]
+static void boardFrame(CamPose P, float pitch, int votes[10][2], float &pitchFit) {
+  for (int v = 0; v < CAM_HI_H; v++)
+    for (int u = 0; u < CAM_HI_W; u++) {
+      float r, g, b; camRGB(camHi[v * CAM_HI_W + u], camGain, r, g, b);
+      int k = classify(r, g, b);
+      bLab[v][u] = (k == BLUE || k == GREEN) ? k : 0;
+      bDark[v][u] = fmaxf(r, fmaxf(g, b)) < 90 ? 1 : 0;
+    }
+  boardCalibrate(P, pitch);
+  pitchFit = pitch;
+  for (int v = 1; v < CAM_HI_H - 1; v++) for (int u = 0; u < CAM_HI_W; u++)          // close 1-pixel noise gaps
+    if (!bLab[v][u] && bLab[v - 1][u] && bLab[v - 1][u] == bLab[v + 1][u]) bLab[v][u] = bLab[v - 1][u];
+  for (int v = 0; v < CAM_HI_H; v++) for (int u = 1; u < CAM_HI_W - 1; u++)
+    if (!bLab[v][u] && bLab[v][u - 1] && bLab[v][u - 1] == bLab[v][u + 1]) bLab[v][u] = bLab[v][u - 1];
+  static uint8_t seenPx[CAM_HI_H][CAM_HI_W];
+  static int16_t stk[CAM_HI_W * CAM_HI_H];
+  static int8_t colTop[CAM_HI_W], colBot[CAM_HI_W];
+  memset(seenPx, 0, sizeof(seenPx));
+  float cx0 = P.x + LOOK_X * cosf(P.yaw), cy0 = P.y + LOOK_X * sinf(P.yaw);
+  for (int v0 = 0; v0 < CAM_HI_H; v0++)
+    for (int u0 = 0; u0 < CAM_HI_W; u0++) {
+      int k = bLab[v0][u0];
+      if (!k || seenPx[v0][u0]) continue;
+      memset(colTop, -1, sizeof(colTop)); memset(colBot, -1, sizeof(colBot));
+      int ns = 0, npx = 0;
+      stk[ns++] = v0 * CAM_HI_W + u0; seenPx[v0][u0] = 1;
+      while (ns) {
+        int i = stk[--ns], u = i % CAM_HI_W, v = i / CAM_HI_W;
+        npx++;
+        if (colTop[u] < 0 || v < colTop[u]) colTop[u] = v;
+        if (colBot[u] < 0 || v > colBot[u]) colBot[u] = v;
+        for (int du = -1; du <= 1; du++) for (int dv = -1; dv <= 1; dv++) {
+          int a = u + du, b = v + dv;
+          if (a >= 0 && a < CAM_HI_W && b >= 0 && b < CAM_HI_H && !seenPx[b][a] && bLab[b][a] == k) { seenPx[b][a] = 1; stk[ns++] = b * CAM_HI_W + a; }
+        }
+      }
+      if (npx < 2) continue;
+      for (int u = 0; u < CAM_HI_W; u++) {
+        if (colBot[u] < 0) continue;
+        float hx, hy;
+        if (!camHit(u, colBot[u] + 0.5f, pitch, 0.0f, P, hx, hy)) continue;
+        float ux = hx - cx0, uy = hy - cy0, n = hypotf(ux, uy);
+        if (n < 1e-6f) continue;
+        float cx = hx + PIECE_R * ux / n, cy = hy + PIECE_R * uy / n;
+        int best = 1; float bd = 1e9f;
+        for (int q = 1; q <= 9; q++) { float d = hypotf(POS_CELL[q].x - cx, POS_CELL[q].y - cy); if (d < bd) { bd = d; best = q; } }
+        if (bd < 0.13f) votes[best][k == BLUE ? 0 : 1]++;
+      }
+    }
+}
+// empty cells in the shadow of a seen piece (same bearing, farther, inside its shadow)
+static int hiddenCells(const int *found, CamPose P, int out_[10]) {
+  float cx0 = P.x + LOOK_X * cosf(P.yaw), cy0 = P.y + LOOK_X * sinf(P.yaw);
+  int n = 0;
+  for (int q = 1; q <= 9; q++) {
+    if (found[q]) continue;
+    float dq = hypotf(POS_CELL[q].x - cx0, POS_CELL[q].y - cy0), aq = atan2f(POS_CELL[q].y - cy0, POS_CELL[q].x - cx0);
+    for (int p = 1; p <= 9; p++) {
+      if (!found[p]) continue;
+      float dp = hypotf(POS_CELL[p].x - cx0, POS_CELL[p].y - cy0), ap = atan2f(POS_CELL[p].y - cy0, POS_CELL[p].x - cx0);
+      if (dp < dq && fabsf(sinf(aq - ap)) * dq < 0.04f && dq - PIECE_R < (dp + PIECE_R) * LOOK_Z / (LOOK_Z - PIECE_H)) { out_[n++] = q; break; }
+    }
+  }
+  return n;
+}
+// fills seen[1..9] with BLUE / GREEN / 0; true only if all 4 pieces (2 + 2) were found
+bool boardLook(int seen[10]) {
+  memset(seen, 0, 10 * sizeof(int));
+  turnTo(PI_F, 0.01f);
+  tiltSet(TILT_LOOK);
+  camHiReq = true;
+  waitS(0.5f);                                   // servo move and settle
+  CamPose P = {px, py, yaw};
+  int tally[10][2]; memset(tally, 0, sizeof(tally));
+  float pitchFit = CAM_PITCH - TILT_LOOK;
+  int frames = 0;
+  for (int i = 0; i < 40 && frames < 3; i++) {
+    camHiNew = false;
+    for (int j = 0; j < 10 && !camHiNew; j++) { driveLR(0, 0); step(); }
+    if (!camHiNew) break;
+    int votes[10][2]; memset(votes, 0, sizeof(votes));
+    boardFrame(P, CAM_PITCH - TILT_LOOK, votes, pitchFit);
+    for (int q = 1; q <= 9; q++) if (votes[q][0] + votes[q][1] >= 2) tally[q][votes[q][0] >= votes[q][1] ? 0 : 1]++;
+    frames++;
+  }
+  camHiReq = false;
+  tiltSet(0);
+  int nb = 0, ng = 0;
+  for (int q = 1; q <= 9; q++) {
+    if (tally[q][0] + tally[q][1] < 2) continue;
+    seen[q] = tally[q][0] >= tally[q][1] ? BLUE : GREEN;
+    seen[q] == BLUE ? nb++ : ng++;
+  }
+  if ((nb < 2 || ng < 2) && nb <= 2 && ng <= 2 && (nb == 2 || ng == 2)) {   // a hidden piece: one colour missing
+    int hid[10], nh = hiddenCells(seen, P, hid), miss = (2 - nb) + (2 - ng);
+    if (nh == miss) {
+      for (int i = 0; i < nh; i++) seen[hid[i]] = nb < 2 ? BLUE : GREEN;
+      logf_("[S3] camera: %d position(s) hidden behind a piece -> the missing %s", nh, nb < 2 ? "BLUE" : "GREEN");
+      if (nb < 2) nb = 2; else ng = 2;
+    }
+  }
+  char txt[40]; int k = 0;
+  for (int q = 1; q <= 9; q++) if (seen[q]) k += snprintf(txt + k, sizeof(txt) - k, "%d:%c ", q, seen[q] == BLUE ? 'B' : 'G');
+  txt[k] = 0;
+  logf_("[S3] camera board look (%d frames, fitted pitch %.1f deg): %s", frames, pitchFit * 57.2958f, k ? txt : "nothing");
+  if (nb == 2 && ng == 2) return true;
+  logf_("[S3] camera board look incomplete -> the ToF inspection decides");
+  return false;
 }
 
 void runPhase3(bool restart) {
@@ -1233,9 +1459,19 @@ void runPhase3(bool restart) {
 
   out.out &= ~OUT_TCS_FLOOR;
   turnTo(HP_F, 0.01f);
-  driveLine(EXIT_JUNC.x, 2.44f, 0.12f, false, false);
+  driveLine(EXIT_JUNC.x, 2.44f, 0.20f, false, false);
   calibrateLine();
-  driveLine(EXIT_JUNC.x, EXIT_JUNC.y, 0.18f);
+  driveLine(EXIT_JUNC.x, EXIT_JUNC.y);
+  {
+    int seenB[10];
+    if (boardLook(seenB)) {                       // Fix 4: the camera saw all 4 pieces -> no ToF inspection
+      for (int p = 1; p <= 9; p++) if (board[p] && board[p] != seenB[p])
+        logf_("[S3] clue says position %d is %s, the camera sees %s - trusting the camera", p, board[p] == BLUE ? "BLUE" : "GREEN",
+              seenB[p] == BLUE ? "BLUE" : seenB[p] == GREEN ? "GREEN" : "nothing");
+      for (int p = 1; p <= 9; p++) board[p] = seenB[p];
+      unresolvedB = unresolvedG = 0;
+    }
+  }
   pickPiece(clan);
 
   if (unresolvedB + unresolvedG) {
@@ -1268,8 +1504,8 @@ void runPhase3(bool restart) {
     logf_("[S3] no winning move - placing in position %d", win);
   } else logf_("[S3] winning move: position %d completes %d-%d-%d", win, line[0], line[1], line[2]);
   placePiece(win);
-  go(BOARD_OUT, 0.18f);
-  driveLine(END_PT.x, END_PT.y, 0.12f);
+  go(BOARD_OUT);
+  driveLine(END_PT.x, END_PT.y);
   logf_("[S3] reached the END zone  t=%.1fs", tSim);
   { char l2[24]; snprintf(l2, sizeof(l2), "END  t=%.1f s", tSim); show("MISSION COMPLETE", l2); }
   logf_("==================== MISSION COMPLETE ====================");
@@ -1349,6 +1585,8 @@ void setup() {
   loadCalibration();
 #else
   loadCalibration();
+  camHiGrid = (uint16_t *)bigAlloc(CAM_HI_W * CAM_HI_H * 2);
+  ledcAttach(TILT_PIN, 50, 14);                  // Fix 4: camera tilt servo
   if (camBegin()) { xTaskCreatePinnedToCore(cameraTask, "cam", 4096, nullptr, 1, nullptr, 0); logf_("camera PID 0x%02X", camPID); }
   else logf_("CAMERA NOT FOUND - tiles will come from the floor colour sensor only");
   if (!psramFound()) logf_("NO PSRAM: set Tools > PSRAM > OPI PSRAM (N16R8)");
@@ -1361,8 +1599,9 @@ void setup() {
   prefs.getBytes("cg", &camGain, sizeof(camGain));
   prefs.end();
   mazeInit(); gridInit(); s3Init();
+  tiltSet(0);
   delay(500);
-  logf_("GuardianBot v4.1 brain ready - K1 start, K3 Section 3 restart, K4 white balance");
+  logf_("GuardianBot v4.2 brain ready - K1 start, K3 Section 3 restart, K4 white balance");
 }
 
 void loop() {

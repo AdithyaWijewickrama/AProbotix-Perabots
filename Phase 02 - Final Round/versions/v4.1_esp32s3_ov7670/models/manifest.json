@@ -16,7 +16,7 @@
    "group": "3-D printed parts",
    "name": "camera mast",
    "kind": "stl",
-   "src": "hardware/3d_prints/camera_mast.stl"
+   "src": "versions/v4.1_esp32s3_ov7670/3d_prints/camera_mast.stl"
   },
   {
    "group": "3-D printed parts",
@@ -162,7 +162,7 @@
   },
   {
    "name": "GuardianBot_v4.1_build_guide.md",
-   "src": "docs/GuardianBot_v4.1_build_guide.md",
+   "src": "versions/v4.1_esp32s3_ov7670/GuardianBot_v4.1_build_guide.md",
    "kb": 18
   },
   {

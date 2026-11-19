@@ -1,5 +1,5 @@
 // GuardianBot v4.1 - Arduino Mega 2560 pin map (the "body": all real-time I/O)
-// The Mega sits upside-down on the PCB mid deck (hardware/pcb_v4). Keep in sync with docs/GuardianBot_v4.1_build_guide.md
+// The Mega sits upside-down on the PCB mid deck (hardware/pcb_v4). Keep in sync with docs/GuardianBot_v4.2_build_guide.md
 #pragma once
 #include <stdint.h>
 

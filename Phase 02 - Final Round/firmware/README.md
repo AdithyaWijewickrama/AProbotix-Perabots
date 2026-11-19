@@ -1,9 +1,11 @@
-# GuardianBot v4.1 firmware
+# GuardianBot v4.2 firmware
+
+v4.2 changes only the brain (`esp32s3_brain`): the camera tilt servo and the faster Section 3 (test/FIXES.md, Fix 4). `mega_body`, `esp32s3_testbench` and the link protocol are the same as v4.1.
 
 | Folder | What it is |
 |---|---|
 | `mega_body/` | **Arduino Mega 2560** (real-time body): `mega_body.ino`, `pins.h` (pin map = the PCB deck), `protocol.h` (link frames) |
-| `esp32s3_brain/` | **ESP32-S3 N16R8 + OV7670** = brain + eye (competition firmware, no Wi-Fi). Core 1 runs the mission (Sections 1–3); core 0 runs the camera task (160 × 120 frame → 48 × 32 grid). `config.h` holds geometry, speeds and servo angles; `cam_ov7670.h` the camera pins and driver; `colour.h` the colour classes; `protocol.h` is an identical copy |
+| `esp32s3_brain/` | **ESP32-S3 N16R8 + OV7670** = brain + eye (competition firmware, no Wi-Fi). Core 1 runs the mission (Sections 1–3); core 0 runs the camera task (160 × 120 frame → 48 × 32 grid, or 96 × 64 for the Section 3 board look). `config.h` holds geometry, speeds and servo angles; `cam_ov7670.h` the camera pins and driver; `colour.h` the colour classes; `protocol.h` is an identical copy |
 | `esp32s3_testbench/` | **Test-bench firmware** for the same S3: a Wi-Fi access point with a web page for sensors, manual drive, camera view, calibration and CSV logging. Calibration is saved in flash (namespace `gb`) and loaded by the brain. `web/index.html` is the page; `tools/make_page_h.py` turns it into `web_page.h` |
 | `hostcheck/` | `check.sh`: compiles all three sketches on a PC and checks that the shared headers are identical with stub Arduino headers (`g++ -Wall -Wextra`) |
 | (see also) | `simulation/wokwi/`: the Mega firmware in the Wokwi circuit simulator with every sensor, plus a simavr co-simulation test |
@@ -26,6 +28,7 @@ Older firmware is recorded in `versions/`: v4.0 (ESP32-CAM brain) in `versions/v
 ## Link protocol (`protocol.h`)
 
 - **Link:** 250000 baud, 8N1. Mega Serial2 (TX2 D16 / RX2 D17) ↔ ESP32-S3 GPIO41 (RX) / GPIO42 (TX).
+- **Camera tilt servo (Fix 4):** SG90 / MG90S signal on ESP32-S3 **GPIO21** (LEDC 50 Hz), power from the +5V5 servo rail. `config.h`: `TILT_DEG_MAZE` (servo angle for the maze view) and `TILT_DIR` (which way lifts the camera). In Section 3 the brain lifts the camera 14° at the exit junction and reads the whole board (96 × 64 grid); without the servo it falls back to the ToF inspection.
 - **Level shifting on the PCB deck:**
   - A 1k8/3k3 divider takes Mega TX down to 3.2 V.
   - A 2N7000 with two 10 k pull-ups takes ESP TX up to 5 V. The 3.3 V comes from the S3 board's own regulator (5th wire of the link cable).

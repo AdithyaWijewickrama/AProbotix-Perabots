@@ -354,5 +354,6 @@
   "no placement gives a winning move"
  ],
  "clan": "GREEN",
- "winning_cells": []
+ "winning_cells": [],
+ "legal_20cm_route": true
 }

@@ -380,5 +380,6 @@
  },
  "board_note": [],
  "clan": "BLUE",
- "winning_cells": []
+ "winning_cells": [],
+ "legal_20cm_route": true
 }

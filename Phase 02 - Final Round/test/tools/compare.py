@@ -70,10 +70,13 @@ def main():
                 slower += 1
             else:
                 same += 1
+        if after.get(run) and not after[run].get("legal", True):
+            ch += " (illegal arena)"
         lines.append("| %s | %s | %s | %s |" % (run, fmt(b), fmt(a), ch))
-    good_after = sum(1 for r in after.values() if ok(row(r)))
-    summary = ("**%d fixed, %d broken, %d faster, %d slower, %d same (±0.5 s), %d new.** Runs fully right after the change: %d of %d."
-               % (fixed, broke, faster, slower, same, new, good_after, len(after)))
+    legal = {k: v for k, v in after.items() if v.get("legal", True)}
+    good_after = sum(1 for r in legal.values() if ok(row(r)))
+    summary = ("**%d fixed, %d broken, %d faster, %d slower, %d same (±0.5 s), %d new.** Legal-arena runs fully right after the change: %d of %d (%d runs on illegal stress-test arenas not counted)."
+               % (fixed, broke, faster, slower, same, new, good_after, len(legal), len(after) - len(legal)))
     text = "\n".join(lines) + "\n\n" + summary + "\n"
     print(text)
     if md:

@@ -1,8 +1,8 @@
-# GuardianBot v4.1 – final build guide
+# GuardianBot v4.2 – final build guide
 
 PeraBots 2026 University Final, *The Nine Seals of Pera*, team AProbotix.
 
-v4.1 is built around the parts the team actually has. The brain is the team's own **ESP32-S3 N16R8** with the
+v4.1 (and so v4.2) is built around the parts the team actually has. The brain is the team's own **ESP32-S3 N16R8** with the
 **OV7670** camera, eight VL53L0X time-of-flight sensors give the distances, and a PCB is the robot's middle floor.
 Nothing on the S3 side has to be bought, so the budget drops to about **Rs 15,900**. If the PCB can't be made,
 a vero board does the same job (section 4).
@@ -10,7 +10,13 @@ a vero board does the same job (section 4).
 v4.0 used an ESP32-CAM as brain and camera; it is kept in `versions/v4.0_esp32cam_pcbdeck/`.
 The mission code, the Mega, the PCB deck and every sensor are the same in v4.1.
 
-![GuardianBot v4.1](images/v41_robot_iso.png)
+**v4.2 adds a camera tilt servo** (one of the team's SG90s). In Section 3 the brain lifts the camera 14° at the
+exit junction and reads all four board pieces in one look, instead of driving slowly along the board lines. In the
+simulation that cut Section 3 from about 81 s to 36 s (`test/FIXES.md`, Fix 4). The changes are a new camera mast
+and bracket (section 5), one signal wire from the S3 and a Y-lead for power (section 4), and two settings in the brain
+firmware (section 6). Everything else is v4.1; v4.1's own guide is in `versions/v4.1_esp32s3_ov7670/`.
+
+![GuardianBot v4.2 camera mast with the SG90 tilt servo](images/v42_tilt_mast.png)
 
 ## 1. What changed from v3, and why
 
@@ -56,9 +62,11 @@ about 18 s slower. A 90–120° M12 lens (≈ Rs 600) gets that time back.
 | Kpower M0170 servo | 2 | gripper arms |
 | LM2596 buck + HW-319 buck | 1 + 1 | 5.0 V logic, 5.5 V servos |
 
-**Not used in v4:** the L298N ×4 (they lose too much voltage), the 12 V N20 / 37D / SG90 motors, the 12 V 5200 mAh pack (too heavy), the 1602 LCD, the ESP-12E, the 2 Pololu IR sensors and 4 of the 6 HC-SR04. Keep the second Mega, a spare TCS3200 and two HC-SR04 as spares.
+**Used from v4.2:** one SG90 micro servo for the camera tilt (an MG90S fits the same holes if you have one).
 
-## 3. Shopping list (Sri Lanka, about Rs 15,900)
+**Not used in v4:** the L298N ×4 (they lose too much voltage), the 12 V N20 / 37D motors, the other SG90s, the 12 V 5200 mAh pack (too heavy), the 1602 LCD, the ESP-12E, the 2 Pololu IR sensors and 4 of the 6 HC-SR04. Keep the second Mega, a spare TCS3200 and two HC-SR04 as spares.
+
+## 3. Shopping list (Sri Lanka, about Rs 16,000)
 
 Prices are from tronic.lk in Nov 2026; "≈" marks an estimate. The VL53L0X is also listed at alphatronic.lk; if tronic.lk is out of stock, try there or the Pettah shops.
 
@@ -77,8 +85,9 @@ Prices are from tronic.lk in Nov 2026; "≈" marks an estimate. The VL53L0X is a
 | 11 | 5 mm blue + green LEDs, 5 V active buzzer | 1 set | ≈150 | |
 | 12 | Silicone wire 20 AWG red + black, 26 AWG ribbon for the sensors, heat-shrink | 1 set | ≈900 | |
 | 13 | Hook-and-loop strap (battery), foam tape (DRV8833, gyro, bucks) | 1 | ≈250 | |
-| | **Total** (without the optional lens) | | **≈15,900** | |
-| | **Vero-board fallback** (no PCB): replace rows 4–6 by a 9 × 15 cm vero board (≈300), female header strips (≈300) and the same JST sets (≈1,200), and cut `deck_mid_3mm_vero_fallback.dxf` from the acrylic | | **≈11,400** | |
+| 14 | **v4.2:** servo Y-lead (or a 3-pin female–2 × male splitter), 20 cm 1-wire female–female jumper, 2 × M2 × 8 self-tapping screws (SG90 tabs), 2 × M2 × 5 screws (horn) | 1 set | ≈100 | |
+| | **Total** (without the optional lens) | | **≈16,000** | |
+| | **Vero-board fallback** (no PCB): replace rows 4–6 by a 9 × 15 cm vero board (≈300), female header strips (≈300) and the same JST sets (≈1,200), and cut `deck_mid_3mm_vero_fallback.dxf` from the acrylic | | **≈11,500** | |
 
 ## 4. The PCB mid deck
 
@@ -183,6 +192,16 @@ holes at x = +5.5 mm, y = ±32.5 mm; 6 mm nylon spacers under the carrier so the
 | XCLK | 15 | | D7 | 16 |
 | RESET | 3V3 (always running) | | PWDN | GND (always on) |
 
+**Camera tilt servo (v4.2).** The SG90 is driven by the S3 itself, not the Mega, so the link and the PCB don't change:
+
+| SG90 wire | Goes to |
+|---|---|
+| orange (signal) | S3 **GPIO21**, a 20 cm jumper from the carrier's header row (3.3 V is enough for the SG90) |
+| red (+) and brown (−) | **+5V5 servo rail**: a Y-lead on the `SERVO_L` header (J26), shared with the left gripper servo |
+
+The servo rail's buck has the headroom: `hardware/spice/` now stalls both gripper servos **and** the SG90 at once,
+and +5V5 stays above 5.0 V even on an empty pack. Don't power the SG90 from the S3's 5 V pin (logic rail).
+
 Pins the N16R8 must **not** use: GPIO 35, 36 and 37 (octal PSRAM), 19 and 20 (USB), 0, 3, 45 and 46 (boot
 straps), 43 and 44 (the log port). The pin numbers are in `firmware/esp32s3_brain/cam_ov7670.h`.
 
@@ -203,7 +222,7 @@ Every file is generated from `hardware/cad/guardianbot_geometry.py`, the same nu
 - **Laser cut** (`hardware/acrylic/`): `deck_base_3mm.dxf` and `deck_top_3mm.dxf`. `sheet_layout.dxf` also has the vero-fallback mid deck.
   - **v4.1 changes:** the top deck has 2 new M3 holes for the S3 carrier, and its cable slot is 2 mm further forward.
   - The base deck's side-ToF post holes are fixed. In v4.0 they were 7 mm too far out, and two of them cut through the edge.
-  - **Cut the v4.1 files, not the v4.0 ones.**
+  - **Cut the v4.1 files, not the v4.0 ones.** v4.2 uses the same decks: the new mast fits the old 2 × M3 holes.
 - **3D print** (`hardware/3d_prints/`), in PETG or PLA+, 0.2 mm layers, 4 walls, 40 % infill:
 
 | Part | Qty | Notes |
@@ -217,7 +236,8 @@ Every file is generated from `hardware/cad/guardianbot_geometry.py`, the same nu
 | gripper_arm_left / right | 1 + 1 | servo horn screwed to the top plate; bicycle-tube strip in the groove |
 | pocket | 1 | rear pocket on the base |
 | tcs_front_bracket, tcs_floor_spacer ×2 | 1 + 2 | front and floor colour sensors |
-| camera_mast | 1 | OV7670 lens 140 mm up, tilted 29° down. The foot is 24 mm long so it clears the front sonar hanger's nuts |
+| camera_mast | 1 | **v4.2:** plate with a window for the SG90 and two stop pins. Same 2 × M3 foot holes as v4.1; the foot still clears the front sonar hanger's nuts. Print it standing on the foot |
+| camera_tilt_bracket | 1 | **v4.2:** holds the OV7670 (lens 140 mm up, 29° down in the maze view) and screws to the SG90 horn. Print it lying on the camera plate's back |
 | caster_spacer | 1 | sand it until the robot sits level |
 | deck_spacer_54p5 / deck_spacer_33p4 | 4 + 4 | on M3 threaded rod |
 
@@ -233,8 +253,15 @@ Build order:
    - Fit the gyro (flat, at the front right) and the servo cradles with the servos.
    - Centre the servos at 90° before you tighten the arm horns.
 3. **Top deck.** Fit the camera mast, both sonar hangers, the back ToF hanger, the OLED, the keypad and the LEDs. Screw the empty S3 carrier down on its spacers, plug in the S3, then connect the camera ribbon and the link cable.
+4. **Camera tilt (v4.2).**
+   - Push the SG90 through the mast's window from the −y side (the robot's right), shaft towards the robot's left, and screw its tabs to the plate with 2 × M2 × 8.
+   - Screw the OV7670 to the bracket (4 × M2, lens through the window). Screw the single-arm horn to the bracket's hub (2 × M2 × 5).
+   - Power the robot with the **brain firmware**: it holds the servo at the maze view. Push the bracket onto the servo spline so its tail sits about 1 mm above the **lower** stop pin, then fit the horn screw. The camera now looks 29° down.
+   - The servo must never press on a stop in the maze view: if it buzzes, move the bracket one spline tooth.
+   - Route the camera ribbon down the robot's right side of the servo with a loose loop, so the camera can tilt 29° without pulling it.
 
-The robot weighs about 580 g, stands 152 mm tall at the mast, and nothing sticks out past the 150 mm circle.
+The robot weighs about 590 g, stands 160 mm tall at the mast (171 mm with the camera fully up) and nothing sticks
+out past the 150 mm circle.
 
 ## 6. Firmware, calibration and competition procedure
 
@@ -275,6 +302,7 @@ See `firmware/README.md` for the boards, libraries and first power-up checklist.
 1. Flash `mega_body`. The OLED must show `ToF 8/8 gyro ok`.
 2. Flash `esp32s3_testbench` and do the Calibrate tab. Set `ENC_CPR` in `mega_body.ino` too, then re-flash the Mega.
 3. Flash `esp32s3_brain`. The OLED shows `READY 1:GO 3:S3 4:CAL`.
+   - **v4.2 tilt servo:** `config.h` has `TILT_DEG_MAZE` (servo angle for the maze view, 90 by default) and `TILT_DIR` (+1 or −1, the direction that lifts the camera). In Section 3 the camera must go **up** 14° at the exit junction, and the log line `camera board look` must list four pieces. If it presses on the lower stop instead, change `TILT_DIR` to `+1`.
 4. **Calibration time.** Press **K4** with white paper under and in front of the robot (colour sensors **and** camera). The robot must stay still for 1.5 s after power-on (gyro bias).
 5. **Run.** Place the robot in START and press **K1**. It also starts correctly at the maze entrance.
    - It doesn't need to be exactly straight. In the first 0.3 s it measures its angle to the wall beside it with the side ToF pairs (tested up to ±20° off straight). Keep the right side within about 20 cm of the east wall.

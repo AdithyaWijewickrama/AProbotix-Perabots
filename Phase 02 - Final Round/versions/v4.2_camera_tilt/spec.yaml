@@ -1,0 +1,82 @@
+id: v4.2
+name: GuardianBot v4.2 - camera tilt servo, faster Section 3
+tag: v4.2
+date: 2026-11-19
+status: latest - simulation + real firmware + CAD (tilting camera mast) + SPICE; not built yet
+summary: v4.1 with the OV7670 on an SG90 tilt servo (29 deg hard stop; the team already owns SG90s). At the exit junction the brain lifts the camera 14 deg and reads all four board pieces in one look (96 x 64 grid, self-calibrated on the board's grid lines), so the slow ToF inspection is only a fallback. Section 3 also drives straight through crossings at 0.25 m/s (0.16 m/s while carrying the piece). Section 3 went from about 81 s to 36 s; the official arena from 153.6 s to 97.7 s.
+body:
+  shape: round 150 mm, acrylic base + 144 mm PCB mid deck + acrylic top deck, rear pocket, camera mast with an SG90 tilt servo (printed mast + tilt bracket, stops at -2 and +29 deg); ESP32-S3 flat on a vero carrier on the top deck
+  size_mm: [150, 150, 160]
+  height_mm: 160
+  decks: 2 (3 mm acrylic) + 1.6 mm PCB mid deck
+  gripper: rear pocket + 2 arms, one Kpower M0170 servo each
+weight_g: 590
+weight_note: about 10 g more than v4.1 - the SG90 (9 g) and its lead; 160 mm tall in the maze view, 171 mm with the camera fully up (rule limit 200 mm)
+controllers: [Arduino Mega 2560 (body, upside-down on the PCB deck), ESP32-S3 N16R8 (brain on core 1 + OV7670 camera on core 0 + camera tilt servo on GPIO21)]
+drive: 2 x N20 6 V 300 rpm encoder motors, 43 mm wheels, DRV8833 (PWM capped at 80 %)
+battery: 2S LiPo 7.4 V 1500 mAh
+sensors:
+  - OV7670 on the ESP32-S3 on an SG90 tilt servo (QQVGA RGB565 -> 48 x 32 maze grid, 96 x 64 board-look grid; needs a lens of at least 52 deg)
+  - 8 x VL53L0X ToF (front, +-45 deg, two per side, back)
+  - 2 x HC-SR04
+  - 2 x TCS3200
+  - Pololu QTR-8RC line array
+  - L3G4200D gyro
+pcb:
+  type: same as v4.0 and v4.1 - round 144 mm PCB mid deck, 2 layers, all through-hole; the S3 uses the ESP32CAM link socket unchanged
+  rules: 0.3 mm signal tracks (0.2-0.25 mm on a few), 0.6-0.8 mm power, 0.25 mm clearance (0.2 mm min), 1.0/0.6 mm vias, 1.0 mm pin holes; DRC 0 unconnected pads, 5 one-spoke GND thermal errors (see tests)
+  files: hardware/pcb_v4 (KiCad, Gerbers zip, toner-transfer PDFs, BOM, DRC report)
+budget:
+  currency: LKR
+  total: 16000
+  total_vero_fallback: 11500
+  note: as v4.1 plus about Rs 100 for the tilt servo's Y-lead and wire; the SG90 is already owned (an MG90S, about Rs 600, only adds metal gears). ESP32-S3 and OV7670 already owned; optional M12 wide lens about Rs 600.
+simulation:
+  judge: neutral judge supervisor, same arena as every version
+  section1_s: 23.2
+  maze_s: 62.3
+  end_s: 97.7
+  collisions: 0
+  firmware_sil_end_s: 102.4
+  result: full mission, piece placed
+files:
+  - the top-level folders of "Phase 02 - Final Round" (this is the current version)
+  - firmware/esp32s3_brain (tiltSet, boardLook), simulation/controllers/main_controller (board_look), simulation/controllers/mega_sil
+  - test/FIXES.md (Fix 4), test/results/fix4_compare.md, test/results/fix4_camera_study.md
+  - hardware/3d_prints/camera_mast + camera_tilt_bracket (hardware/cad/make_printed_parts.py), docs/GuardianBot_v4.2_build_guide.md, hardware/spice (SG90 on +5V5)
+tests:
+  - name: Judge simulation run (Webots, same arena for every version)
+    result: full mission in 97.7 s with the real mast geometry (v4.1 - 153.6 s), 0 collisions
+    status: pass
+    link: versions/judge/judge.py
+  - name: Real firmware in the simulation (SIL)
+    result: full mission in 102.4 s with the real mast geometry (v4.1 - 187.7 s); Section 3 restart test w08_s3 in 44.8 s
+    status: pass
+  - name: Fix 4 - faster Section 3, camera board look on an SG90 tilt servo (re-run)
+    result: all 54 legal-arena runs fully right; Section 3 81 s -> 36 s on average; whole mission -46 s (Python), -60 s (firmware)
+    status: pass
+    link: test/results/fix4_compare.md
+  - name: v4.2 camera mast re-run (real pivot, lens moves 7 mm when tilted; all 64 runs)
+    result: all 54 legal-arena runs fully right; Section 3 unchanged (35.5 s / 36.4 s); END +0.1 s Python, +5.2 s firmware (Section 1-2 route changes)
+    status: pass
+    link: test/results/v42_mast_compare.md
+  - name: Fix 4 camera study - tilt servo vs fixed camera (45 boards)
+    result: fixed maze-view camera 0-1 of 45 boards; lifted 14 deg 45 of 45, also with 3.4 deg pitch error
+    status: pass
+    link: test/results/fix4_camera_study.md
+  - name: PCB deck design-rule check (KiCad DRC)
+    result: 'same board as v4.0 and v4.1: 0 unconnected pads; 5 errors (Mega GND pads with 1 thermal spoke instead of 2), 77 warnings'
+    status: partial
+    link: hardware/pcb_v4/guardianbot_v4_pcb_deck_drc.txt
+  - name: SPICE checks of the deck with the ESP32-S3 and the SG90
+    result: 25/25 pass with both gripper servos and the SG90 stalling at once (+5V5 at least 5.08 V; VBAT 6.09 V on an empty pack)
+    status: pass
+    link: hardware/spice/README.md
+  - name: Wokwi virtual Mega (S3 brain stub)
+    result: chip unit tests and co-simulation pass
+    status: pass
+    link: simulation/wokwi/README.md
+  - name: Firmware compile check on a PC (hostcheck)
+    result: all 3 sketches compile with the tilt servo and board look, shared headers identical
+    status: pass
+    link: firmware/hostcheck/check.sh

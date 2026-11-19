@@ -1,4 +1,4 @@
-// GuardianBot v4.1 - ESP32-S3 N16R8 brain configuration (OV7670 camera)
+// GuardianBot v4.2 - ESP32-S3 N16R8 brain configuration (OV7670 camera, SG90 tilt servo)
 // Geometry matches hardware/cad/guardianbot_geometry.py and the Webots model.
 #pragma once
 #include <math.h>
@@ -23,6 +23,18 @@
 static float LENS_HFOV = LENS_HFOV_DEF;   // test-bench calibration (flash "gb"/"lens") overrides it
 static const float CAM_X = 0.062f, CAM_Z = 0.140f, CAM_PITCH = 0.50f;
 static float CAM_FOV = LENS_HFOV_DEF < 0.90f ? LENS_HFOV_DEF : 0.90f;
+
+// ---------------------------------------------------------------- camera tilt servo (Fix 4)
+// SG90 on the camera mast (v4.2: hardware/3d_prints camera_mast + camera_tilt_bracket), printed stops at -2 and +29 deg. Signal from S3 GPIO21 (3.3 V is enough
+// for the SG90), power from the +5V5 servo rail (Y-lead on the SERVO_L header). 0 = maze view (28.6 deg down);
+// the board look lifts it 14 deg so the camera sees the whole Section 3 board from the exit junction.
+#define TILT_PIN 21
+#define CAM_HI_W 96                 // board-look grid: same lens and crop as the 48 x 32 maze grid, twice the pixels
+#define CAM_HI_H 64
+static float TILT_DEG_MAZE = 90.0f; // servo angle for the maze view: set it so the camera sits on its maze mark
+static float TILT_DIR = -1.0f;      // +1 or -1: the direction that lifts the camera
+static const float TILT_MAX = 0.506f, TILT_LOOK = 0.25f;   // rad: hard stop, board look
+static const float TILT_PX = 0.036f, TILT_PZ = 0.151f;      // servo shaft (tilt axis), robot frame (hardware/cad TILT_PIVOT)
 
 // ---------------------------------------------------------------- drive (N20 6 V ~300 rpm on 2S via DRV8833)
 static const float R_WHEEL    = 0.0215f;   // 43 mm wheels

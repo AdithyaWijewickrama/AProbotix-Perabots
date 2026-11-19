@@ -2,55 +2,75 @@
 
 | run | start | result | S1 real/best s | S2 real/best s | S3 real/best s | END | tile count | tiles found | piece on | collisions | contact flags | min clearance mm |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| w00_official_python | full | mission complete, piece correct | 21.8 / 11.0 | 40.1 / 37.5 | 91.7 / 21.9 | 153.6 s | right | 5/5 | 7 (right) | 0 | 0 | 11.7 |
-| w00_official_sil | full | mission complete, piece correct | 49.0 / 11.0 | 43.8 / 37.5 | 95.0 / 21.9 | 187.7 s | right | 5/5 | 7 (right) | 0 | 0 | 14.7 |
-| w01_python | full | mission complete, piece correct | 30.4 / 12.5 | 44.0 / 37.9 | 89.5 / 21.4 | 163.8 s | right | 3/3 | 6 (right) | 0 | 0 | 12.6 |
-| w01_sil | full | mission complete, piece correct | 67.1 / 12.5 | 49.8 / 37.9 | 88.0 / 21.4 | 204.9 s | right | 3/3 | 6 (right) | 0 | 0 | 13.2 |
-| w02_python | full | mission complete, piece correct | 15.5 / 11.2 | 47.8 / 38.5 | 87.4 / 21.4 | 150.7 s | right | 3/3 | 8 (right) | 0 | 0 | 27.2 |
-| w02_sil | full | mission complete, piece correct | 26.0 / 11.2 | 54.4 / 38.5 | 86.7 / 21.4 | 167.1 s | right | 3/3 | 8 (right) | 0 | 0 | 31.0 |
-| w02_straight_python | full | mission complete, piece correct | 15.1 / 11.2 | 47.2 / 38.5 | 87.0 / 21.4 | 149.3 s | right | 3/3 | 8 (right) | 0 | 0 | 23.0 |
-| w02_straight_sil | full | mission complete, piece correct | 29.4 / 11.2 | 54.5 / 38.5 | 90.7 / 21.4 | 174.6 s | right | 3/3 | 8 (right) | 0 | 0 | 30.4 |
-| w03_deceptive_python | full | mission complete, piece correct | 18.3 / 11.8 | 47.6 / 37.9 | 81.6 / 18.1 | 147.6 s | right | 3/3 | 5 (right) | 0 | 1 | 22.7 |
-| w03_deceptive_sil | full | mission complete, piece correct | 38.0 / 11.8 | 54.0 / 37.9 | 81.5 / 18.1 | 173.5 s | right | 3/3 | 5 (right) | 0 | 6 | 24.2 |
-| w04_python | full | mission complete, piece correct | 14.6 / 10.2 | 44.9 / 39.5 | 89.3 / 21.4 | 148.9 s | right | 3/3 | 6 (right) | 0 | 0 | 16.0 |
-| w05_loops_python | full | mission complete, piece correct | 15.8 / 10.8 | 51.5 / 40.7 | 90.2 / 21.9 | 157.6 s | right | 3/3 | 4 (right) | 0 | 0 | 27.0 |
-| w06_maze_python | maze | mission complete, piece correct | - | 42.5 / 29.1 | 83.7 / 21.9 | 126.2 s | right | 5/5 | 7 (right) | 0 | 2 | 34.1 |
-| w06_maze_sil | maze | mission complete, piece correct | - | 51.7 / 29.1 | 84.3 / 21.9 | 135.9 s | right | 5/5 | 7 (right) | 0 | 2 | 27.6 |
-| w07_maze_deceptive_python | maze | mission complete, piece correct | - | 48.4 / 43.1 | 91.8 / 21.9 | 140.2 s | right | 3/3 | 7 (right) | 0 | 4 | 27.5 |
-| w08_s3_python | s3 | mission complete, piece correct | - | - | 43.4 / 21.9 | 46.7 s | - | - | 7 (right) | 0 | 0 | 34.0 |
-| w09_s3_python | s3 | mission complete, piece correct | - | - | 97.2 / 21.9 | 100.3 s | - | - | 7 (right) | 0 | 0 | 34.0 |
-| w10_python | full | mission complete, piece correct | 21.1 / 11.2 | 42.6 / 22.2 | 81.4 / 18.1 | 145.1 s | right | 3/3 | 5 (right) | 0 | 0 | 27.0 |
-| w11_python | full | mission complete, piece correct | 18.5 / 11.0 | 51.6 / 45.8 | 81.2 / 18.1 | 151.3 s | right | 3/3 | 5 (right) | 0 | 0 | 29.8 |
-| w12_python | full | mission complete, piece correct | 15.7 / 10.5 | 53.5 / 49.2 | 81.5 / 18.1 | 150.8 s | right | 3/3 | 5 (right) | 0 | 1 | 34.3 |
-| w13_python | full | mission complete, piece correct | 19.1 / 12.8 | 49.0 / 39.8 | 42.0 / 21.4 | 110.2 s | right | 3/3 | 8 (right) | 0 | 0 | 31.4 |
-| w14_python | full | mission complete, piece correct | 21.0 / 10.7 | 53.3 / 29.3 | 42.3 / 21.4 | 116.6 s | right | 5/5 | 8 (right) | 0 | 0 | 28.7 |
-| w15_python | full | mission complete, piece correct | 16.1 / 9.7 | 45.4 / 41.6 | 78.1 / 21.9 | 139.6 s | right | 5/5 | 2 (right) | 0 | 0 | 11.5 |
-| w16_maze_python | maze | mission complete, piece correct | - | 53.7 / 46.6 | 81.2 / 18.1 | 134.9 s | right | 3/3 | 5 (right) | 0 | 0 | 27.4 |
-| w17_maze_python | maze | mission complete, piece correct | - | 51.6 / 37.1 | 81.4 / 18.1 | 133.0 s | right | 3/3 | 5 (right) | 0 | 4 | 30.1 |
-| w18_maze_python | maze | mission complete, piece correct | - | 59.5 / 51.6 | 109.5 / 21.9 | 169.0 s | right | 3/3 | 4 (right) | 0 | 2 | 22.3 |
-| w19_maze_python | maze | mission complete, piece correct | - | 38.7 / 34.5 | 86.9 / 21.4 | 125.6 s | right | 3/3 | 8 (right) | 0 | 2 | 25.4 |
-| w20_maze_python | maze | mission complete, piece correct | - | 56.1 / 43.3 | 75.6 / 18.1 | 131.7 s | right | 3/3 | 9 (right) | 0 | 0 | 33.5 |
-| w21_maze_python | maze | mission complete, piece correct | - | 45.8 / 39.0 | 89.6 / 21.4 | 135.4 s | right | 3/3 | 6 (right) | 0 | 0 | 22.6 |
-| w22_s3_python | s3 | mission complete, piece correct | - | - | 89.7 / 21.4 | 92.8 s | - | - | 6 (right) | 0 | 0 | 34.0 |
-| w23_s3_python | s3 | mission complete, piece correct | - | - | 75.6 / 18.1 | 78.7 s | - | - | 9 (right) | 0 | 3 | 34.0 |
-| w24_s3_python | s3 | mission complete, piece correct | - | - | 83.7 / 21.9 | 86.8 s | - | - | 7 (right) | 0 | 0 | 34.0 |
-| w25_s3_python | s3 | mission complete, piece correct | - | - | 81.2 / 18.1 | 84.5 s | - | - | 5 (right) | 0 | 0 | 34.0 |
-| w26_hard_python | full | mission complete, piece correct | 29.1 / 12.3 | 35.5 / 29.4 | 101.7 / 21.9 | 166.2 s | right | 5/5 | 3 (right) | 0 | 4 | 19.8 |
-| w26_hard_sil | full | mission complete, piece correct | 57.3 / 12.3 | 35.9 / 29.4 | 105.0 / 21.9 | 198.2 s | right | 5/5 | 3 (right) | 0 | 3 | 24.2 |
-| w26_hard_straight_python | full | mission complete, piece correct | 23.1 / 12.3 | 35.3 / 29.4 | 101.4 / 21.9 | 159.8 s | right | 5/5 | 3 (right) | 0 | 0 | 18.8 |
-| w26_hard_straight_sil | full | mission complete, piece correct | 55.9 / 12.3 | 36.3 / 29.4 | 105.4 / 21.9 | 197.6 s | right | 5/5 | 3 (right) | 0 | 4 | 25.2 |
-| w27_hard_python | full | mission complete, piece correct | 17.6 / 9.8 | 31.1 / 28.3 | 83.9 / 21.9 | 132.5 s | right | 5/5 | 7 (right) | 0 | 0 | 29.3 |
-| w28_hard_python | full | mission complete, piece correct | 21.7 / 11.3 | 41.1 / 30.9 | 39.6 / 18.7 | 102.5 s | right | 5/5 | 1 (right) | 0 | 0 | 31.5 |
-| w29_hard_python | full | mission complete, piece correct | 20.5 / 12.7 | 47.6 / 28.6 | 87.8 / 21.4 | 156.0 s | right | 5/5 | 8 (right) | 0 | 0 | 9.5 |
-| w30_maze_crooked_python | maze | mission complete, piece correct | - | 40.2 / 31.2 | 91.0 / 21.9 | 131.3 s | right | 3/3 | 7 (right) | 0 | 2 | 31.6 |
-| w30_maze_crooked_sil | maze | mission complete, piece correct | - | 48.1 / 31.2 | 90.7 / 21.9 | 138.9 s | right | 3/3 +1 false | 7 (right) | 0 | 2 | 31.2 |
-| w31_maze_crooked_python | maze | mission complete, piece correct | - | 65.0 / 59.0 | 89.8 / 21.9 | 154.7 s | right | 3/3 | 7 (right) | 0 | 0 | 26.7 |
-| w31_maze_crooked_sil | maze | mission complete, piece correct | - | 78.1 / 59.0 | 89.2 / 21.9 | 167.3 s | right | 3/3 | 7 (right) | 0 | 0 | 29.8 |
+| w00_official_python | full | mission complete, piece correct | 23.2 / 11.0 | 39.1 / 37.5 | 35.3 / 21.9 | 97.7 s | right | 5/5 | 7 (right) | 0 | 0 | 15.8 |
+| w00_official_sil | full | mission complete, piece correct | 24.5 / 11.0 | 41.8 / 37.5 | 36.0 / 21.9 | 102.4 s | right | 5/5 | 7 (right) | 0 | 0 | 12.0 |
+| w01_python | full | mission complete, piece correct | 37.0 / 12.5 | 42.3 / 37.9 | 33.1 / 21.4 | 112.4 s | right | 3/3 | 6 (right) | 0 | 0 | 8.8 |
+| w01_sil | full | mission complete, piece correct | 40.3 / 12.5 | 44.9 / 37.9 | 33.8 / 21.4 | 118.9 s | right | 3/3 | 6 (right) | 0 | 0 | 25.7 |
+| w02_python | full | mission complete, piece correct | 14.3 / 11.2 | 47.8 / 38.5 | 33.3 / 21.4 | 95.4 s | right | 3/3 | 8 (right) | 0 | 0 | 25.4 |
+| w02_sil | full | mission complete, piece correct | 16.9 / 11.2 | 48.8 / 38.5 | 33.7 / 21.4 | 99.4 s | right | 3/3 | 8 (right) | 0 | 0 | 33.4 |
+| w02_straight_python | full | mission complete, piece correct | 14.5 / 11.2 | 46.5 / 38.5 | 33.0 / 21.4 | 94.0 s | right | 3/3 | 8 (right) | 0 | 0 | 29.0 |
+| w02_straight_sil | full | mission complete, piece correct | 30.4 / 11.2 | 53.3 / 38.5 | 36.1 / 21.4 | 119.8 s | right | 3/3 | 8 (right) | 0 | 0 | 26.7 |
+| w03_deceptive_python | full | mission complete, piece correct | 17.5 / 11.8 | 46.5 / 37.9 | 35.0 / 18.1 | 99.0 s | right | 3/3 | 5 (right) | 0 | 2 | 20.1 |
+| w03_deceptive_sil | full | mission complete, piece correct | 19.5 / 11.8 | 52.5 / 37.9 | 36.0 / 18.1 | 108.1 s | right | 3/3 | 5 (right) | 0 | 0 | 25.5 |
+| w04_python | full | mission complete, piece correct | 14.6 / 10.2 | 44.3 / 39.5 | 33.1 / 21.4 | 92.0 s | right | 3/3 | 6 (right) | 0 | 0 | 31.2 |
+| w05_loops_python | full | mission complete, piece correct | 16.2 / 10.8 | 51.0 / 40.7 | 70.9 / 21.9 | 138.1 s | right | 3/3 | 4 (right) | 0 | 0 | 26.6 |
+| w06_maze_python | maze | mission complete, piece correct | - | 41.5 / 29.1 | 35.5 / 21.9 | 77.0 s | right | 5/5 | 7 (right) | 0 | 1 | 33.6 |
+| w06_maze_sil | maze | mission complete, piece correct | - | 50.6 / 29.1 | 40.5 / 21.9 | 91.2 s | right | 5/5 | 7 (right) | 0 | 0 | 29.7 |
+| w07_maze_deceptive_python | maze | mission complete, piece correct | - | 47.2 / 43.1 | 35.1 / 21.9 | 82.4 s | right | 3/3 | 7 (right) | 0 | 0 | 34.9 |
+| w08_s3_python | s3 | mission complete, piece correct | - | - | 35.1 / 21.9 | 37.5 s | - | - | 7 (right) | 0 | 0 | 34.0 |
+| w08_s3_sil | s3 | mission complete, piece correct | - | - | 40.8 / 21.9 | 44.8 s | - | - | 7 (right) | 0 | 0 | 34.0 |
+| w09_s3_python | s3 | mission complete, piece correct | - | - | 35.2 / 21.9 | 37.7 s | - | - | 7 (right) | 0 | 0 | 34.0 |
+| w10_python | full | mission complete, piece correct | 22.2 / 11.2 | 50.2 / 22.2 | 35.4 / 18.1 | 107.9 s | right | 3/3 | 5 (right) | 0 | 0 | 24.1 |
+| w11_python | full | mission complete, piece correct | 17.5 / 11.0 | 50.6 / 45.8 | 35.2 / 18.1 | 103.2 s | right | 3/3 | 5 (right) | 0 | 0 | 31.8 |
+| w12_python | full | mission complete, piece correct | 17.5 / 10.5 | 53.5 / 49.2 | 35.1 / 18.1 | 106.1 s | right | 3/3 | 5 (right) | 0 | 4 | 19.1 |
+| w13_python | full | mission complete, piece correct | 20.7 / 12.8 | 47.1 / 39.8 | 32.9 / 21.4 | 100.7 s | right | 3/3 | 8 (right) | 0 | 0 | 12.0 |
+| w14_python | full | mission complete, piece correct | 20.3 / 10.7 | 44.7 / 29.3 | 33.0 / 21.4 | 98.0 s | right | 5/5 | 8 (right) | 0 | 0 | 33.9 |
+| w15_c10_python | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 16.2 / 9.6 | 44.5 / 41.6 | 36.2 / 21.9 | 96.9 s | right | 5/5 | 2 (right) | 0 | 1 | 0.3 |
+| w15_c10_sil | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only), DID NOT FINISH (no movement for 60 s), piece not on a correct cell | 75.4 / 9.6 | - | - | - | - | - | not placed | 0 | 0 | 41.7 |
+| w15_c5_python | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 16.0 / 9.6 | 45.0 / 41.6 | 36.1 / 21.9 | 97.2 s | right | 5/5 +1 false | 2 (right) | 0 | 0 | 6.7 |
+| w15_cm10_python | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 17.3 / 9.7 | 44.6 / 41.6 | 36.3 / 21.9 | 98.2 s | right | 5/5 | 2 (right) | 0 | 0 | 1.7 |
+| w15_cm10_sil | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only), DID NOT FINISH (no movement for 60 s), piece not on a correct cell | 83.2 / 9.7 | - | - | - | - | - | not placed | 0 | 0 | 37.8 |
+| w15_cm15_python | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 17.2 / 9.7 | 44.9 / 41.6 | 36.0 / 21.9 | 98.1 s | right | 5/5 | 2 (right) | 0 | 0 | 3.4 |
+| w15_cm5_python | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 15.8 / 9.7 | 44.9 / 41.6 | 36.2 / 21.9 | 96.9 s | right | 5/5 | 2 (right) | 0 | 5 | -0.7 |
+| w15_python | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 14.8 / 9.7 | 45.2 / 41.6 | 36.1 / 21.9 | 96.0 s | right | 5/5 | 2 (right) | 0 | 0 | 9.7 |
+| w15_straight_python | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 15.2 / 9.6 | 44.4 / 41.6 | 36.0 / 21.9 | 95.7 s | right | 5/5 +1 false | 2 (right) | 0 | 0 | 7.0 |
+| w15_straight_sil | full | ILLEGAL ARENA (no route for a 20 cm robot; stress test only) | 21.1 / 9.6 | 47.8 / 41.6 | 36.7 / 21.9 | 105.7 s | right | 5/5 | 2 (right) | 0 | 0 | 12.8 |
+| w16_maze_python | maze | mission complete, piece correct | - | 52.6 / 46.6 | 35.2 / 18.1 | 87.7 s | right | 3/3 | 5 (right) | 0 | 0 | 30.8 |
+| w17_maze_python | maze | mission complete, piece correct | - | 51.0 / 37.1 | 35.0 / 18.1 | 86.0 s | right | 3/3 | 5 (right) | 0 | 1 | 29.7 |
+| w18_maze_python | maze | mission complete, piece correct | - | 58.7 / 51.6 | 36.0 / 21.9 | 94.7 s | right | 3/3 | 4 (right) | 0 | 0 | 35.1 |
+| w19_maze_python | maze | mission complete, piece correct | - | 36.2 / 34.5 | 33.2 / 21.4 | 69.4 s | right | 3/3 | 8 (right) | 0 | 0 | 33.5 |
+| w20_maze_python | maze | mission complete, piece correct | - | 50.4 / 43.3 | 36.0 / 18.1 | 86.4 s | right | 3/3 | 9 (right) | 0 | 0 | 26.9 |
+| w21_maze_python | maze | mission complete, piece correct | - | 45.1 / 39.0 | 33.1 / 21.4 | 78.2 s | right | 3/3 | 6 (right) | 0 | 0 | 29.0 |
+| w22_s3_python | s3 | mission complete, piece correct | - | - | 33.2 / 21.4 | 35.6 s | - | - | 6 (right) | 0 | 0 | 34.0 |
+| w23_s3_python | s3 | mission complete, piece correct | - | - | 36.0 / 18.1 | 38.5 s | - | - | 9 (right) | 0 | 0 | 34.0 |
+| w24_s3_python | s3 | mission complete, piece correct | - | - | 35.1 / 21.9 | 37.6 s | - | - | 7 (right) | 0 | 0 | 34.0 |
+| w25_s3_python | s3 | mission complete, piece correct | - | - | 35.2 / 18.1 | 37.7 s | - | - | 5 (right) | 0 | 0 | 34.0 |
+| w26_hard_python | full | mission complete, piece correct | 22.3 / 12.3 | 32.6 / 29.4 | 35.2 / 21.9 | 90.0 s | right | 5/5 | 3 (right) | 0 | 0 | 20.4 |
+| w26_hard_sil | full | mission complete, piece correct | 68.0 / 12.3 | 43.2 / 29.4 | 35.9 / 21.9 | 147.1 s | right | 5/5 +1 false | 3 (right) | 0 | 0 | 20.7 |
+| w26_hard_straight_python | full | mission complete, piece correct | 29.7 / 12.3 | 34.5 / 29.4 | 35.1 / 21.9 | 99.3 s | right | 5/5 | 3 (right) | 0 | 0 | 22.5 |
+| w26_hard_straight_sil | full | mission complete, piece correct | 33.1 / 12.3 | 43.4 / 29.4 | 36.1 / 21.9 | 112.6 s | right | 5/5 +1 false | 3 (right) | 0 | 1 | 26.0 |
+| w27_hard_python | full | mission complete, piece correct | 16.4 / 9.8 | 37.1 / 28.3 | 35.6 / 21.9 | 89.2 s | right | 5/5 | 7 (right) | 0 | 0 | 32.7 |
+| w28_hard_python | full | mission complete, piece correct | 23.0 / 11.3 | 42.3 / 30.9 | 31.1 / 18.7 | 96.3 s | right | 5/5 | 1 (right) | 0 | 0 | 24.7 |
+| w29_hard_python | full | mission complete, piece correct | 35.7 / 12.7 | 47.3 / 28.6 | 32.9 / 21.4 | 115.9 s | right | 5/5 | 8 (right) | 0 | 0 | 11.2 |
+| w30_maze_crooked_python | maze | mission complete, piece correct | - | 54.5 / 31.2 | 34.9 / 21.9 | 89.3 s | right | 3/3 | 7 (right) | 0 | 0 | 31.0 |
+| w30_maze_crooked_sil | maze | mission complete, piece correct | - | 64.9 / 31.2 | 40.0 / 21.9 | 104.9 s | right | 3/3 +1 false | 7 (right) | 0 | 0 | 31.8 |
+| w31_maze_crooked_python | maze | mission complete, piece correct | - | 64.1 / 59.0 | 35.4 / 21.9 | 99.4 s | right | 3/3 | 7 (right) | 0 | 0 | 26.7 |
+| w31_maze_crooked_sil | maze | mission complete, piece correct | - | 70.7 / 59.0 | 35.8 / 21.9 | 106.6 s | right | 3/3 | 7 (right) | 0 | 0 | 32.4 |
+| w32_tight_python | full | mission complete, piece correct | 15.6 / 11.4 | 46.7 / 41.0 | 33.1 / 21.4 | 95.5 s | right | 3/3 | 8 (right) | 0 | 0 | 22.2 |
+| w32_tight_sil | full | mission complete, piece correct | 29.0 / 11.4 | 59.7 / 41.0 | 34.3 / 21.4 | 123.0 s | right | 3/3 +1 false | 8 (right) | 0 | 0 | 7.8 |
+| w33_tight_python | full | mission complete, piece correct | 16.6 / 12.1 | 37.5 / 37.0 | 35.3 / 18.1 | 89.4 s | right | 3/3 | 5 (right) | 0 | 0 | 20.5 |
+| w33_tight_sil | full | mission complete, piece correct | 20.5 / 12.1 | 45.3 / 37.0 | 36.0 / 18.1 | 101.9 s | right | 3/3 | 5 (right) | 0 | 1 | 16.0 |
+| w34_tight_python | full | mission complete, piece correct | 18.1 / 10.5 | 47.0 / 39.1 | 36.1 / 21.9 | 101.2 s | right | 5/5 | 4 (right) | 0 | 0 | 22.6 |
+| w34_tight_sil | full | mission complete, piece correct | 54.8 / 10.5 | 61.8 / 39.1 | 37.7 / 21.9 | 154.3 s | right | 5/5 +1 false | 4 (right) | 0 | 0 | 4.2 |
+| w35_tight_python | full | mission complete, piece correct | 20.8 / 10.6 | 49.8 / 49.9 | 32.9 / 21.4 | 103.5 s | right | 3/3 | 8 (right) | 0 | 0 | 13.3 |
+| w35_tight_sil | full | mission complete, piece correct | 19.9 / 10.6 | 59.2 / 49.9 | 33.4 / 21.4 | 112.4 s | right | 3/3 | 8 (right) | 0 | 0 | 27.3 |
+| w37_tight_python | full | mission complete, piece correct | 20.2 / 14.5 | 56.1 / 53.0 | 36.3 / 18.1 | 112.5 s | right | 3/3 | 9 (right) | 0 | 0 | 19.5 |
+| w37_tight_sil | full | mission complete, piece correct | 41.2 / 14.5 | 62.1 / 53.0 | 37.0 / 18.1 | 140.3 s | right | 3/3 | 9 (right) | 0 | 0 | 21.7 |
 
 ## Where the extra time goes (average seconds per section, finished runs only)
 
 | section | runs | avg gap s | longer path | turning | stops | below top speed | other |
 |---|---|---|---|---|---|---|---|
-| S1 | 25 | 15.7 | 2.1 | 9.1 | 3.6 | 0.8 | 0.1 |
-| S2 | 38 | 10.3 | 2.3 | 4.4 | 2.7 | 0.8 | 0.1 |
-| S3 | 44 | 63.4 | 15.7 | 5.6 | 3.1 | 39.0 | 0.0 |
+| S1 | 42 | 12.3 | 1.8 | 6.5 | 2.9 | 1.0 | 0.1 |
+| S2 | 55 | 9.1 | 2.4 | 3.8 | 2.7 | 0.1 | 0.1 |
+| S3 | 62 | 14.9 | 1.3 | 1.8 | 2.3 | 9.5 | 0.0 |

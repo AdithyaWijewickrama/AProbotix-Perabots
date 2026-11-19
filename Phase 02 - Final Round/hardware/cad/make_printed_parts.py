@@ -1,5 +1,5 @@
 """
-make_printed_parts.py - GuardianBot v4.1 3-D printed parts (CadQuery). Units: mm.
+make_printed_parts.py - GuardianBot v4.2 3-D printed parts (CadQuery). Units: mm.
 Outputs STL (slicer) and STEP (CAD) into ../3d_prints/. Hole positions match make_acrylic_dxf.py.
 
 Print: PETG or PLA+, 0.2 mm layers, 4 walls, 40 % infill. Pads: TPU 95A (or glue on rubber strip).
@@ -16,8 +16,10 @@ Parts (quantity):
   tcs_front_bracket    (1)  GY-31 facing forward at z 28 (piece colour)
   tcs_floor_spacer     (2)  8 mm spacers: floor GY-31 lens 8 mm above the floor
   caster_spacer        (1)  sets the ball-caster height (sand to level the robot)
-  camera_mast          (1)  OV7670 holder (lens 140 mm high, pitched 29 deg down) with the ESP32-S3 carrier
-                            plate on its back; same 2 x M3 foot holes in the top deck as v4.0
+  camera_mast          (1)  v4.2: mast plate holding an SG90 tilt servo (window + 2 tab screws) and two stop pins;
+                            same 2 x M3 foot holes in the top deck as v4.0 / v4.1
+  camera_tilt_bracket  (1)  v4.2: OV7670 plate (lens 140 mm high, 29 deg down in the maze view) on an arm that
+                            screws to the SG90 horn; its tail meets the stops at -2 and +29 deg
   deck_spacer_54p5     (4)  base -> mid deck spacer tube on M3 threaded rod
   deck_spacer_33p4     (4)  PCB deck -> top deck spacer tube on M3 threaded rod
 Run:  python make_printed_parts.py
@@ -27,7 +29,7 @@ import os
 
 import cadquery as cq
 
-from guardianbot_geometry import (CAM_PITCH, CAM_X, CAM_Z, OV7670_BOARD, TOP_Z1, ARM_L, BASE_Z1, HINGE_X, HINGE_Y, MID_Z0, POCKET_FLARE_X, POCKET_IN_HW,
+from guardianbot_geometry import (CAM_PITCH, CAM_X, CAM_Z, OV7670_BOARD, TILT_PIVOT, SG90_BODY, SG90_TABS, SG90_SHAFT_END, SG90_Y0, TILT_STOPS_DEG, TOP_Z1, ARM_L, BASE_Z1, HINGE_X, HINGE_Y, MID_Z0, POCKET_FLARE_X, POCKET_IN_HW,
                                   POCKET_MOUTH_HW, POCKET_WALL_T, POCKET_X, SERVO_BODY, TCS_FRONT, TOF,
                                   TOP_Z0, US, MID_Z1)
 
@@ -179,25 +181,91 @@ def tcs_floor_spacer():
     return cq.Workplane("XY").circle(3.5).extrude(4.5).cut(zhole(M3, 6, (0, 0, -1)))
 
 
+def _tilt_frame():
+    """Mast frame: origin = lens x on the top-deck surface (x forward, z up), in mm."""
+    px, pz = TILT_PIVOT[0] * MM - CAM_X * MM, TILT_PIVOT[1] * MM - TOP_Z1 * MM
+    return (px, pz), CAM_Z * MM - TOP_Z1 * MM
+
+
+TAIL_DEG, TAIL_R, PIN_R = 150.0, 12.0, 1.75       # bracket tail direction in the maze view, stop radius, pin radius
+
+
+def _stop_pins():
+    """Centres (x, z) of the two stop pins: the tail (4 mm wide) touches them at TILT_STOPS_DEG."""
+    (px, pz), _ = _tilt_frame()
+    out = []
+    for k, ang in enumerate(TILT_STOPS_DEG):
+        f = math.radians(TAIL_DEG + ang)
+        t = (math.cos(f), math.sin(f))
+        n = (math.sin(f), -math.cos(f)) if k == 0 else (-math.sin(f), math.cos(f))   # CW side at the low stop, CCW at the high
+        out.append((px + TAIL_R * t[0] + (2 + PIN_R) * n[0], pz + TAIL_R * t[1] + (2 + PIN_R) * n[1]))
+    return out
+
+
 def camera_mast():
-    """v4.1: OV7670 module (34 x 34 mm) screwed to a plate tilted CAM_PITCH down, lens centre at (CAM_X, CAM_Z).
-    The ESP32-S3 lies flat on the top deck behind the mast (S3_CARRIER), so the mast carries only the camera.
-    Foot: 2 x M3 into the top deck at (CAM_X - 18, +-10) as in v4.0."""
-    bw, bh, bt = (v * MM for v in OV7670_BOARD)
-    foot = box(24, 36, 3, at=(-19, 0, 0))     # ends 7 mm behind the lens: clears the front HC-SR04 hanger nuts
+    """v4.2: mast plate (xz plane) with a window for an SG90 tilt servo. The servo's shaft (+y) is the tilt axis,
+    26 mm behind and 11 mm above the lens; its tabs screw to the plate's +y face (2 x M2 self-tappers, 27.8 mm apart).
+    Two 3.5 mm stop pins limit the camera bracket's tail to -2 deg (maze view, no stall) and +29 deg.
+    The plate is cut away under the servo's front so the camera plate can swing past it.
+    Foot: 2 x M3 into the top deck at (CAM_X - 18, +-10), as in v4.0 / v4.1."""
+    (px, pz), zl = _tilt_frame()
+    L, W, H = (v * MM for v in SG90_BODY)
+    tab_len, tab_t, tab_z, hole_pitch = (v * MM for v in SG90_TABS)
+    y_tab = SG90_Y0 * MM + tab_z                                # plane of the tabs (= plate's +y face)
+    z_top = pz + SG90_SHAFT_END * MM                            # case end next to the shaft
+    z_bot = z_top - L
+    pins = _stop_pins()
+    foot = box(24, 36, 3, at=(-19, 0, 0))
     for s_ in (1, -1):
         foot = foot.cut(zhole(M3, 6, (-18, s_ * 10, -1)))
-    zl = CAM_Z * MM - TOP_Z1 * MM                                      # lens height above the top deck
-    post = box(5, 30, zl + 4, at=(-12.5, 0, 3))
-    # camera plate: 3 mm, square to the lens axis, 4 x M2 holes 28 mm apart, lens / holder window 16 mm
-    plate = box(3, bw + 4, bh + 4, at=(0, 0, -(bh + 4) / 2))
+    x0 = min(c[0] for c in pins) - PIN_R - 1
+    x1 = px + W / 2 + 3
+    plate_top = max(z_top + (tab_len - L) / 2, max(c[1] for c in pins) + PIN_R) + 1.5
+    plate = box(x1 - x0, 3, plate_top, at=((x0 + x1) / 2, y_tab - 1.5, 0))
+    plate = plate.cut(box(W + 0.6, 10, L + 0.6, at=(px, y_tab - 1.5, z_bot - 0.3)))           # servo window
+    plate = plate.cut(box(x1 - px + 4, 10, z_bot - 3.3, at=((px + x1) / 2 + 2, y_tab - 1.5, 3)))   # notch for the camera plate
+    zc = (z_top + z_bot) / 2
+    for dz in (-hole_pitch / 2, hole_pitch / 2):                                                # tab screw holes
+        plate = plate.cut(cq.Workplane("XZ").circle(0.9).extrude(-10).translate((px, y_tab - 5, zc + dz)))
+    rib = box(3, 16, plate_top - 4, at=(x0 + 1.5, y_tab - 1.5, 0))                             # rear rib (yz)
+    mast = foot.union(plate).union(rib)
+    for cx, cz in pins:                                                                         # pins: plate face -> y 19
+        mast = mast.union(cq.Workplane("XZ").circle(PIN_R).extrude(-(19 - y_tab + 1)).translate((cx, y_tab - 1, cz)))
+    return mast
+
+
+def camera_tilt_bracket(angle_deg=0.0):
+    """v4.2: the moving part. OV7670 plate (3 mm, square to the lens axis, 4 x M2 holes 28 mm apart, 16 mm lens
+    window) joined by a side arm to the SG90 horn (the single-arm horn screws on with 2 x M2 x 5 at 7 mm from the axis),
+    plus a short tail that meets the mast's stop pins. Drawn in the maze view (angle 0); angle_deg rotates it for checks."""
+    (px, pz), zl = _tilt_frame()
+    bw, bh, bt = (v * MM for v in OV7670_BOARD)
+    y_horn = SG90_Y0 * MM + SG90_BODY[2] * MM + 4.0 + 1.5           # shaft (4 mm) + horn (1.5 mm) above the case
+    plate = box(3, bw + 4, bh + 2, at=(0, 0, -(bh + 2) / 2))
     plate = plate.cut(cq.Workplane("YZ").rect(16, 16).extrude(10, both=True))
     for dy in (-14, 14):
         for dz in (-14, 14):
             plate = plate.cut(cq.Workplane("YZ").circle(1.1).extrude(10, both=True).translate((0, dy, dz)))
-    plate = plate.translate((-1.5, 0, 0)).rotate((0, 0, 0), (0, 1, 0), math.degrees(CAM_PITCH)).translate((-8.5, 0, zl))   # lens ~6 mm ahead of the plate
-    rib = box(10, 3, zl - 4, at=(-18, 0, 3))                           # back rib (stiffens the post)
-    return foot.union(post).union(rib).union(plate).intersect(box(80, 60, 90, at=(0, 0, 0)))
+    plate = plate.translate((-1.5, 0, 0)).rotate((0, 0, 0), (0, 1, 0), math.degrees(CAM_PITCH)).translate((-8.5, 0, zl))
+    # side arm (xz plane, y from the horn face to the plate's +y edge): pivot hub -> plate centre, and the tail
+    yw = (bw + 4) / 2 - y_horn
+    pcx = -8.5 - 1.5 * math.cos(CAM_PITCH)
+    pcz = zl + 1.5 * math.sin(CAM_PITCH)
+    hub = cq.Workplane("XZ").circle(9).extrude(-yw).translate((px, y_horn, pz))
+    ang = math.atan2(pcz - pz, pcx - px)
+    ln = math.hypot(pcx - px, pcz - pz)
+    bar = (cq.Workplane("XZ").rect(ln, 12).extrude(-yw)
+           .rotate((0, 0, 0), (0, 1, 0), -math.degrees(ang)).translate(((px + pcx) / 2, y_horn, (pz + pcz) / 2)))
+    tail = (cq.Workplane("XZ").rect(TAIL_R + 3, 4).extrude(-yw).translate(((TAIL_R + 3) / 2, 0, 0))
+            .rotate((0, 0, 0), (0, 1, 0), -TAIL_DEG).translate((px, y_horn, pz)))
+    arm = hub.union(bar).union(tail)
+    arm = arm.cut(cq.Workplane("XZ").circle(3.2).extrude(-20).translate((px, y_horn - 5, pz)))   # horn screw / boss
+    for dx in (-7, 7):
+        arm = arm.cut(cq.Workplane("XZ").circle(0.9).extrude(-20).translate((px + dx, y_horn - 5, pz)))
+    b = plate.union(arm)
+    if angle_deg:
+        b = b.rotate((px, 0, pz), (px, 1, pz), -angle_deg)
+    return b
 
 
 def deck_spacer(length):
@@ -226,6 +294,7 @@ PARTS = {
     "tcs_floor_spacer": tcs_floor_spacer,
     "caster_spacer": caster_spacer,
     "camera_mast": camera_mast,
+    "camera_tilt_bracket": camera_tilt_bracket,
     "deck_spacer_54p5": lambda: deck_spacer(54.5),
     "deck_spacer_33p4": lambda: deck_spacer(33.4),
 }

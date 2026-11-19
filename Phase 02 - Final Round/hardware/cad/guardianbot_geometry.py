@@ -1,5 +1,5 @@
 """
-guardianbot_geometry.py - single source of truth for GuardianBot v4.1 (final-round build).
+guardianbot_geometry.py - single source of truth for GuardianBot v4.2 (final-round build; v4.2 adds the camera tilt servo).
 
 Built from the team's parts list (Nov 17; v4.1 Nov 19):
   Arduino Mega 2560 (real-time I/O, mounted upside-down on the PCB mid deck)
@@ -89,7 +89,26 @@ CASTER_BALL_R = 0.0063
 # CAM = lens position (x, z) and the downward pitch (rad). CAM_FOV = horizontal field of view
 # after the brain crops its 160x120 frame to a 48x32 RGB565 grid (see firmware/esp32s3_brain/cam_ov7670.h).
 CAM_X, CAM_Z, CAM_PITCH = 0.062, 0.140, 0.50
+CAM_TILT_MAX = 0.506          # Fix 4: SG90/MG90S tilt servo lifts the camera up to 29 deg (hard stop) for the board look
+CAM_TILT_LOOK = 0.25          # Fix 4: board look from the exit junction (14 deg up); the image is self-calibrated on the grid lines
 CAM_FOV = 0.90
+# v4.2: the camera board sits on a printed bracket on an SG90 tilt servo. The servo's output shaft is the tilt axis,
+# horizontal (along y) at TILT_PIVOT, 26 mm behind and 11 mm above the lens; the servo sits in a window in the mast
+# plate. Maze view (servo 0) = CAM_PITCH down; the bracket's tail meets printed stops at -2 deg (no stall at 0) and
+# +29 deg. Tilting up by a moves the lens on a 28.2 mm arc around TILT_PIVOT (lens_at_tilt() below).
+TILT_PIVOT = (0.036, 0.151)
+SG90_BODY = (0.0228, 0.0122, 0.0227)    # L (along z here) x W (along x) x H (case height, along the shaft = y)
+SG90_TABS = (0.0322, 0.0025, 0.0159, 0.0278)   # tab length overall, tab thickness, tab plane above the case bottom, hole pitch
+SG90_SHAFT_END = 0.0059                 # output shaft centre from the near end of the case (along L)
+SG90_Y0 = -0.014                        # case bottom (y); the shaft points +y, horn face at about y +14 mm
+TILT_STOPS_DEG = (-2.0, 29.0)
+
+
+def lens_at_tilt(a):
+    """Lens (x, z) in metres when the camera is tilted up by a radians from the maze view."""
+    import math
+    dx, dz = CAM_X - TILT_PIVOT[0], CAM_Z - TILT_PIVOT[1]
+    return (TILT_PIVOT[0] + dx * math.cos(a) - dz * math.sin(a), TILT_PIVOT[1] + dx * math.sin(a) + dz * math.cos(a))
 CAM_W, CAM_H = 48, 32
 ESP32CAM_BOARD = (0.027, 0.0405, 0.0045)     # (v4.0) width (y), height (z), PCB thickness
 # v4.1: OV7670 module (34 x 34 mm board, M12 lens holder) on the mast. The ESP32-S3 N16R8 DevKitC-1
