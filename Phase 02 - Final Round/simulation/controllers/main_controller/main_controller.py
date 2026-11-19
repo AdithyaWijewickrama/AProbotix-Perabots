@@ -477,10 +477,37 @@ def n_open(c, r):
     return sum(1 for h in range(4) if edge(c, r, h) == OPEN)
 
 
+def sure_open(c, r, h):
+    """Fix 2 (test plan): an opening counts as sure only with at least 3 'open' votes and more than twice as
+    many 'open' as 'wall' votes. A single stray ray must not rule out a dead end (it hid a tile next to the exit)."""
+    e = edge_ref(c, r, h)
+    return e[0] >= 3 and e[0] > 2 * e[1]
+
+
+def n_sure_open(c, r):
+    return sum(1 for h in range(4) if sure_open(c, r, h))
+
+
 def needed(c, r):
-    if (c, r) in seen or n_open(c, r) >= 2:
+    """Could this cell still be a dead end with an unseen tile? Only two SURE openings rule it out."""
+    if (c, r) in seen or n_sure_open(c, r) >= 2:
         return False
     return any(edge(c, r, h) != WALL for h in range(4))
+
+
+def tile_counts(key):
+    """Fix 2: tiles are only in dead ends, so a tile seen in a cell with 2+ sure openings is the camera
+    spilling a neighbouring tile into it - don't count it twice."""
+    return seen.get(key) in (BLUE, GREEN) and n_sure_open(*key) <= 1
+
+
+def tile_totals():
+    nb = sum(1 for k in seen if tile_counts(k) and seen[k] == BLUE)
+    ng = sum(1 for k in seen if tile_counts(k) and seen[k] == GREEN)
+    ignored = [k for k in seen if seen[k] in (BLUE, GREEN) and not tile_counts(k)]
+    for c, r in ignored:
+        print('tile at c%d r%d ignored: that cell is not a dead end (camera saw a neighbouring tile)' % (c + 1, r + 1))
+    return nb, ng
 
 
 def plan(c0, r0, h0, goal, allow_unk=False, bonus=None):
@@ -576,8 +603,7 @@ def next_plan(c, r, h):
 
 
 def show_majority():
-    nb = sum(1 for v in seen.values() if v == BLUE)
-    ng = sum(1 for v in seen.values() if v == GREEN)
+    nb, ng = tile_totals()
     blue = nb >= ng
     led_b.set(1 if blue else 0)
     led_g.set(0 if blue else 1)
@@ -1267,8 +1293,7 @@ def go(target, v_max=0.16, extra=()):
 
 # ------------------------------------------------------------------ clues
 def maze_clues():
-    nb = sum(1 for v in seen.values() if v == BLUE)
-    ng = sum(1 for v in seen.values() if v == GREEN)
+    nb, ng = tile_totals()
     # shortest path (fewest cells, then fewest turns) through the mapped maze;
     # the robot enters cell (0,0) heading +y (h=0). Turns in the exit cell are not counted.
     start = (0, 0, 0)

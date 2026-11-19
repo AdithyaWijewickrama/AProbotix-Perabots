@@ -4,8 +4,8 @@
  "start": "full",
  "marks": {
   "s1": 14.64,
-  "s2": 59.15,
-  "end": 148.72
+  "s2": 59.55,
+  "end": 148.88
  },
  "reason": "reached END",
  "intervals": {
@@ -15,11 +15,11 @@
   ],
   "S2": [
    14.64,
-   59.15
+   59.55
   ],
   "S3": [
-   59.15,
-   148.72
+   59.55,
+   148.88
   ]
  },
  "sections": {
@@ -37,51 +37,51 @@
    "reversing": 0.0
   },
   "S2": {
-   "time": 44.51,
-   "distance": 8.702,
-   "turns": 23,
+   "time": 44.91,
+   "distance": 8.728,
+   "turns": 26,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 28.6,
-   "stopped": 2.16,
-   "turning": 11.18,
+   "energy_J": 29.7,
+   "stopped": 1.97,
+   "turning": 11.47,
    "cruising": 27.22,
-   "slow": 3.94,
-   "reversing": 0.0
+   "slow": 4.22,
+   "reversing": 0.05
   },
   "S3": {
-   "time": 89.57,
-   "distance": 9.393,
-   "turns": 17,
+   "time": 89.33,
+   "distance": 9.387,
+   "turns": 16,
    "stops": 4,
    "stop_list": [
     [
-     68.3,
+     68.59,
      0.62,
-     2.008,
+     2.007,
      3.264
     ],
     [
-     70.94,
-     0.86,
+     71.28,
+     0.82,
      2.007,
-     3.361
+     3.358
     ],
     [
-     131.04,
+     131.18,
      0.62,
-     1.537,
-     2.751
+     1.541,
+     2.752
     ],
     [
-     133.68,
+     133.82,
      0.43,
-     1.696,
+     1.698,
      2.752
     ]
    ],
    "energy_J": 25.8,
-   "stopped": 4.8,
+   "stopped": 4.56,
    "turning": 8.06,
    "cruising": 0.0,
    "slow": 76.66,
@@ -98,19 +98,19 @@
    "other": 0.1
   },
   "S2": {
-   "gap": 5.04,
-   "longer path": 0.14,
-   "turning": 2.23,
-   "stops": 2.16,
-   "below top speed": 0.5,
-   "other": 0.01
+   "gap": 5.44,
+   "longer path": 0.23,
+   "turning": 2.52,
+   "stops": 1.97,
+   "below top speed": 0.69,
+   "other": 0.03
   },
   "S3": {
-   "gap": 68.14,
-   "longer path": 18.3,
+   "gap": 67.9,
+   "longer path": 18.28,
    "turning": 3.7,
-   "stops": 2.8,
-   "below top speed": 43.29,
+   "stops": 2.56,
+   "below top speed": 43.31,
    "other": 0.05
   }
  },
@@ -123,7 +123,7 @@
   "revisits": 4,
   "never_entered": 6
  },
- "clearance_mm": 26.0,
+ "clearance_mm": 16.0,
  "wall_overlaps": 0,
  "judge_collisions": 0,
  "s3": {
@@ -162,7 +162,7 @@
  },
  "collisions": 0,
  "summary": {
-  "real": "148.7 s",
+  "real": "148.9 s",
   "best": "71.1 s",
   "note": "mission complete, piece correct"
  }

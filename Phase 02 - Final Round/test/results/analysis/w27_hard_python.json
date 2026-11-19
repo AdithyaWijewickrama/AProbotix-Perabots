@@ -4,8 +4,8 @@
  "start": "full",
  "marks": {
   "s1": 17.57,
-  "s2": 49.36,
-  "end": 133.18
+  "s2": 48.66,
+  "end": 132.54
  },
  "reason": "reached END",
  "intervals": {
@@ -15,11 +15,11 @@
   ],
   "S2": [
    17.57,
-   49.36
+   48.66
   ],
   "S3": [
-   49.36,
-   133.18
+   48.66,
+   132.54
   ]
  },
  "sections": {
@@ -37,54 +37,54 @@
    "reversing": 0.0
   },
   "S2": {
-   "time": 31.79,
-   "distance": 5.658,
-   "turns": 21,
+   "time": 31.09,
+   "distance": 5.668,
+   "turns": 19,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 21.5,
-   "stopped": 1.63,
-   "turning": 9.12,
-   "cruising": 17.38,
-   "slow": 3.6,
+   "energy_J": 20.2,
+   "stopped": 1.49,
+   "turning": 8.69,
+   "cruising": 17.47,
+   "slow": 3.36,
    "reversing": 0.1
   },
   "S3": {
-   "time": 83.82,
-   "distance": 8.581,
+   "time": 83.88,
+   "distance": 8.569,
    "turns": 16,
    "stops": 4,
    "stop_list": [
     [
-     58.42,
+     57.84,
      0.62,
-     2.009,
-     3.268
-    ],
-    [
-     61.1,
-     0.82,
      2.008,
-     3.362
+     3.262
     ],
     [
-     118.46,
+     60.53,
+     0.82,
+     2.007,
+     3.356
+    ],
+    [
+     117.74,
      0.62,
-     1.142,
-     2.757
+     1.141,
+     2.758
     ],
     [
-     121.1,
+     120.38,
      0.43,
      1.299,
-     2.757
+     2.758
     ]
    ],
    "energy_J": 24.6,
-   "stopped": 4.7,
-   "turning": 7.92,
+   "stopped": 4.66,
+   "turning": 8.3,
    "cruising": 0.0,
-   "slow": 71.14,
+   "slow": 70.9,
    "reversing": 5.28
   }
  },
@@ -98,20 +98,20 @@
    "other": 0.06
   },
   "S2": {
-   "gap": 3.51,
-   "longer path": -0.01,
-   "turning": 1.12,
-   "stops": 1.63,
-   "below top speed": 0.71,
-   "other": 0.06
+   "gap": 2.81,
+   "longer path": 0.03,
+   "turning": 0.69,
+   "stops": 1.49,
+   "below top speed": 0.52,
+   "other": 0.08
   },
   "S3": {
-   "gap": 61.89,
-   "longer path": 15.59,
-   "turning": 3.15,
-   "stops": 2.7,
-   "below top speed": 40.39,
-   "other": 0.06
+   "gap": 61.95,
+   "longer path": 15.55,
+   "turning": 3.53,
+   "stops": 2.66,
+   "below top speed": 40.19,
+   "other": 0.02
   }
  },
  "s2_coverage": {
@@ -173,7 +173,7 @@
  },
  "collisions": 0,
  "summary": {
-  "real": "133.2 s",
+  "real": "132.5 s",
   "best": "60.0 s",
   "note": "mission complete, piece correct"
  }
