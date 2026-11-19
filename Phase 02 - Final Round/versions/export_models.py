@@ -76,7 +76,21 @@ VERSIONS = {
                         "hardware/pcb_v4/guardianbot_v4_pcb_deck_BOM.csv",
                         "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_top_silkscreen.pdf",
                         "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_bottom_silkscreen_mirrored.pdf",
-                        "docs/GuardianBot_v4.1_build_guide.md",
+                        "versions/v4.1_esp32s3_ov7670/GuardianBot_v4.1_build_guide.md",
+                        "docs/TEST_PLAN.md"]),
+    # v4.2: same PCB and decks; the camera mast is new (camera_mast + camera_tilt_bracket in hardware/3d_prints).
+    # v4.1's fixed mast is kept in versions/v4.1_esp32s3_ov7670/3d_prints/ (its manifest points there).
+    "v4.2": dict(folder="v4.2_camera_tilt",
+                 pcb="hardware/pcb_v4/guardianbot_v4_pcb_deck.kicad_pcb",
+                 prints="hardware/3d_prints",
+                 decks="hardware/acrylic",
+                 extras="mega_flipped_above",
+                 files=["hardware/pcb_v4/guardianbot_v4_pcb_deck_gerbers.zip",
+                        "hardware/pcb_v4/guardianbot_v4_pcb_deck_schematic.pdf",
+                        "hardware/pcb_v4/guardianbot_v4_pcb_deck_BOM.csv",
+                        "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_top_silkscreen.pdf",
+                        "hardware/pcb_v4/guardianbot_v4_pcb_deck-assembly_bottom_silkscreen_mirrored.pdf",
+                        "docs/GuardianBot_v4.2_build_guide.md",
                         "docs/TEST_PLAN.md"]),
 }
 

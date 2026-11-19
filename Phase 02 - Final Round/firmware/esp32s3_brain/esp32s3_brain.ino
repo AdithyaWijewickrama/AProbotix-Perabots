@@ -1266,20 +1266,23 @@ int lookColour(int pos) {
 // shows the whole board. Pitch and heading are fitted to the black grid lines first (servo, floor and odometry are
 // never exact), then every blue / green blob's lowest pixel gives the piece's foot on the floor -> its cell.
 static const float PIECE_H = 0.05f, PIECE_R = 0.025f;
+// v4.2: the servo shaft is 26 mm behind and 11 mm above the lens, so the lens moves when the camera tilts
+static const float LOOK_X = TILT_PX + (CAM_X - TILT_PX) * cosf(TILT_LOOK) - (CAM_Z - TILT_PZ) * sinf(TILT_LOOK);
+static const float LOOK_Z = TILT_PZ + (CAM_X - TILT_PX) * sinf(TILT_LOOK) + (CAM_Z - TILT_PZ) * cosf(TILT_LOOK);
 struct CamPose { float x, y, yaw; };
 static bool camHit(float u, float v, float pitch, float zp, const CamPose &P, float &wx, float &wy) {
   float f = (CAM_HI_W / 2.0f) / tanf(CAM_FOV / 2);
   float x = f, y = -(u + 0.5f - CAM_HI_W / 2.0f), z = -(v + 0.5f - CAM_HI_H / 2.0f);
   float x2 = x * cosf(pitch) + z * sinf(pitch), z2 = -x * sinf(pitch) + z * cosf(pitch);
   if (z2 >= -1e-6f) return false;
-  float t = (zp - CAM_Z) / z2, gx = CAM_X + t * x2, gy = t * y;
+  float t = (zp - LOOK_Z) / z2, gx = LOOK_X + t * x2, gy = t * y;
   float c = cosf(P.yaw), s_ = sinf(P.yaw);
   wx = P.x + c * gx - s_ * gy; wy = P.y + s_ * gx + c * gy;
   return true;
 }
 static bool camProject(float wx, float wy, float cp, float sp, const CamPose &P, float cy_, float sy_, int &u, int &v) {
   float dx = wx - P.x, dy = wy - P.y;
-  float X = cy_ * dx + sy_ * dy - CAM_X, Y = -sy_ * dx + cy_ * dy, Z = -CAM_Z;
+  float X = cy_ * dx + sy_ * dy - LOOK_X, Y = -sy_ * dx + cy_ * dy, Z = -LOOK_Z;
   float x = X * cp - Z * sp, z = X * sp + Z * cp;
   if (x <= 0.01f) return false;
   float f = (CAM_HI_W / 2.0f) / tanf(CAM_FOV / 2);
@@ -1329,7 +1332,7 @@ static void boardFrame(CamPose P, float pitch, int votes[10][2], float &pitchFit
   static int16_t stk[CAM_HI_W * CAM_HI_H];
   static int8_t colTop[CAM_HI_W], colBot[CAM_HI_W];
   memset(seenPx, 0, sizeof(seenPx));
-  float cx0 = P.x + CAM_X * cosf(P.yaw), cy0 = P.y + CAM_X * sinf(P.yaw);
+  float cx0 = P.x + LOOK_X * cosf(P.yaw), cy0 = P.y + LOOK_X * sinf(P.yaw);
   for (int v0 = 0; v0 < CAM_HI_H; v0++)
     for (int u0 = 0; u0 < CAM_HI_W; u0++) {
       int k = bLab[v0][u0];
@@ -1363,7 +1366,7 @@ static void boardFrame(CamPose P, float pitch, int votes[10][2], float &pitchFit
 }
 // empty cells in the shadow of a seen piece (same bearing, farther, inside its shadow)
 static int hiddenCells(const int *found, CamPose P, int out_[10]) {
-  float cx0 = P.x + CAM_X * cosf(P.yaw), cy0 = P.y + CAM_X * sinf(P.yaw);
+  float cx0 = P.x + LOOK_X * cosf(P.yaw), cy0 = P.y + LOOK_X * sinf(P.yaw);
   int n = 0;
   for (int q = 1; q <= 9; q++) {
     if (found[q]) continue;
@@ -1371,7 +1374,7 @@ static int hiddenCells(const int *found, CamPose P, int out_[10]) {
     for (int p = 1; p <= 9; p++) {
       if (!found[p]) continue;
       float dp = hypotf(POS_CELL[p].x - cx0, POS_CELL[p].y - cy0), ap = atan2f(POS_CELL[p].y - cy0, POS_CELL[p].x - cx0);
-      if (dp < dq && fabsf(sinf(aq - ap)) * dq < 0.04f && dq - PIECE_R < (dp + PIECE_R) * CAM_Z / (CAM_Z - PIECE_H)) { out_[n++] = q; break; }
+      if (dp < dq && fabsf(sinf(aq - ap)) * dq < 0.04f && dq - PIECE_R < (dp + PIECE_R) * LOOK_Z / (LOOK_Z - PIECE_H)) { out_[n++] = q; break; }
     }
   }
   return n;

@@ -3,121 +3,121 @@
  "world": "w15_c10",
  "start": "full",
  "marks": {
-  "s1": 16.16,
-  "s2": 60.83,
-  "end": 97.14
+  "s1": 16.24,
+  "s2": 60.72,
+  "end": 96.9
  },
  "reason": "reached END",
  "intervals": {
   "S1": [
    0.0,
-   16.16
+   16.24
   ],
   "S2": [
-   16.16,
-   60.83
+   16.24,
+   60.72
   ],
   "S3": [
-   60.83,
-   97.14
+   60.72,
+   96.9
   ]
  },
  "sections": {
   "S1": {
-   "time": 16.16,
-   "distance": 2.638,
-   "turns": 15,
+   "time": 16.24,
+   "distance": 2.633,
+   "turns": 14,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 9.8,
-   "stopped": 1.68,
-   "turning": 4.85,
-   "cruising": 7.97,
-   "slow": 1.58,
+   "energy_J": 9.2,
+   "stopped": 1.92,
+   "turning": 4.46,
+   "cruising": 7.82,
+   "slow": 1.97,
    "reversing": 0.0
   },
   "S2": {
-   "time": 44.67,
-   "distance": 7.713,
-   "turns": 31,
+   "time": 44.48,
+   "distance": 7.708,
+   "turns": 30,
    "stops": 0,
    "stop_list": [],
    "energy_J": 32.9,
-   "stopped": 2.59,
-   "turning": 15.02,
-   "cruising": 23.76,
-   "slow": 3.26,
-   "reversing": 0.05
+   "stopped": 2.69,
+   "turning": 14.5,
+   "cruising": 23.42,
+   "slow": 3.79,
+   "reversing": 0.1
   },
   "S3": {
-   "time": 36.31,
-   "distance": 4.079,
+   "time": 36.18,
+   "distance": 4.093,
    "turns": 12,
    "stops": 5,
    "stop_list": [
     [
      63.7,
      0.67,
-     2.205,
-     3.038
+     2.206,
+     3.049
     ],
     [
-     69.41,
+     69.46,
      0.62,
-     2.007,
-     3.265
+     2.008,
+     3.267
     ],
     [
      72.1,
      0.86,
-     2.006,
-     3.364
+     2.008,
+     3.366
     ],
     [
-     87.89,
+     87.79,
      0.58,
-     0.735,
-     2.75
+     0.74,
+     2.756
     ],
     [
-     90.48,
-     0.48,
-     0.895,
-     2.751
+     90.38,
+     0.43,
+     0.897,
+     2.756
     ]
    ],
    "energy_J": 14.3,
-   "stopped": 4.42,
-   "turning": 5.95,
-   "cruising": 6.05,
-   "slow": 19.82,
-   "reversing": 3.26
+   "stopped": 4.37,
+   "turning": 5.86,
+   "cruising": 6.19,
+   "slow": 19.73,
+   "reversing": 3.17
   }
  },
  "gaps": {
   "S1": {
-   "gap": 6.56,
-   "longer path": 0.42,
-   "turning": 3.93,
-   "stops": 1.68,
-   "below top speed": 0.45,
-   "other": 0.08
+   "gap": 6.64,
+   "longer path": 0.41,
+   "turning": 3.54,
+   "stops": 1.92,
+   "below top speed": 0.7,
+   "other": 0.07
   },
   "S2": {
-   "gap": 3.09,
-   "longer path": -1.49,
-   "turning": 2.85,
-   "stops": 2.59,
-   "below top speed": -0.9,
-   "other": 0.04
+   "gap": 2.9,
+   "longer path": -1.51,
+   "turning": 2.33,
+   "stops": 2.69,
+   "below top speed": -0.69,
+   "other": 0.08
   },
   "S3": {
-   "gap": 14.38,
-   "longer path": 0.58,
-   "turning": 1.18,
-   "stops": 2.42,
+   "gap": 14.25,
+   "longer path": 0.63,
+   "turning": 1.09,
+   "stops": 2.37,
    "below top speed": 10.13,
-   "other": 0.07
+   "other": 0.03
   }
  },
  "s2_coverage": {
@@ -134,9 +134,9 @@
   "revisits": 3,
   "never_entered": 9
  },
- "clearance_mm": -0.9,
+ "clearance_mm": 0.3,
  "wall_overlaps": 0,
- "judge_collisions": 4,
+ "judge_collisions": 1,
  "s3": {
   "clan": "BLUE",
   "winning_cells": [
@@ -176,7 +176,7 @@
  "collisions": 0,
  "legal": false,
  "summary": {
-  "real": "97.1 s",
+  "real": "96.9 s",
   "best": "73.1 s",
   "note": "ILLEGAL ARENA (no route for a 20 cm robot; stress test only)"
  }

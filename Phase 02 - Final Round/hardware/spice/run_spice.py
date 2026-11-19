@@ -1,5 +1,5 @@
 """
-run_spice.py - SPICE checks of the GuardianBot v4.1 PCB deck circuits (PCB rev A, unchanged from v4.0) with ngspice (KiCad's simulator).
+run_spice.py - SPICE checks of the GuardianBot v4.2 PCB deck circuits (PCB rev A, unchanged from v4.0) with ngspice (KiCad's simulator).
 
     python run_spice.py        -> README.md (results) + plots/*.png (and the .cir decks it ran)
 
@@ -8,7 +8,7 @@ run_spice.py - SPICE checks of the GuardianBot v4.1 PCB deck circuits (PCB rev A
   3. vbat_adc           20k / 10k + 100 nF divider -> A0: DC 5..9 V, ADC counts, settling
   4. buzzer             D9 -> 1k -> BC547 -> 5 V active buzzer (30 mA)
   5. power              2S LiPo (full / nominal / empty) -> wiring -> DRV8833 + 2 N20 stall, both bucks,
-                        both servos stalling: how far VBAT, +5V and +5V5 dip
+                        both gripper servos and the SG90 tilt servo stalling: how far VBAT, +5V and +5V5 dip
 Every value comes from hardware/cad/deck_v4/deck_design.py (the PCB) or a datasheet (noted in models.lib).
 Needs: ngspice on the PATH (Windows: ngspice from ngspice.sourceforge.io, or KiCad's bundled one), numpy, matplotlib.
 """
@@ -250,13 +250,13 @@ Rlog p5 0 {{ 5 / 0.35 }}
 Sburst p5 bur ctl_b 0 SWM
 Rbur bur 0 {{ 5 / 0.3 }}
 Vctl_b ctl_b 0 PULSE(0 1 12m 10u 10u 2m 100m)
-* servo buck HW-319 -> +5V5: both M0170 servos stall at once (2 x 1.5 A) from 10 ms to 30 ms
+* servo buck HW-319 -> +5V5: both M0170 servos (2 x 1.5 A) and the v4.2 SG90 camera tilt servo (0.75 A) stall at once, 10 ms .. 30 ms
 X55 vbat p55 0 BUCK params: vset=5.5 vdrop=0.5 rsw=0.15 eff=0.88
 C2 p55 c2e 470u
 Rc2 c2e 0 0.05
 Ridle p55 0 {{ 5.5 / 0.02 }}
 Ssrv p55 srv ctl_s 0 SWM
-Rsrv srv 0 {{ 5.5 / 3.0 }}
+Rsrv srv 0 {{ 5.5 / 3.75 }}
 Vctl_s ctl_s 0 PULSE(0 1 10m 10u 10u 20m 100m)
 .tran 5u 40m
 .control
@@ -290,7 +290,7 @@ def main():
         ax[0].plot(t * 1e3, vb, label="%s (%.1f V)" % (tag, vocv)); ax[1].plot(t * 1e3, v5); ax[2].plot(t * 1e3, v55)
         res("Power, %s battery: lowest VBAT at the deck" % tag, "%.2f V" % mb, "> 6.0 V (DRV8833 min 2.7 V, bucks)", mb > 6.0)
         res("Power, %s battery: lowest +5V (logic)" % tag, "%.2f V" % m5, "> 4.75 V (ESP32-S3, sensors)", m5 > 4.75)
-        res("Power, %s battery: lowest +5V5 (servos)" % tag, "%.2f V" % m55, "> 4.8 V (M0170 min)", m55 > 4.8)
+        res("Power, %s battery: lowest +5V5 (servos)" % tag, "%.2f V" % m55, "> 4.8 V (M0170, SG90 min)", m55 > 4.8)
     ax[0].set_ylabel("VBAT (V)"); ax[0].legend(fontsize=8)
     ax[1].set_ylabel("+5V (V)"); ax[2].set_ylabel("+5V5 (V)"); ax[2].set_xlabel("ms")
     for a, txt in ((ax[0], "motors start 5 ms, servos stall 10 ms, S3 + camera step 12 ms"),):
@@ -307,14 +307,15 @@ def main():
              "- **vbat_adc**: the 20k/10k + 100 nF battery divider on A0.",
              "- **buzzer**: the BC547 driver.",
              "- **power_full / nominal / empty**: the 2S LiPo and wiring feeding the DRV8833, both N20s starting from",
-             "  standstill, the logic buck with an S3 + camera current step, and the servo buck with both servos stalled at once.", "",
+             "  standstill, the logic buck with an S3 + camera current step, and the servo buck with both gripper servos and the SG90 camera tilt servo (v4.2) stalled at once.", "",
              "| Check | Result | Limit | |", "|---|---|---|---|"]
     lines += ["| %s | %s | %s | %s |" % r for r in results]
     nfail = sum(1 for r in results if r[3] != "pass")
     lines += ["", "**%d of %d checks pass.**" % (len(results) - nfail, len(results)), "",
               "![link](plots/link.png)", "", "![power](plots/power.png)", ""]
-    lines += ["With an empty pack (6.6 V), the servo buck runs in dropout while both servos stall:",
-              "+5V5 sags to about 5.2 V, which is still fine for the M0170. The logic rail never moves more than",
+    lines += ["With an empty pack (6.6 V), the servo buck runs in dropout while all three servos stall:",
+              "+5V5 sags to about 5.1 V, which is still fine for the M0170 and the SG90. VBAT at the deck dips to 6.09 V, close to",
+              "the 6.0 V check, so charge the pack before a run. The logic rail never moves more than",
               "a few tens of mV, so the Mega and the ESP32-S3 do not brown out when the motors or servos start.", ""]
     open(os.path.join(HERE, "README.md"), "w").write("\n".join(lines))
     for r in results:

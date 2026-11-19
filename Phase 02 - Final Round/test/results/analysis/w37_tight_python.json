@@ -3,133 +3,138 @@
  "world": "w37_tight",
  "start": "full",
  "marks": {
-  "s1": 22.66,
-  "s2": 81.34,
-  "end": 117.66
+  "s1": 20.18,
+  "s2": 76.27,
+  "end": 112.54
  },
  "reason": "reached END",
  "intervals": {
   "S1": [
    0.0,
-   22.66
+   20.18
   ],
   "S2": [
-   22.66,
-   81.34
+   20.18,
+   76.27
   ],
   "S3": [
-   81.34,
-   117.66
+   76.27,
+   112.54
   ]
  },
  "sections": {
   "S1": {
-   "time": 22.66,
-   "distance": 3.651,
-   "turns": 21,
+   "time": 20.18,
+   "distance": 3.581,
+   "turns": 17,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 13.6,
-   "stopped": 1.92,
-   "turning": 7.3,
-   "cruising": 11.18,
-   "slow": 2.21,
+   "energy_J": 11.9,
+   "stopped": 1.68,
+   "turning": 5.66,
+   "cruising": 10.9,
+   "slow": 1.87,
    "reversing": 0.0
   },
   "S2": {
-   "time": 58.68,
-   "distance": 11.248,
+   "time": 56.09,
+   "distance": 10.702,
    "turns": 34,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 39.9,
-   "stopped": 3.22,
-   "turning": 15.79,
-   "cruising": 35.14,
-   "slow": 4.46,
-   "reversing": 0.05
+   "energy_J": 37.9,
+   "stopped": 3.02,
+   "turning": 15.5,
+   "cruising": 32.78,
+   "slow": 4.7,
+   "reversing": 0.0
   },
   "S3": {
-   "time": 36.32,
-   "distance": 4.096,
+   "time": 36.27,
+   "distance": 4.092,
    "turns": 14,
    "stops": 5,
    "stop_list": [
     [
-     84.24,
+     79.2,
      0.67,
-     2.207,
-     3.044
+     2.206,
+     3.052
     ],
     [
-     90.0,
+     84.82,
      0.62,
      2.008,
-     3.265
+     3.264
     ],
     [
-     92.64,
+     87.46,
      0.86,
-     2.008,
-     3.365
+     2.007,
+     3.363
     ],
     [
-     108.43,
+     103.15,
      0.58,
      0.737,
-     3.053
+     3.052
     ],
     [
-     111.02,
-     0.43,
+     105.74,
+     0.48,
      0.896,
-     3.053
+     3.052
     ]
    ],
-   "energy_J": 14.6,
-   "stopped": 4.32,
-   "turning": 5.95,
-   "cruising": 6.14,
-   "slow": 19.87,
-   "reversing": 3.22
+   "energy_J": 14.5,
+   "stopped": 4.27,
+   "turning": 6.14,
+   "cruising": 6.19,
+   "slow": 19.63,
+   "reversing": 3.17
   }
  },
  "gaps": {
   "S1": {
-   "gap": 8.16,
-   "longer path": 1.39,
-   "turning": 4.6,
-   "stops": 1.92,
-   "below top speed": 0.2,
-   "other": 0.05
-  },
-  "S2": {
-   "gap": 5.72,
-   "longer path": 0.29,
-   "turning": 2.56,
-   "stops": 3.22,
-   "below top speed": -0.42,
+   "gap": 5.68,
+   "longer path": 1.16,
+   "turning": 2.96,
+   "stops": 1.68,
+   "below top speed": -0.19,
    "other": 0.07
   },
+  "S2": {
+   "gap": 3.13,
+   "longer path": -1.53,
+   "turning": 2.27,
+   "stops": 3.02,
+   "below top speed": -0.72,
+   "other": 0.09
+  },
   "S3": {
-   "gap": 18.22,
-   "longer path": 2.64,
-   "turning": 2.84,
-   "stops": 2.32,
-   "below top speed": 10.38,
+   "gap": 18.17,
+   "longer path": 2.63,
+   "turning": 3.03,
+   "stops": 2.27,
+   "below top speed": 10.2,
    "other": 0.04
   }
  },
  "s2_coverage": {
   "dead_ends": 5,
-  "checked": 5,
-  "missed": [],
-  "cells_entered": 44,
-  "cells_unique": 30,
-  "revisits": 14,
-  "never_entered": 6
+  "checked": 4,
+  "missed": [
+   [
+    0,
+    3
+   ]
+  ],
+  "cells_entered": 42,
+  "cells_unique": 29,
+  "revisits": 13,
+  "never_entered": 7
  },
- "clearance_mm": 28.8,
+ "clearance_mm": 19.5,
  "wall_overlaps": 0,
  "judge_collisions": 0,
  "s3": {
@@ -169,7 +174,7 @@
  "collisions": 0,
  "legal": true,
  "summary": {
-  "real": "117.7 s",
+  "real": "112.5 s",
   "best": "85.6 s",
   "note": "mission complete, piece correct"
  }

@@ -5,19 +5,19 @@
  "marks": {
   "s1": 0.02,
   "s2": 2.42,
-  "end": 37.68
+  "end": 37.66
  },
  "reason": "reached END",
  "intervals": {
   "S3": [
    2.42,
-   37.68
+   37.66
   ]
  },
  "sections": {
   "S3": {
-   "time": 35.26,
-   "distance": 4.089,
+   "time": 35.24,
+   "distance": 4.096,
    "turns": 12,
    "stops": 5,
    "stop_list": [
@@ -28,46 +28,46 @@
      3.05
     ],
     [
-     10.94,
+     10.99,
      0.62,
      2.008,
-     3.268
+     3.269
     ],
     [
-     13.58,
-     0.86,
-     2.007,
+     13.68,
+     0.82,
+     2.008,
      3.367
     ],
     [
      26.83,
-     0.62,
-     1.138,
-     3.051
+     0.58,
+     1.139,
+     3.052
     ],
     [
-     29.47,
-     0.48,
+     29.42,
+     0.43,
      1.298,
-     3.051
+     3.052
     ]
    ],
-   "energy_J": 14.4,
-   "stopped": 4.37,
+   "energy_J": 14.3,
+   "stopped": 4.27,
    "turning": 5.81,
-   "cruising": 7.68,
+   "cruising": 7.78,
    "slow": 17.33,
    "reversing": 3.22
   }
  },
  "gaps": {
   "S3": {
-   "gap": 17.16,
-   "longer path": 2.62,
+   "gap": 17.14,
+   "longer path": 2.64,
    "turning": 2.7,
-   "stops": 2.37,
-   "below top speed": 9.4,
-   "other": 0.07
+   "stops": 2.27,
+   "below top speed": 9.48,
+   "other": 0.05
   }
  },
  "clearance_mm": 34.0,

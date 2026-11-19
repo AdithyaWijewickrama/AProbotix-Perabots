@@ -7,6 +7,7 @@ centralWidgetVisible: 1
 orthographicViewHeight: 1
 textFiles: -1
 consoles: Console:All:All
-renderingDevicePerspectives: team_robot:cam;1;1;0;0
+renderingDevicePerspectives: team_robot:cam;1;6.45833;0;0
+renderingDevicePerspectives: team_robot:cam_hi;0;2.1875;0.0190259;0.440629
 renderingDevicePerspectives: team_robot:tcs_floor;1;8;0;0
 renderingDevicePerspectives: team_robot:tcs_front;1;8;0;0

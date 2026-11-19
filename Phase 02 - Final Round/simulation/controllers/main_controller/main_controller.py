@@ -1477,6 +1477,10 @@ def look_colour(pos):
 
 # ------------------------------------------------------------------ Fix 4: camera board look
 PIECE_H, PIECE_R = 0.05, 0.025
+TILT_PX, TILT_PZ = 0.036, 0.151          # v4.2: SG90 shaft (tilt axis), hardware/cad/guardianbot_geometry.py TILT_PIVOT
+_lx, _lz = CAM_X - TILT_PX, CAM_Z - TILT_PZ
+LOOK_X = TILT_PX + _lx * math.cos(CAM_TILT_LOOK) - _lz * math.sin(CAM_TILT_LOOK)   # lens when tilted for the board look
+LOOK_Z = TILT_PZ + _lx * math.sin(CAM_TILT_LOOK) + _lz * math.cos(CAM_TILT_LOOK)
 
 
 def cam_ray(u, v, W, H, pitch):
@@ -1490,16 +1494,16 @@ def cam_hit(u, v, W, H, pitch, zp, pose):
     x2, y, z2 = cam_ray(u, v, W, H, pitch)
     if z2 >= -1e-6:
         return None
-    t = (zp - CAM_Z) / z2
-    gx, gy = CAM_X + t * x2, t * y
+    t = (zp - LOOK_Z) / z2
+    gx, gy = LOOK_X + t * x2, t * y
     c, s_ = math.cos(pose[2]), math.sin(pose[2])
-    return pose[0] + c * gx - s_ * gy, pose[1] + s_ * gx + c * gy, math.hypot(gx - CAM_X, gy)
+    return pose[0] + c * gx - s_ * gy, pose[1] + s_ * gx + c * gy, math.hypot(gx - LOOK_X, gy)
 
 
 def cam_project(wx, wy, W, H, pitch, pose):
     c, s_ = math.cos(pose[2]), math.sin(pose[2])
     dx, dy = wx - pose[0], wy - pose[1]
-    X, Y, Z = c * dx + s_ * dy - CAM_X, -s_ * dx + c * dy, -CAM_Z
+    X, Y, Z = c * dx + s_ * dy - LOOK_X, -s_ * dx + c * dy, -LOOK_Z
     x = X * math.cos(pitch) - Z * math.sin(pitch)
     z = X * math.sin(pitch) + Z * math.cos(pitch)
     if x <= 0.01:
@@ -1530,7 +1534,7 @@ def cam_calibrate(dark, W, H, pose, pitch, span=0.08):
 
 def hidden_cells(found, pose):
     """Empty cells in the shadow of a seen piece (same bearing, farther away, inside its shadow)."""
-    cx0, cy0 = pose[0] + CAM_X * math.cos(pose[2]), pose[1] + CAM_X * math.sin(pose[2])
+    cx0, cy0 = pose[0] + LOOK_X * math.cos(pose[2]), pose[1] + LOOK_X * math.sin(pose[2])
     out = []
     for q, (qx, qy) in POS_CELL.items():
         if q in found:
@@ -1539,7 +1543,7 @@ def hidden_cells(found, pose):
         for p in found:
             px_, py_ = POS_CELL[p]
             dp, ap = math.hypot(px_ - cx0, py_ - cy0), math.atan2(py_ - cy0, px_ - cx0)
-            if dp < dq and abs(math.sin(aq - ap)) * dq < 0.04 and dq - PIECE_R < (dp + PIECE_R) * CAM_Z / (CAM_Z - PIECE_H):
+            if dp < dq and abs(math.sin(aq - ap)) * dq < 0.04 and dq - PIECE_R < (dp + PIECE_R) * LOOK_Z / (LOOK_Z - PIECE_H):
                 out.append(q)
                 break
     return out
@@ -1594,7 +1598,7 @@ def board_from_image(img, W, H, pose, pitch):
                 h = cam_hit(u, bot + 0.5, W, H, pitch, 0.0, pose)      # lower edge of the lowest pixel = the piece's foot
                 if h is None:
                     continue
-                cx0, cy0 = pose[0] + CAM_X * math.cos(pose[2]), pose[1] + CAM_X * math.sin(pose[2])
+                cx0, cy0 = pose[0] + LOOK_X * math.cos(pose[2]), pose[1] + LOOK_X * math.sin(pose[2])
                 ux, uy = h[0] - cx0, h[1] - cy0
                 n = math.hypot(ux, uy) or 1.0
                 cx, cy = h[0] + PIECE_R * ux / n, h[1] + PIECE_R * uy / n

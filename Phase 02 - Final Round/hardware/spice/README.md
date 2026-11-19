@@ -10,7 +10,7 @@ opens in KiCad's simulator or plain ngspice.
 - **vbat_adc**: the 20k/10k + 100 nF battery divider on A0.
 - **buzzer**: the BC547 driver.
 - **power_full / nominal / empty**: the 2S LiPo and wiring feeding the DRV8833, both N20s starting from
-  standstill, the logic buck with an S3 + camera current step, and the servo buck with both servos stalled at once.
+  standstill, the logic buck with an S3 + camera current step, and the servo buck with both gripper servos and the SG90 camera tilt servo (v4.2) stalled at once.
 
 | Check | Result | Limit | |
 |---|---|---|---|
@@ -30,15 +30,15 @@ opens in KiCad's simulator or plain ngspice.
 | Battery sense: ADC sample kick-back on A0 | 0.70 mV | < 1 LSB (4.9 mV) | pass |
 | Buzzer driver: Vce(sat) with 1k base resistor | 0.07 V | < 0.3 V (fully on) | pass |
 | Buzzer driver: Ic / Ib (forced gain) | 29.5 mA / 4.23 mA | Ib > Ic / 50 | pass |
-| Power, full battery: lowest VBAT at the deck | 7.88 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
+| Power, full battery: lowest VBAT at the deck | 7.80 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
 | Power, full battery: lowest +5V (logic) | 4.98 V | > 4.75 V (ESP32-S3, sensors) | pass |
-| Power, full battery: lowest +5V5 (servos) | 5.27 V | > 4.8 V (M0170 min) | pass |
-| Power, nominal battery: lowest VBAT at the deck | 6.85 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
+| Power, full battery: lowest +5V5 (servos) | 5.21 V | > 4.8 V (M0170, SG90 min) | pass |
+| Power, nominal battery: lowest VBAT at the deck | 6.76 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
 | Power, nominal battery: lowest +5V (logic) | 4.98 V | > 4.75 V (ESP32-S3, sensors) | pass |
-| Power, nominal battery: lowest +5V5 (servos) | 5.27 V | > 4.8 V (M0170 min) | pass |
-| Power, empty battery: lowest VBAT at the deck | 6.14 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
+| Power, nominal battery: lowest +5V5 (servos) | 5.21 V | > 4.8 V (M0170, SG90 min) | pass |
+| Power, empty battery: lowest VBAT at the deck | 6.09 V | > 6.0 V (DRV8833 min 2.7 V, bucks) | pass |
 | Power, empty battery: lowest +5V (logic) | 4.98 V | > 4.75 V (ESP32-S3, sensors) | pass |
-| Power, empty battery: lowest +5V5 (servos) | 5.22 V | > 4.8 V (M0170 min) | pass |
+| Power, empty battery: lowest +5V5 (servos) | 5.08 V | > 4.8 V (M0170, SG90 min) | pass |
 
 **25 of 25 checks pass.**
 
@@ -46,6 +46,7 @@ opens in KiCad's simulator or plain ngspice.
 
 ![power](plots/power.png)
 
-With an empty pack (6.6 V), the servo buck runs in dropout while both servos stall:
-+5V5 sags to about 5.2 V, which is still fine for the M0170. The logic rail never moves more than
+With an empty pack (6.6 V), the servo buck runs in dropout while all three servos stall:
++5V5 sags to about 5.1 V, which is still fine for the M0170 and the SG90. VBAT at the deck dips to 6.09 V, close to
+the 6.0 V check, so charge the pack before a run. The logic rail never moves more than
 a few tens of mV, so the Mega and the ESP32-S3 do not brown out when the motors or servos start.

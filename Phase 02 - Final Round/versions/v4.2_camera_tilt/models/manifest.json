@@ -14,9 +14,15 @@
   },
   {
    "group": "3-D printed parts",
-   "name": "camera mast",
+   "name": "camera mast (SG90 tilt servo)",
    "kind": "stl",
    "src": "hardware/3d_prints/camera_mast.stl"
+  },
+  {
+   "group": "3-D printed parts",
+   "name": "camera tilt bracket",
+   "kind": "stl",
+   "src": "hardware/3d_prints/camera_tilt_bracket.stl"
   },
   {
    "group": "3-D printed parts",
@@ -161,8 +167,8 @@
    "kb": 186
   },
   {
-   "name": "GuardianBot_v4.1_build_guide.md",
-   "src": "docs/GuardianBot_v4.1_build_guide.md",
+   "name": "GuardianBot v4.2 build guide",
+   "src": "docs/GuardianBot_v4.2_build_guide.md",
    "kb": 18
   },
   {

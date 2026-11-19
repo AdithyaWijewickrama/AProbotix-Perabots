@@ -107,3 +107,14 @@ along the inner board lines, done in most worlds because two clues often point a
   gets stuck in Section 1 instead of squeezing through by luck. Not counted, as agreed in Fix 3.
 - **Not done yet:** the tilt servo needs a new camera mast (hardware), a crooked start in a Section 3 restart, and a
   second look for boards where two pieces hide behind others.
+
+### v4.2 camera mast re-run (all 64 runs)
+
+The real mast puts the servo shaft 26 mm behind and 11 mm above the lens, so the lens moves about 7 mm up when the
+camera tilts for the board look. The simulation's tilt joint and both board-look codes now use that geometry
+(`TILT_PIVOT`, `LOOK_X` / `LOOK_Z`). Results against the Fix 4 runs (`test/results/v42_mast_compare.md`):
+- **All 54 legal-arena runs are still fully right.** The board look read the board in 59 of 60 runs (w05_loops falls back, as before).
+- **Section 3 is unchanged:** 35.5 s (Python) and 36.4 s (firmware) on average.
+- **Whole mission:** +0.1 s (Python) and +5.2 s (firmware) on average. The changes come from Sections 1 and 2: the
+  moving camera head changes the simulated robot's dynamics a little, and the route choices there are sensitive to that
+  (−14 s to +38 s per run, about even overall). Official arena: Python 97.7 s, firmware 102.4 s.

@@ -4,70 +4,70 @@
  "start": "s3",
  "marks": {
   "s1": 0.02,
-  "s2": 2.51,
-  "end": 38.06
+  "s2": 2.48,
+  "end": 37.73
  },
  "reason": "reached END",
  "intervals": {
   "S3": [
-   2.51,
-   38.06
+   2.48,
+   37.73
   ]
  },
  "sections": {
   "S3": {
-   "time": 35.55,
-   "distance": 4.081,
+   "time": 35.25,
+   "distance": 4.091,
    "turns": 12,
    "stops": 5,
    "stop_list": [
     [
-     5.42,
+     5.38,
      0.72,
      2.208,
      3.05
     ],
     [
-     11.18,
+     11.04,
      0.62,
-     2.008,
+     2.009,
      3.268
     ],
     [
-     13.82,
+     13.68,
      0.86,
      2.008,
-     3.366
+     3.367
     ],
     [
-     27.22,
-     0.62,
-     1.139,
+     26.98,
+     0.58,
+     1.142,
      2.755
     ],
     [
-     29.86,
+     29.57,
      0.43,
-     1.298,
+     1.3,
      2.754
     ]
    ],
    "energy_J": 14.3,
-   "stopped": 4.27,
-   "turning": 6.24,
+   "stopped": 4.56,
+   "turning": 5.71,
    "cruising": 7.73,
    "slow": 17.23,
-   "reversing": 3.22
+   "reversing": 3.17
   }
  },
  "gaps": {
   "S3": {
-   "gap": 13.62,
-   "longer path": 0.59,
-   "turning": 1.47,
-   "stops": 2.27,
-   "below top speed": 9.21,
-   "other": 0.08
+   "gap": 13.32,
+   "longer path": 0.62,
+   "turning": 0.94,
+   "stops": 2.56,
+   "below top speed": 9.18,
+   "other": 0.02
   }
  },
  "clearance_mm": 34.0,
@@ -104,7 +104,7 @@
  "collisions": 0,
  "legal": true,
  "summary": {
-  "real": "38.1 s",
+  "real": "37.7 s",
   "best": "21.9 s",
   "note": "mission complete, piece correct"
  }

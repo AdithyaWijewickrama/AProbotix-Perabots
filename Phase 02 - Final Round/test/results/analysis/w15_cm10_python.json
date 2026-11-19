@@ -2,40 +2,139 @@
  "run": "w15_cm10_python",
  "world": "w15_cm10",
  "start": "full",
- "marks": {},
- "reason": "no movement for 60 s",
+ "marks": {
+  "s1": 17.34,
+  "s2": 61.9,
+  "end": 98.19
+ },
+ "reason": "reached END",
  "intervals": {
   "S1": [
    0.0,
-   71.65
+   17.34
+  ],
+  "S2": [
+   17.34,
+   61.9
+  ],
+  "S3": [
+   61.9,
+   98.19
   ]
  },
  "sections": {
   "S1": {
-   "time": 71.65,
-   "distance": 2.422,
-   "turns": 105,
+   "time": 17.34,
+   "distance": 2.657,
+   "turns": 15,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 85.4,
-   "stopped": 6.0,
-   "turning": 57.94,
-   "cruising": 6.72,
-   "slow": 0.91,
+   "energy_J": 10.1,
+   "stopped": 1.54,
+   "turning": 5.76,
+   "cruising": 7.78,
+   "slow": 2.21,
    "reversing": 0.0
+  },
+  "S2": {
+   "time": 44.56,
+   "distance": 7.732,
+   "turns": 31,
+   "stops": 0,
+   "stop_list": [],
+   "energy_J": 33.0,
+   "stopped": 2.59,
+   "turning": 14.45,
+   "cruising": 23.52,
+   "slow": 3.94,
+   "reversing": 0.05
+  },
+  "S3": {
+   "time": 36.29,
+   "distance": 4.093,
+   "turns": 12,
+   "stops": 5,
+   "stop_list": [
+    [
+     64.85,
+     0.67,
+     2.205,
+     3.051
+    ],
+    [
+     70.46,
+     0.62,
+     2.008,
+     3.268
+    ],
+    [
+     73.15,
+     0.82,
+     2.007,
+     3.369
+    ],
+    [
+     88.94,
+     0.58,
+     0.738,
+     2.755
+    ],
+    [
+     91.54,
+     0.48,
+     0.898,
+     2.754
+    ]
+   ],
+   "energy_J": 14.3,
+   "stopped": 4.42,
+   "turning": 5.86,
+   "cruising": 6.1,
+   "slow": 19.87,
+   "reversing": 3.22
   }
  },
  "gaps": {
   "S1": {
-   "gap": 61.99,
-   "longer path": -0.3,
-   "turning": 56.96,
-   "stops": 6.0,
-   "below top speed": -0.75,
-   "other": 0.08
+   "gap": 7.68,
+   "longer path": 0.49,
+   "turning": 4.78,
+   "stops": 1.54,
+   "below top speed": 0.82,
+   "other": 0.05
+  },
+  "S2": {
+   "gap": 2.98,
+   "longer path": -1.43,
+   "turning": 2.28,
+   "stops": 2.59,
+   "below top speed": -0.52,
+   "other": 0.06
+  },
+  "S3": {
+   "gap": 14.36,
+   "longer path": 0.63,
+   "turning": 1.09,
+   "stops": 2.42,
+   "below top speed": 10.18,
+   "other": 0.04
   }
  },
- "clearance_mm": 39.3,
+ "s2_coverage": {
+  "dead_ends": 6,
+  "checked": 5,
+  "missed": [
+   [
+    2,
+    0
+   ]
+  ],
+  "cells_entered": 30,
+  "cells_unique": 27,
+  "revisits": 3,
+  "never_entered": 9
+ },
+ "clearance_mm": 1.7,
  "wall_overlaps": 0,
  "judge_collisions": 0,
  "s3": {
@@ -43,34 +142,42 @@
   "winning_cells": [
    2
   ],
-  "placed_at": null,
-  "correct": false,
+  "placed_at": 2,
+  "correct": true,
   "board_disturbed": []
  },
  "robot": {
-  "maze_count": null,
-  "clues": null,
+  "maze_count": [
+   5,
+   0
+  ],
+  "clues": [
+   5,
+   0,
+   8,
+   8
+  ],
   "inspected_board": false,
-  "tiles_found": {}
+  "tiles_found": {
+   "0,1": "BLUE",
+   "4,3": "BLUE",
+   "2,0": "BLUE",
+   "5,1": "BLUE",
+   "7,2": "BLUE"
+  }
  },
- "maze_count_ok": null,
+ "maze_count_ok": true,
  "tiles": {
   "true": 5,
-  "found_right": 0,
+  "found_right": 5,
   "false_or_wrong_colour": [],
-  "missed": [
-   "0,1",
-   "2,0",
-   "4,3",
-   "5,1",
-   "7,2"
-  ]
+  "missed": []
  },
  "collisions": 0,
  "legal": false,
  "summary": {
-  "real": "-",
+  "real": "98.2 s",
   "best": "73.2 s",
-  "note": "ILLEGAL ARENA (no route for a 20 cm robot; stress test only), DID NOT FINISH (no movement for 60 s), piece not on a correct cell"
+  "note": "ILLEGAL ARENA (no route for a 20 cm robot; stress test only)"
  }
 }

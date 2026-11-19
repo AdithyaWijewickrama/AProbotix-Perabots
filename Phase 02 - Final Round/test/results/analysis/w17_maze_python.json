@@ -4,25 +4,25 @@
  "start": "maze",
  "marks": {
   "s1": 2.1,
-  "s2": 51.02,
-  "end": 85.95
+  "s2": 51.01,
+  "end": 85.97
  },
  "reason": "reached END",
  "intervals": {
   "S2": [
    0.0,
-   51.02
+   51.01
   ],
   "S3": [
-   51.02,
-   85.95
+   51.01,
+   85.97
   ]
  },
  "sections": {
   "S2": {
-   "time": 51.02,
-   "distance": 9.75,
-   "turns": 30,
+   "time": 51.01,
+   "distance": 9.721,
+   "turns": 31,
    "stops": 1,
    "stop_list": [
     [
@@ -33,73 +33,79 @@
     ]
    ],
    "energy_J": 34.9,
-   "stopped": 2.98,
-   "turning": 13.82,
-   "cruising": 30.34,
-   "slow": 3.79,
-   "reversing": 0.1
+   "stopped": 2.74,
+   "turning": 14.21,
+   "cruising": 29.95,
+   "slow": 4.03,
+   "reversing": 0.14
   },
   "S3": {
-   "time": 34.93,
-   "distance": 4.067,
+   "time": 34.96,
+   "distance": 4.092,
    "turns": 12,
-   "stops": 5,
+   "stops": 6,
    "stop_list": [
     [
-     53.86,
+     53.9,
      0.67,
-     2.209,
-     3.036
+     2.205,
+     3.048
     ],
     [
-     59.28,
-     0.67,
+     59.42,
+     0.62,
+     2.008,
+     2.836
+    ],
+    [
+     62.06,
+     0.38,
      2.007,
-     2.837
-    ],
-    [
-     62.02,
-     0.82,
-     2.006,
      2.736
     ],
     [
-     75.12,
-     0.62,
-     1.136,
-     3.045
+     62.5,
+     0.43,
+     2.007,
+     2.737
     ],
     [
-     77.76,
-     0.48,
-     1.296,
-     3.045
+     75.17,
+     0.67,
+     1.139,
+     3.048
+    ],
+    [
+     77.86,
+     0.43,
+     1.298,
+     3.048
     ]
    ],
    "energy_J": 14.2,
-   "stopped": 4.32,
-   "turning": 5.71,
-   "cruising": 7.63,
+   "stopped": 4.27,
+   "turning": 5.66,
+   "cruising": 7.78,
    "slow": 17.23,
-   "reversing": 3.26
+   "reversing": 3.17
   }
  },
  "gaps": {
   "S2": {
-   "gap": 13.89,
-   "longer path": 6.97,
-   "turning": 4.04,
-   "stops": 2.98,
-   "below top speed": -0.19,
-   "other": 0.09
+   "gap": 13.88,
+   "longer path": 6.87,
+   "turning": 4.43,
+   "stops": 2.74,
+   "below top speed": -0.24,
+   "other": 0.08
   },
   "S3": {
-   "gap": 16.83,
-   "longer path": 2.54,
-   "turning": 2.6,
-   "stops": 2.32,
-   "below top speed": 9.33,
-   "other": 0.04
+   "gap": 16.86,
+   "longer path": 2.63,
+   "turning": 2.55,
+   "stops": 2.27,
+   "below top speed": 9.39,
+   "other": 0.02
   }
  },
  "s2_coverage": {
@@ -116,9 +122,9 @@
   "revisits": 12,
   "never_entered": 10
  },
- "clearance_mm": 29.1,
+ "clearance_mm": 29.7,
  "wall_overlaps": 0,
- "judge_collisions": 0,
+ "judge_collisions": 1,
  "s3": {
   "clan": "GREEN",
   "winning_cells": [

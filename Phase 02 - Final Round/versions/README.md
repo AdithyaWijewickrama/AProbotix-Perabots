@@ -15,7 +15,7 @@ one `spec.yaml` per version, so bodies, PCBs, budgets, speed, weight and parts c
 | v3.3 + Mega shield PCB | `v3.3-pcb` | all wiring on a local-made PCB | 152.1 s | Rs 13,750 |
 | v4.0 ESP32-CAM brain + PCB deck | `v4.0` / `v4.0.1` | real inventory: 8 ToF, QTR-8RC, DRV8833 + 2S, PCB middle floor | 153.6 s | Rs 20,000 (vero: 15,500) |
 | v4.1 ESP32-S3 + OV7670 brain | `v4.1` / `v4.1.1` | the team's own S3 + OV7670 instead of a bought ESP32-CAM; S3 flat on the top deck; Wi-Fi test-bench page; Fixes 1–3 | 153.6 s (firmware: 187.7 s) | Rs 15,900 (vero: 11,400) |
-| **v4.2 camera tilt servo** | `v4.2` | SG90 lifts the camera 14°: one look reads the whole Section 3 board; no stops at line crossings (Fix 4). Tilting mast still to be designed | 93.1 s (firmware: 105.8 s) | Rs 16,000 (vero: 11,500) |
+| **v4.2 camera tilt servo** | `v4.2` | SG90 lifts the camera 14°: one look reads the whole Section 3 board; no stops at line crossings (Fix 4); printed tilting camera mast | 97.7 s (firmware: 102.4 s) | Rs 16,000 (vero: 11,500) |
 
 Times come from one neutral "judge" supervisor on the same arena for every version
 (`judge/judge.py`).
@@ -30,7 +30,7 @@ So far: v3.2, v4.0, v4.1 and v4.2. The other versions still need a re-run with t
 inside `_site`). It has two pages:
 
 - `index.html`: version cards (with the tests done on each version), charts and a side-by-side comparison.
-- `viewer.html`: **hardware in 3-D** for v2.0, v3.3, v4.0, v4.1 and v4.2 (v4.2 shows the v4.1 parts until its tilting mast exists). You can turn and zoom the PCB with every part (and
+- `viewer.html`: **hardware in 3-D** for v2.0, v3.3, v4.0, v4.1 and v4.2 (v4.2 adds the tilting camera mast and bracket). You can turn and zoom the PCB with every part (and
   the Arduino Mega / ESP32 board where it sits), every 3-D printed part, and every laser-cut deck in 3-D or as its
   cut drawing. It also has the downloads: Gerbers, schematic, BOM, DXF, STL and the build guide.
 

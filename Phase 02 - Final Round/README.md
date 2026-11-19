@@ -2,7 +2,7 @@
 
 PeraBots 2026, University category, final round (physical robot) – team AProbotix.
 
-Our robot is **GuardianBot v4.2**: a 150 mm round robot built from the parts the team really owns. v4.2 is v4.1 with the camera on an SG90 tilt servo, so one look reads the whole Section 3 board (`test/FIXES.md`, Fix 4); its tilting camera mast is still to be designed, so the build guide below is still v4.1.
+Our robot is **GuardianBot v4.2**: a 150 mm round robot built from the parts the team really owns. v4.2 is v4.1 with the camera on an SG90 tilt servo, so one look reads the whole Section 3 board (`test/FIXES.md`, Fix 4); the tilting camera mast is in `hardware/3d_prints` (camera_mast + camera_tilt_bracket).
 
 - **Controllers:**
   - Arduino Mega 2560: real-time body, mounted upside-down on the PCB deck.
@@ -22,7 +22,7 @@ Everything physical is generated from one file of dimensions, `hardware/cad/guar
 
 ![GuardianBot v4.1](docs/images/v41_robot_iso.png)
 
-**Start here: [`docs/GuardianBot_v4.1_build_guide.md`](docs/GuardianBot_v4.1_build_guide.md).** It covers:
+**Start here: [`docs/GuardianBot_v4.2_build_guide.md`](docs/GuardianBot_v4.2_build_guide.md).** It covers:
 
 - what changed from v3, and why
 - the parts
@@ -56,7 +56,7 @@ Latest Webots results, 0 collisions in every run:
 
 | Folder | What is inside |
 |---|---|
-| `docs/` | Final-round rulebook (PDF and extracted text), **`GuardianBot_v4.1_build_guide.md`**, `TEST_PLAN.md`, robot renders, rulebook figures, sample run log |
+| `docs/` | Final-round rulebook (PDF and extracted text), **`GuardianBot_v4.2_build_guide.md`**, `TEST_PLAN.md`, robot renders, rulebook figures, sample run log |
 | `simulation/` | Webots R2025a project: arena, robot, controllers |
 | `simulation/worlds/` | `perabots_arena.wbt` (full mission), `section3_start.wbt` (restart at Section 3), `guardian_hw_test.wbt` (gripper/sensor self-test), `testbench.wbt` (test web page on the simulated robot), `Arena.wbt` (same as perabots_arena) |
 | `simulation/protos/` | `Arena.proto` (Section 3 rebuilt from rulebook Figure 1), `Obstacles.proto`, `GuardianBot.proto` (generated) |

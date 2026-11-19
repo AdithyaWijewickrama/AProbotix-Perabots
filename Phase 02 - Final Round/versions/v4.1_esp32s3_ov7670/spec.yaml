@@ -43,7 +43,7 @@ simulation:
 files:
   - git commit de5373f on branch feature/v4.1 (Fixes 1 and 2); Fix 3 went into the v4.2 commit, together with the camera tilt
   - firmware/esp32s3_brain, firmware/esp32s3_testbench, simulation/controllers/testbench_sim
-  - docs/GuardianBot_v4.1_build_guide.md, docs/TEST_PLAN.md
+  - versions/v4.1_esp32s3_ov7670/GuardianBot_v4.1_build_guide.md and 3d_prints/camera_mast (the fixed v4.1 mast), docs/TEST_PLAN.md
 tests:
   - name: Judge simulation run (Webots, same arena for every version)
     result: full mission in 153.6 s after Fix 3, 0 collisions
