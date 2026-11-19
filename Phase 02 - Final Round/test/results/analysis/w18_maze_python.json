@@ -3,90 +3,97 @@
  "world": "w18_maze",
  "start": "maze",
  "marks": {
-  "s1": 1.73,
-  "s2": 59.57,
-  "end": 169.12
+  "s1": 2.0,
+  "s2": 59.52,
+  "end": 168.98
  },
  "reason": "reached END",
  "intervals": {
   "S2": [
    0.0,
-   59.57
+   59.52
   ],
   "S3": [
-   59.57,
-   169.12
+   59.52,
+   168.98
   ]
  },
  "sections": {
   "S2": {
-   "time": 59.57,
-   "distance": 11.786,
-   "turns": 31,
-   "stops": 0,
-   "stop_list": [],
-   "energy_J": 39.4,
-   "stopped": 2.64,
+   "time": 59.52,
+   "distance": 11.749,
+   "turns": 32,
+   "stops": 1,
+   "stop_list": [
+    [
+     0.05,
+     0.34,
+     0.22,
+     1.275
+    ]
+   ],
+   "energy_J": 39.2,
+   "stopped": 3.02,
    "turning": 15.02,
-   "cruising": 37.44,
-   "slow": 4.42,
-   "reversing": 0.05
+   "cruising": 37.3,
+   "slow": 4.08,
+   "reversing": 0.1
   },
   "S3": {
-   "time": 109.55,
-   "distance": 10.608,
-   "turns": 25,
+   "time": 109.46,
+   "distance": 10.623,
+   "turns": 24,
    "stops": 4,
    "stop_list": [
     [
      68.74,
      0.62,
-     2.009,
-     2.831
+     2.008,
+     2.834
     ],
     [
      71.42,
      0.82,
-     2.009,
-     2.737
+     2.007,
+     2.74
     ],
     [
-     157.1,
+     157.06,
      0.62,
-     0.737,
-     3.348
+     0.739,
+     3.351
     ],
     [
-     159.74,
+     159.7,
      0.43,
      0.896,
-     3.349
+     3.35
     ]
    ],
-   "energy_J": 32.4,
+   "energy_J": 32.3,
    "stopped": 5.9,
-   "turning": 11.57,
+   "turning": 11.42,
    "cruising": 0.0,
-   "slow": 92.02,
+   "slow": 92.11,
    "reversing": 8.59
   }
  },
  "gaps": {
   "S2": {
-   "gap": 7.92,
-   "longer path": 0.42,
+   "gap": 7.87,
+   "longer path": 0.3,
    "turning": 4.29,
-   "stops": 2.64,
-   "below top speed": 0.52,
-   "other": 0.05
+   "stops": 3.02,
+   "below top speed": 0.16,
+   "other": 0.1
   },
   "S3": {
-   "gap": 87.62,
-   "longer path": 22.35,
-   "turning": 6.8,
+   "gap": 87.53,
+   "longer path": 22.4,
+   "turning": 6.65,
    "stops": 3.9,
-   "below top speed": 54.51,
-   "other": 0.06
+   "below top speed": 54.55,
+   "other": 0.03
   }
  },
  "s2_coverage": {
@@ -98,9 +105,9 @@
   "revisits": 15,
   "never_entered": 5
  },
- "clearance_mm": 22.8,
+ "clearance_mm": 22.3,
  "wall_overlaps": 0,
- "judge_collisions": 0,
+ "judge_collisions": 2,
  "s3": {
   "clan": "GREEN",
   "winning_cells": [
@@ -137,7 +144,7 @@
  },
  "collisions": 0,
  "summary": {
-  "real": "169.1 s",
+  "real": "169.0 s",
   "best": "73.6 s",
   "note": "mission complete, piece correct"
  }

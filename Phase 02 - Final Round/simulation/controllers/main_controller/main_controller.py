@@ -118,6 +118,8 @@ def wrap(a):
 px, py = 2.315, 0.125
 yaw = 0.0
 yaw_off = 0.0           # heading correction learned from the side ToF pairs (the real gyro drifts)
+_imu0 = None            # first inertial-unit reading: the real robot only has a gyro (turn since power-on),
+                        # so the heading is "turned since start + 90 deg", corrected by start_heading()
 _pl = _pr = None
 _last_l = _last_r = 0.0
 t_sim = 0.0
@@ -129,7 +131,11 @@ def step():
         raise SystemExit
     t_sim += TS / 1000.0
     l, r = le.getValue(), re_.getValue()
-    y2 = wrap(imu.getRollPitchYaw()[2] + yaw_off)
+    global _imu0
+    a = imu.getRollPitchYaw()[2]
+    if _imu0 is None:
+        _imu0 = a
+    y2 = wrap(a - _imu0 + HP + yaw_off)          # like the gyro: relative to the start, assumed facing +y
     if _pl is not None:
         d = ((l - _pl) + (r - _pr)) * 0.5 * R_WHEEL
         mid = yaw + wrap(y2 - yaw) * 0.5
@@ -908,8 +914,34 @@ def run_s1():
             stuck = 0
 
 
+def start_heading(n=15):
+    """Fix 1 (test plan): the robot may be placed a little crooked. While it stands still, the two side ToF
+    pairs (66 mm apart) give its angle to a straight wall beside it (the east wall in the START area, the
+    chamber/maze walls at the maze entrance). Same sign convention as side_align()."""
+    global yaw_off, yaw
+    acc = {'l': [], 'r': []}
+    for _ in range(n):
+        step()
+        for key, f, r in (('l', 'tof_lf', 'tof_lr'), ('r', 'tof_rf', 'tof_rr')):
+            df, dr = D[f], D[r]
+            if TOF_MIN < df < 0.25 and TOF_MIN < dr < 0.25:
+                acc[key].append(math.atan2(dr - df, SIDE_PAIR_DX) * (1 if key == 'l' else -1))
+    th = [sum(v) / len(v) for v in acc.values() if len(v) >= n // 2]
+    th = [t for t in th if abs(t) < 0.5]
+    if not th:
+        print('start heading: no wall beside the robot - assuming it is straight')
+        return
+    theta = sum(th) / len(th)
+    k = round(yaw / HP)
+    c = wrap(k * HP + theta - yaw)
+    yaw_off += c
+    yaw = wrap(yaw + c)
+    print('start heading: placed %.1f deg off straight (from the side ToF pairs)' % math.degrees(theta))
+
+
 def where_am_i():
     global px, py
+    start_heading()
     k = round(yaw / HP)
     turn_to(k * HP)
     stop_now(3)

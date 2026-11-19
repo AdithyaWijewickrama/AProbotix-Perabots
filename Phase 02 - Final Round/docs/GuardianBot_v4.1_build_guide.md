@@ -277,5 +277,6 @@ See `firmware/README.md` for the boards, libraries and first power-up checklist.
 3. Flash `esp32s3_brain`. The OLED shows `READY 1:GO 3:S3 4:CAL`.
 4. **Calibration time.** Press **K4** with white paper under and in front of the robot (colour sensors **and** camera). The robot must stay still for 1.5 s after power-on (gyro bias).
 5. **Run.** Place the robot in START and press **K1**. It also starts correctly at the maze entrance.
+   - It doesn't need to be exactly straight. In the first 0.3 s it measures its angle to the wall beside it with the side ToF pairs (tested up to ±20° off straight). Keep the right side within about 20 cm of the east wall.
    - **Section 3 restart:** place it in the maze exit cell facing the exit and press **K3**. It uses the clues saved in flash.
 6. **Battery.** Change the LiPo below 3.6 V per cell; the OLED shows the voltage.

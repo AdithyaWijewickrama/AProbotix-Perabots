@@ -3,115 +3,122 @@
  "world": "w26_hard_straight",
  "start": "full",
  "marks": {
-  "s1": 28.02,
-  "s2": 57.81,
-  "end": 159.55
+  "s1": 23.15,
+  "s2": 51.92,
+  "end": 149.65
  },
  "reason": "reached END",
  "intervals": {
   "S1": [
    0.0,
-   28.02
+   23.15
   ],
   "S2": [
-   28.02,
-   57.81
+   23.15,
+   51.92
   ],
   "S3": [
-   57.81,
-   159.55
+   51.92,
+   149.65
   ]
  },
  "sections": {
   "S1": {
-   "time": 28.02,
-   "distance": 4.021,
-   "turns": 31,
-   "stops": 0,
-   "stop_list": [],
-   "energy_J": 18.5,
-   "stopped": 2.35,
-   "turning": 10.7,
-   "cruising": 11.95,
-   "slow": 2.93,
+   "time": 23.15,
+   "distance": 3.254,
+   "turns": 24,
+   "stops": 1,
+   "stop_list": [
+    [
+     0.05,
+     0.34,
+     2.315,
+     0.125
+    ]
+   ],
+   "energy_J": 14.8,
+   "stopped": 2.74,
+   "turning": 8.21,
+   "cruising": 9.46,
+   "slow": 2.69,
    "reversing": 0.0
   },
   "S2": {
-   "time": 29.79,
-   "distance": 5.67,
-   "turns": 16,
+   "time": 28.77,
+   "distance": 5.68,
+   "turns": 15,
    "stops": 0,
    "stop_list": [],
-   "energy_J": 19.1,
-   "stopped": 1.49,
-   "turning": 7.44,
-   "cruising": 17.57,
-   "slow": 3.26,
-   "reversing": 0.1
+   "energy_J": 17.9,
+   "stopped": 1.39,
+   "turning": 6.24,
+   "cruising": 17.38,
+   "slow": 3.7,
+   "reversing": 0.05
   },
   "S3": {
-   "time": 101.74,
-   "distance": 9.785,
-   "turns": 22,
+   "time": 97.73,
+   "distance": 9.815,
+   "turns": 21,
    "stops": 4,
    "stop_list": [
     [
-     66.91,
+     61.06,
      0.62,
-     2.008,
-     2.831
+     2.009,
+     2.838
     ],
     [
-     69.55,
-     0.82,
-     2.008,
-     2.734
+     63.7,
+     0.86,
+     2.009,
+     2.741
     ],
     [
-     144.58,
+     132.05,
      0.62,
-     1.14,
-     3.352
+     1.539,
+     3.046
     ],
     [
-     147.22,
+     134.69,
      0.43,
-     1.297,
-     3.352
+     1.697,
+     3.046
     ]
    ],
-   "energy_J": 30.0,
-   "stopped": 5.76,
-   "turning": 10.75,
+   "energy_J": 28.7,
+   "stopped": 5.47,
+   "turning": 9.6,
    "cruising": 0.0,
-   "slow": 85.15,
-   "reversing": 8.35
+   "slow": 82.61,
+   "reversing": 6.96
   }
  },
  "gaps": {
   "S1": {
-   "gap": 15.67,
-   "longer path": 4.06,
-   "turning": 8.55,
-   "stops": 2.35,
-   "below top speed": 0.62,
-   "other": 0.09
+   "gap": 10.8,
+   "longer path": 1.51,
+   "turning": 6.06,
+   "stops": 2.74,
+   "below top speed": 0.44,
+   "other": 0.05
   },
   "S2": {
-   "gap": 0.44,
-   "longer path": -1.63,
-   "turning": 0.05,
-   "stops": 1.49,
-   "below top speed": 0.5,
-   "other": 0.03
+   "gap": -0.58,
+   "longer path": -1.6,
+   "turning": -1.15,
+   "stops": 1.39,
+   "below top speed": 0.72,
+   "other": 0.06
   },
   "S3": {
-   "gap": 79.81,
-   "longer path": 19.6,
-   "turning": 5.98,
-   "stops": 3.76,
-   "below top speed": 50.39,
-   "other": 0.08
+   "gap": 75.8,
+   "longer path": 19.7,
+   "turning": 4.83,
+   "stops": 3.47,
+   "below top speed": 47.75,
+   "other": 0.05
   }
  },
  "s2_coverage": {
@@ -119,12 +126,12 @@
   "checked": 3,
   "missed": [
    [
-    5,
-    2
-   ],
-   [
     6,
     1
+   ],
+   [
+    7,
+    3
    ]
   ],
   "cells_entered": 22,
@@ -132,26 +139,26 @@
   "revisits": 0,
   "never_entered": 14
  },
- "clearance_mm": 16.6,
+ "clearance_mm": 18.8,
  "wall_overlaps": 0,
- "judge_collisions": 2,
+ "judge_collisions": 5,
  "s3": {
   "clan": "GREEN",
   "winning_cells": [
    3
   ],
-  "placed_at": 3,
-  "correct": true,
+  "placed_at": 1,
+  "correct": false,
   "board_disturbed": []
  },
  "robot": {
   "maze_count": [
    0,
-   5
+   4
   ],
   "clues": [
    0,
-   5,
+   4,
    5,
    5
   ],
@@ -159,22 +166,23 @@
   "tiles_found": {
    "0,3": "GREEN",
    "6,1": "GREEN",
-   "5,2": "GREEN",
    "8,0": "GREEN",
-   "7,3": "GREEN"
+   "5,2": "GREEN"
   }
  },
- "maze_count_ok": true,
+ "maze_count_ok": false,
  "tiles": {
   "true": 5,
-  "found_right": 5,
+  "found_right": 4,
   "false_or_wrong_colour": [],
-  "missed": []
+  "missed": [
+   "7,3"
+  ]
  },
  "collisions": 0,
  "summary": {
-  "real": "159.6 s",
+  "real": "149.7 s",
   "best": "63.6 s",
-  "note": "mission complete, piece correct"
+  "note": "WRONG TILE COUNT, piece not on a correct cell"
  }
 }

@@ -7,6 +7,7 @@ usage:  python test/tools/gen.py <name> <seed> [start] [options]
                             LOOPS=a-b (extra maze openings, default 0-2)
                             NTILES=a-b (clue tiles, default 3-7, always odd)
                             DECEPTIVE=1 (dead ends near the exit, long side branches)
+                            STRAIGHT=1 (no random start angle), CROOK=deg (start this far off straight)
         seed 0 = the official arena (rulebook Figure 1), unchanged.
 
 writes  test/protos/Arena_<name>.proto, test/protos/Obstacles_<name>.proto,
@@ -351,6 +352,8 @@ def build(name, seed, start="full"):
         crook = rng.uniform(-0.35, 0.35)                   # placed by hand: not perfectly straight
         if os.environ.get("STRAIGHT") != "1":              # STRAIGHT=1: same arena, robot placed exactly straight
             a0 += crook
+    if os.environ.get("CROOK"):                            # CROOK=deg: place the robot this many degrees off straight
+        a0 += math.radians(float(os.environ["CROOK"]))
     args = ('\n  controllerArgs [ "section3" "clues=%d,%d,%d,%d" ]' % (nb, ng, R, L)) if start == "s3" else ""
     robot = ('# ---- robot ----\nGuardianBot {\n  translation %.3f %.3f 0\n  rotation 0 0 1 %.4f\n  name "team_robot"\n'
              '  controller "test_runner"%s\n}\n' % (x0, y0, a0, args))

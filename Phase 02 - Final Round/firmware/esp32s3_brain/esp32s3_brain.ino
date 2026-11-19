@@ -824,7 +824,36 @@ void runS1() {
 }
 
 // ============================================================ start detection
+// Fix 1 (test plan): the robot may be placed a little crooked, and the gyro only knows how far it has turned.
+// While it stands still, the two side ToF pairs (66 mm apart) give its angle to a straight wall beside it
+// (the east wall in the START area, the chamber / maze walls at the maze entrance). Same signs as sideAlign().
+void startHeading(int n = 15) {
+  float sum[2] = {0, 0}; int cnt[2] = {0, 0};
+  const int pr[2][2] = {{TOF_LF, TOF_LR}, {TOF_RF, TOF_RR}};
+  for (int i = 0; i < n; i++) {
+    step();
+    for (int k = 0; k < 2; k++) {
+      float df = D[pr[k][0]], dr = D[pr[k][1]];
+      if (df > TOF_MIN && df < 0.25f && dr > TOF_MIN && dr < 0.25f) {
+        sum[k] += atan2f(dr - df, SIDE_PAIR_DX) * (k == 0 ? 1.0f : -1.0f);
+        cnt[k]++;
+      }
+    }
+  }
+  float th = 0; int m = 0;
+  for (int k = 0; k < 2; k++)
+    if (cnt[k] >= n / 2 && fabsf(sum[k] / cnt[k]) < 0.5f) { th += sum[k] / cnt[k]; m++; }
+  if (!m) { logf_("start heading: no wall beside the robot - assuming it is straight"); return; }
+  th /= m;
+  float k = roundf(yaw / HP_F);
+  float c = wrapA(k * HP_F + th - yaw);
+  yawOff += c;
+  yaw = wrapA(yaw + c);
+  logf_("start heading: placed %.1f deg off straight (from the side ToF pairs)", th * 180.0f / PI_F);
+}
+
 int whereAmI() {
+  startHeading();
   float k = roundf(yaw / HP_F);
   turnTo(k * HP_F); stopNow(3);
   float wd[4] = {9, 9, 9, 9}, wox[4] = {0}, woy[4] = {0};
